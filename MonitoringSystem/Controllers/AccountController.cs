@@ -15,8 +15,7 @@ namespace MonitoringSystem.Controllers
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
-            // Simple check (You can change "admin" to anything)
-            if (username == "admin" && password == "1234")
+            if (username == "LGU" && password == "1234")
             {
                 // REDIRECTS to LguDashboard Controller -> Index Action
                 return RedirectToAction("Index", "LguDashboard");
