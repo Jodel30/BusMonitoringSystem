@@ -1,0 +1,297 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/css/site.css" />
+    <title>LGU Dashboard</title>
+</head>
+<body>
+    
+    <section class="main" id="dashboard">
+        <section class="title-card">
+            <div class="overlay">
+                <div class="title-content">
+                    <h1>Student Transport Monitoring System</h1>
+                </div>
+            </div>
+        </section>
+        <div class="cards">
+            <div class="card">
+                <h3>Total Registered Students</h3>
+                <p>0</p>
+                <img src="students-removebg-preview.png">
+            </div>
+            <div class="card">
+                <h3>Total Bus</h3>
+                <p>0</p>
+                <img src="bus-removebg-preview.png">
+            </div>
+            <div class="card">
+                <h3>Total Drivers</h3>
+                <p>0</p>
+                <img src="driver-removebg-preview.png">
+            </div>
+            <div class="card">
+                <h3>Total Users</h3>
+                <p>0</p>
+                <img src="users-removebg-preview.png">
+            </div>
+        </div>
+
+        <div class="table">
+            <div class="table-box">
+                <h3>Recent Activity</h3>
+                <p>Latest Boarding Records</p>
+                <table>
+                    <tr>
+                        <th>Date</th>
+                        <th>Total Number of Students Boarded</th>
+                        <th>Driver Id</th>
+                        <th>Status</th>
+                    </tr>
+                </table>
+            </div>
+    </section>
+    <section class="main" id="students">
+        <section class="title-card2">
+            <div class="overlay2">
+                <div class="title-content2">
+                    <h1>Registered Students</h1>
+                </div>
+            </div>
+        </section>
+        <div class="studentcard">
+            <h3>Total Registered Students</h3>
+            <p>0</p>
+            <img src="students-removebg-preview.png">
+        </div>
+        <div class="table">
+            <div class="table-box">
+                <h3>REGISTERED STUDENTS</h3>
+                <div class="search-box">
+                    <img src="searchh.png" class="search-icon">
+                    <input type="text" class="search" placeholder="Search...">
+                </div>
+                <table>
+                    <tr>
+                        <th>LRN</th>
+                        <th>Name of Students</th>
+                        <th>Grade Level</th>
+                        <th>Section</th>
+                        <th>Contact Number</th>
+                        <th>Address</th>
+                        <th>QR Code</th>
+                    </tr>
+                </table>
+            </div>
+
+    </section>
+
+
+    <section class="main" id="driverlogs" style="padding-top: 100px;">
+
+        <div class="driver-header">
+
+            <div class="drivercard">
+                <h3>Total Registered Drivers</h3>
+                <p>0</p>
+                <img src="driver-removebg-preview.png" alt="Driver">
+            </div>
+
+            <section class="title-card3">
+                <div class="overlay3">
+                    <div class="title-content3">
+                        <h1>Driver</h1>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <div class="table1">
+            <div class="table-box1">
+                <h3>DRIVER INFORMATION</h3>
+
+                <div class="search-box">
+                    <img src="searchh.png" class="search-icon">
+                    <input type="text" class="search" placeholder="Search...">
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Driver Id</th>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Contact Number</th>
+                        <th>Status</th>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+
+    <section class="main" id="maintenance" style="margin-bottom: 10px;">
+        <div class="maintenance-header">
+
+            <section class="title-card4">
+                <div class="overlay4">
+                    <div class="title-content4">
+                        <h1>Bus Maintenance</h1>
+                    </div>
+                </div>
+            </section>
+
+            <img src="maintenance.png" alt="Maintenance" class="main-image">
+
+        </div>
+        <section class="maintenance-form">
+
+            <h2>Bus Maintenance Form</h2>
+
+            <form>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label>Bus ID *</label>
+                        <input type="text" placeholder="Enter Bus ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Driver Name *</label>
+                        <input type="text" placeholder="Enter Driver Name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Maintenance Type *</label>
+                        <select>
+                            <option>Oil Change</option>
+                            <option>Engine Check</option>
+                            <option>Tire Replacement</option>
+                            <option>General Repair</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select>
+                            <option>Pending</option>
+                            <option>In Progress</option>
+                            <option>Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cost (₱)</label>
+                        <input type="number" placeholder="Enter Cost">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea placeholder="Enter maintenance details..."></textarea>
+                    </div>
+
+                </div>
+
+                <button type="submit">Submit</button>
+
+            </form>
+
+        </section>
+        <div class="maintenance-table">
+
+            <h2>Maintenance Records</h2>
+
+            <table id="maintenanceTable">
+                <thead>
+                    <tr>
+                        <th>Bus ID</th>
+                        <th>Driver</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Cost</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will appear here -->
+                </tbody>
+            </table>
+
+        </div>
+    </section>
+
+    <section class="main" id="reports">
+
+        <!-- TITLE -->
+        <div class="reports-header">
+            <section class="title-card5">
+                <div class="overlay5">
+                    <div class="title-content5">
+                        <h1>Reports & Analytics</h1>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="report-cards">
+            <div class="report-card">
+                <h3>Total Students</h3>
+                <p>0</p>
+            </div>
+
+            <div class="report-card">
+                <h3>Total Students</h3>
+                <p>0</p>
+            </div>
+
+            <div class="report-card">
+                <h3>Total Students</h3>
+                <p>0</p>
+            </div>
+
+            <div class="report-card">
+                <h3>Total Students</h3>
+                <p>0</p>
+            </div>
+        </div>
+
+        <div class="report-filter">
+            <input type="date" id="reportDate">
+            <button onclick="filterData()">Show Report</button>
+        </div>
+
+        <div class="reports-table">
+
+            <h2>Reports</h2>
+            <table id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>LRN</th>
+                        <th>Bus</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will appear here -->
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
+    <section class="main" id="user">
+        <h2>User Management</h2>
+    </section>
+    <script src="LguDashboard.js"></script>
+</body>
+</html>
