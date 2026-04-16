@@ -6,6 +6,7 @@ namespace MonitoringSystem.Controllers
     {
         public IActionResult Index()
         {
+            // This looks for Views/LguDashboard/Index.cshtml
             return View();
         }
     }
