@@ -20,6 +20,11 @@ namespace MonitoringSystem.Controllers
                 // REDIRECTS to LguDashboard Controller -> Index Action
                 return RedirectToAction("Index", "LguDashboard");
             }
+            if (username == "Driver" && password == "1234")
+            {
+                // REDIRECTS to DriverDashboard Controller -> Index Action
+                return RedirectToAction("Driver", "DriverDashboard");
+            }
 
             ViewBag.Error = "Invalid Username or Password";
             return View();

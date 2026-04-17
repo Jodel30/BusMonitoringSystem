@@ -10,22 +10,28 @@
 </head>
 <body>
 
-        <header class="top-nav">
-            <img class="logo" src="~/buslogo-removebg-preview.png" alt="bus logo">
-
-        <nav>
-            <ul>
-                <li><a href="#dashboard" class="active">Dashboard</a></li>
-                <li><a href="#students">Students</a></li>
-                <li><a href="#driverlogs">Driver</a></li>
-                <li><a href="#maintenance">Bus Maintenance</a></li>
-                <li><a href="#reports">Reports</a></li>
-                <li><a href="#user">User Management</a></li>
-                <img class="profile" src="~/logout-removebg-preview.png" alt="Profile Image">
-            </ul>
-        </nav>
-        </header>
-
+    <header class="top-nav">
+        <div class="nav-container">
+            <div class="brand">
+                <img src="~/buslogo-removebg-preview.png" alt="logo">
+                <span>STMS</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="#students"><i class="fa-solid fa-user-graduate"></i> Students</a></li>
+                    <li><a href="#driverlogs"><i class="fa-solid fa-id-card"></i> Driver Fleet</a></li>
+                    <li><a href="#reports"><i class="fa-solid fa-file-invoice"></i> Analytics</a></li>
+                    <li><a href="#user"><i class="fa-solid fa-users-gear"></i> User Management</a></li>
+                </ul>
+            </nav>
+            <div class="profile-area">
+                <a href="/Account/Login" title="Logout">
+                    <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout">
+                </a>
+            </div>
+        </div>
+    </header>
         <div class="container">
             @RenderBody()
         </div>

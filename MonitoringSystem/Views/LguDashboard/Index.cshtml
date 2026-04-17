@@ -1,346 +1,187 @@
-﻿<!DOCTYPE html>
+﻿
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="~/css/site.css" />
-    <title>LGU Dashboard</title>
-<style>
-        .title-card {
-            width: 100%;
-            height: 250px;
-            background: linear-gradient(to left, rgba(244,246,249,0) 90% ), url(' /freebus.jpg') no-repeat center right;
-            background-size: 60%;
-            border-radius: 20px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .title-card2 {
-            flex: 1;
-            width: 70%;
-            height: 220px;
-            background: linear-gradient(to right, rgba(244,246,249,0) 90% ), url(' /studenttst.jpg') no-repeat left center;
-            background-size: 50%;
-            border-radius: 30px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .title-card3 {
-            flex: 1;
-            width: 70%;
-            height: 220px;
-            background: linear-gradient(to right, rgba(244,246,249,0) 90% ), url(' /driver-removebg-preview.png') no-repeat right center;
-            background-size: 30%;
-            border-radius: 30px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-
-        .title-card4 {
-            flex: 1;
-            width: 60%;
-            height: 150px;
-            background: linear-gradient(to right, rgba(244,246,249,0) 90%), url(' /maintenance.png') no-repeat right center;
-            background-size: 50%;
-            border-radius: 30px;
-            overflow: hidden;
-            margin: 20px 0;
-            position: relative;
-        }
-</style>
+    <title>STMS | LGU Dashboard</title>
+    <!-- Modern Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css">
 </head>
 <body>
-    
-    <section class="main" id="dashboard">
-        <section class="title-card">
-            <div class="overlay">
-                <div class="title-content">
-                    <h1>Student Transport Monitoring System</h1>
+
+  
+
+    <div class="main-wrapper">
+
+        <!-- SECTION: DASHBOARD HOME -->
+        <section class="main-content" id="dashboard">
+            <div class="hero-banner">
+                <div class="hero-text">
+                    <h1>Student Transport<br>Monitoring System</h1>
+
+                </div>
+                <div class="hero-visual">
+                    <img src="~/freebus.jpg" alt="Fleet">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
+                    <div class="info"><h3>Students</h3><p>1,240</p></div>
+                    <img src="~/students-removebg-preview.png" class="bg-icon">
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box cyan"><i class="fa-solid fa-bus"></i></div>
+                    <div class="info"><h3>Total Buses</h3><p>14</p></div>
+                    <img src="~/bus-removebg-preview.png" class="bg-icon">
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box navy"><i class="fa-solid fa-steering-wheel"></i></div>
+                    <div class="info"><h3>Drivers</h3><p>28</p></div>
+                    <img src="~/driver-removebg-preview.png" class="bg-icon">
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box grey"><i class="fa-solid fa-user-shield"></i></div>
+                    <div class="info"><h3>Users</h3><p>5</p></div>
+                    <img src="~/users-removebg-preview.png" class="bg-icon">
+                </div>
+            </div>
+
+            <div class="glass-card mt-5">
+                <div class="card-header">
+                    <h2>Recent Activity</h2>
+                    <p>Live feed of student boarding events</p>
+                </div>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Time Stamp</th>
+                            <th>Total Boarded</th>
+                            <th>Driver Assigned</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Today, 07:45 AM</td><td>45 Students</td><td>D-102 (Cardo)</td><td><span class="status success">Completed</span></td></tr>
+                        <tr><td>Today, 08:30 AM</td><td>32 Students</td><td>D-105 (Juan)</td><td><span class="status warning">In Route</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: STUDENTS -->
+        <section class="main-content" id="students">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-user-graduate"></i> Student Registry</h2>
+                <div class="header-tools">
+                    
+                    <button class="btn-action"><i class="fa-solid fa-plus"></i> Add Student</button>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search LRN or Name...">
+                </div>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>LRN</th>
+                            <th>Name</th>
+                            <th>Level</th>
+                            <th>Address</th>
+                            <th>Contact</th>
+                            <th>QR Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="id-tag">123456789</span></td>
+                            <td><strong>Jodel</strong></td>
+                            <td>Grade 10</td>
+                            <td>Kabac</td>
+                            <td>0912-345-678</td>
+                            <td><button class="icon-btn"><i class="fa-solid fa-qrcode"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: DRIVERS (Replaces Maintenance Location) -->
+        <section class="main-content" id="driverlogs">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-id-card"></i> Driver Fleet Management</h2>
+                <button class="btn-action"><i class="fa-solid fa-plus"></i> Register Driver</button>
+            </div>
+
+            <div class="driver-grid">
+                <!-- Driver Card 1 -->
+                <div class="driver-card glass-card">
+                    <div class="driver-top">
+                        <div class="online-indicator"></div>
+                        <img src="~/driver-removebg-preview.png" alt="driver">
+                    </div>
+                    <h3>Ricardo Dalisay</h3>
+                    <p class="driver-id">ID: DRV-001</p>
+                    <div class="driver-details">
+                        <span><i class="fa-solid fa-bus"></i> Bus A-01</span>
+                        <span><i class="fa-solid fa-phone"></i> 0917-000-000</span>
+                    </div>
+                
+                </div>
+                <!-- Driver Card 2 -->
+                <div class="driver-card glass-card">
+                    <div class="driver-top">
+                        <div class="online-indicator offline"></div>
+                        <img src="~/driver-removebg-preview.png" alt="driver">
+                    </div>
+                    <h3>Juan Dela Cruz</h3>
+                    <p class="driver-id">ID: DRV-002</p>
+                    <div class="driver-details">
+                        <span><i class="fa-solid fa-bus"></i> Bus B-05</span>
+                        <span><i class="fa-solid fa-phone"></i> 0918-111-222</span>
+                    </div>
+                    
                 </div>
             </div>
         </section>
-        <div class="cards">
-            <div class="card">
-                <h3>Total Registered Students</h3>
-                <p>0</p>
-                <img src="~/students-removebg-preview.png">
-            </div>
-            <div class="card">
-                <h3>Total Bus</h3>
-                <p>0</p>
-                <img src="~/bus-removebg-preview.png">
-            </div>
-            <div class="card">
-                <h3>Total Drivers</h3>
-                <p>0</p>
-                <img src="~/driver-removebg-preview.png">
-            </div>
-            <div class="card">
-                <h3>Total Users</h3>
-                <p>0</p>
-                <img src="~/users-removebg-preview.png">
-            </div>
-        </div>
 
-        <div class="table">
-            <div class="table-box">
-                <h3>Recent Activity</h3>
-                <p>Latest Boarding Records</p>
-                <table>
-                    <tr>
-                        <th>Date</th>
-                        <th>Total Number of Students Boarded</th>
-                        <th>Driver Id</th>
-                        <th>Status</th>
-                    </tr>
-                </table>
-            </div>
-    </section>
-    <section class="main" id="students">
-        <div class="student-header">
-        <section class="title-card2">
-            <div class="overlay2">
-                <div class="title-content2">
-                    <h1>Registered Students</h1>
+        <!-- SECTION: REPORTS -->
+        <section class="main-content" id="reports">
+            <div class="section-heading">
+                <h2><i class="fa-solid fa-file-invoice"></i> Reports & Analytics</h2>
+                <div class="filter-group">
+                    <input type="date" class="date-input">
+                    <button class="btn-primary-sm">Filter</button>
                 </div>
+            </div>
+
+            <div class="glass-card">
+                <table class="modern-table">
+                    <thead>
+                        <tr><th>Student Name</th><th>LRN</th><th>Bus</th><th>Time Boarded</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Jose Rizal</td><td>111222333</td><td>Bus Line C</td><td>08:15 AM</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
-        <div class="studentcard">
-            <h3>Total Registered Students</h3>
-            <p>0</p>
-            <img src="~/students-removebg-preview.png">
-        </div>
-        </div>
-        <div class="table">
-            <div class="table-box">
-                <h3>REGISTERED STUDENTS</h3>
-                <div class="search-box">
-                    <img src="searchh.png" class="search-icon">
-                    <input type="text" class="search" placeholder="Search...">
-                </div>
-                <table>
-                    <tr>
-                        <th>LRN</th>
-                        <th>Name of Students</th>
-                        <th>Grade Level</th>
-                        <th>Section</th>
-                        <th>Contact Number</th>
-                        <th>Address</th>
-                        <th>QR Code</th>
-                    </tr>
-                </table>
-            </div>
-            </div>
-       
-    </section>
 
-
-    <section class="main" id="driverlogs" style="padding-top: 100px;">
-
-        <div class="driver-header">
-
-            <div class="drivercard">
-                <h3>Total Registered Drivers</h3>
-                <p>0</p>
-                <img src="~/driver-removebg-preview.png" alt="Driver">
-            </div>
-
-            <section class="title-card3">
-                <div class="overlay3">
-                    <div class="title-content3">
-                        <h1>Driver</h1>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-        <div class="table1">
-            <div class="table-box1">
-                <h3>DRIVER INFORMATION</h3>
-
-                <div class="search-box">
-                    <img src="searchh.png" class="search-icon">
-                    <input type="text" class="search" placeholder="Search...">
-                </div>
-
-                <table>
-                    <tr>
-                        <th>Driver Id</th>
-                        <th>Date</th>
-                        <th>Name</th>
-                        <th>Contact Number</th>
-                        <th>Status</th>
-                    </tr>
-                </table>
-            </div>
-        </div>
-
-    </section>
-
-
-    <section class="main" id="maintenance" style="margin-bottom: 10px;">
-        <div class="maintenance-header">
-
-            <section class="title-card4">
-                <div class="overlay4">
-                    <div class="title-content4">
-                        <h1>Bus Maintenance</h1>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-        <section class="maintenance-form">
-
-            <h2>Bus Maintenance Form</h2>
-
-            <form>
-
-                <div class="form-grid">
-
-                    <div class="form-group">
-                        <label>Bus ID *</label>
-                        <input type="text" placeholder="Enter Bus ID">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Driver Name *</label>
-                        <input type="text" placeholder="Enter Driver Name">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Date *</label>
-                        <input type="date">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Maintenance Type *</label>
-                        <select>
-                            <option>Oil Change</option>
-                            <option>Engine Check</option>
-                            <option>Tire Replacement</option>
-                            <option>General Repair</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Status *</label>
-                        <select>
-                            <option>Pending</option>
-                            <option>In Progress</option>
-                            <option>Completed</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cost (₱)</label>
-                        <input type="number" placeholder="Enter Cost">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label>Description</label>
-                        <textarea placeholder="Enter maintenance details..."></textarea>
-                    </div>
-
-                </div>
-
-                <button type="submit">Submit</button>
-
-            </form>
-
+        <!-- SECTION: SECURITY / USER MANAGEMENT -->
+        <section class="main-content" id="user">
+            <h1>User Management</h1>
         </section>
-        <div class="maintenance-table">
 
-            <h2>Maintenance Records</h2>
+    </div>
 
-            <table id="maintenanceTable">
-                <thead>
-                    <tr>
-                        <th>Bus ID</th>
-                        <th>Driver</th>
-                        <th>Date</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Cost</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will appear here -->
-                </tbody>
-            </table>
-
-        </div>
-    </section>
-
-    <section class="main" id="reports">
-
-        <!-- TITLE -->
-        <div class="reports-header">
-            <section class="title-card5">
-                <div class="overlay5">
-                    <div class="title-content5">
-                        <h1>Reports & Analytics</h1>
-                    </div>
-                </div>
-            </section>
-        </div>
-        <div class="report-cards">
-            <div class="report-card">
-                <h3>Total Students</h3>
-                <p>0</p>
-            </div>
-
-            <div class="report-card">
-                <h3>Total Students</h3>
-                <p>0</p>
-            </div>
-
-            <div class="report-card">
-                <h3>Total Students</h3>
-                <p>0</p>
-            </div>
-
-            <div class="report-card">
-                <h3>Total Students</h3>
-                <p>0</p>
-            </div>
-        </div>
-
-        <div class="report-filter">
-            <input type="date" id="reportDate">
-            <button onclick="filterData()">Show Report</button>
-        </div>
-
-        <div class="reports-table">
-
-            <h2>Reports</h2>
-            <table id="reportsTable">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>LRN</th>
-                        <th>Bus</th>
-                        <th>Time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data will appear here -->
-                </tbody>
-            </table>
-        </div>
-
-    </section>
-
-    <section class="main" id="user">
-        <h2>User Management</h2>
-    </section>
     <script src="LguDashboard.js"></script>
 </body>
 </html>
