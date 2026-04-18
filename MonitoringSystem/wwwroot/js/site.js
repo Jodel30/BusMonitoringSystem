@@ -13,3 +13,18 @@ navLinks.forEach(link => {
         this.classList.add("active");
     });
 });
+function setReportView(view) {
+    // 1. Update buttons
+    const btns = document.querySelectorAll('.toggle-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // 2. Switch Filter inputs
+    if (view === 'daily') {
+        document.getElementById('daily-filter').style.display = 'flex';
+        document.getElementById('monthly-filter').style.display = 'none';
+    } else {
+        document.getElementById('daily-filter').style.display = 'none';
+        document.getElementById('monthly-filter').style.display = 'flex';
+    }
+}

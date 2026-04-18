@@ -6,10 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STMS | LGU Dashboard</title>
-    <!-- Modern Google Fonts & Font Awesome -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link rel="stylesheet" href="~/css/site.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
     <style>
        
     </style>
@@ -35,22 +34,22 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
-                    <div class="info"><h3>Students</h3><p>1,240</p></div>
+                    <div class="info"><h3>Students</h3><p>0</p></div>
                     <img src="~/students-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card">
                     <div class="icon-box cyan"><i class="fa-solid fa-bus"></i></div>
-                    <div class="info"><h3>Total Buses</h3><p>14</p></div>
+                    <div class="info"><h3>Total Buses</h3><p>0</p></div>
                     <img src="~/bus-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card">
-                    <div class="icon-box navy"><i class="fa-solid fa-steering-wheel"></i></div>
-                    <div class="info"><h3>Drivers</h3><p>28</p></div>
+                    <div class="icon-box navy"><i class="fa-solid fa-user-tie"></i></div>
+                    <div class="info"><h3>Drivers</h3><p>0</p></div>
                     <img src="~/driver-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card">
                     <div class="icon-box grey"><i class="fa-solid fa-user-shield"></i></div>
-                    <div class="info"><h3>Users</h3><p>5</p></div>
+                    <div class="info"><h3>Users</h3><p>0</p></div>
                     <img src="~/users-removebg-preview.png" class="bg-icon">
                 </div>
             </div>
@@ -58,7 +57,7 @@
             <div class="glass-card mt-5">
                 <div class="card-header">
                     <h2>Recent Activity</h2>
-                    <p>Live feed of student boarding events</p>
+                    
                 </div>
                 <table class="modern-table">
                     <thead>
@@ -79,6 +78,7 @@
 
         <!-- SECTION: STUDENTS -->
         <section class="main-content" id="students">
+            
             <section class="title-card2">
                 <div class="overlay2">
                     <div class="title-content2">
@@ -86,16 +86,17 @@
                     </div>
                 </div>
             </section>
+           
             <div class="studentcard">
                 <h3>Total Registered Students</h3>
                 <p>0</p>
-                <img src="students-removebg-preview.png">
+                <img src="~/students-removebg-preview.png">
             </div>
             
 
             <div class="glass-card">
                 <div class="section-heading">
-                    <h2>Student Registry</h2>
+                    <h2>List Of Students</h2>
                 </div>
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
@@ -128,10 +129,24 @@
 
         <!-- SECTION: DRIVERS  -->
         <section class="main-content" id="driverlogs">
-            <div class="section-heading">
-                <h2>Driver Management</h2>
-                <button class="btn-action"><i class="fa-solid fa-plus"></i> Register Driver</button>
-            </div>
+            
+                <div class="driver-banner">
+                    <div class="driver-text">
+                        <h1>Driver Information</h1>
+
+                    </div>
+                   
+                </div>
+
+                <div class="stats-driver">
+                    <div class="card-driver">
+                    <div class="icon-box navy"><i class="fa-solid fa-user-tie"></i></div>
+                    <div class="info"><h3>Total Drivers</h3><p>0</p></div>
+                    <img src="~/driver-removebg-preview.png" class="bg-icon">
+                    </div>
+                   
+                </div>
+
 
             <div class="driver-grid">
                 <!-- Driver Card 1 -->
@@ -167,29 +182,197 @@
 
         <!-- SECTION: REPORTS -->
         <section class="main-content" id="reports">
-            <div class="section-heading">
-                <h2>Transport Activity</h2>
-                <div class="filter-group">
-                    <input type="date" class="date-input">
-                    <button class="btn-primary-sm">Filter</button>
+
+        
+            
+
+            <!-- QUICK INSIGHTS CARDS -->
+            <div class="report-banner">
+                <div class="report-text">
+                    <h1>Transport Activity</h1>
+                </div>
+
+            </div>
+            <div class="analytics-summary">
+                <div class="insight-card">
+                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="insight-data">
+                        <span class="label">Total Boardings</span>
+                        <p>0</p>
+                        
+                    </div>
+                    <img src="~/students-removebg-preview.png" >
+                </div>
+                <div class="section-header-reports">
+                    <div class="report-view-toggle">
+                        <button class="toggle-btn active" onclick="setReportView('daily')">Daily</button>
+                        <button class="toggle-btn" onclick="setReportView('monthly')">Monthly</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="glass-card">
+            <!-- FILTER BAR -->
+            <div class="report-filters glass-card">
+                <div class="filter-controls" id="daily-filter">
+                    <label><i class="fa-solid fa-calendar-day"></i> Select Date:</label>
+                    <input type="date" class="modern-input">
+                </div>
+                <div class="filter-controls" id="monthly-filter" style="display:none;">
+                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
+                    <input type="month" class="modern-input">
+                </div>
+                <button class="btn-generate">Generate Report <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <!-- THE REPORT TABLE -->
+            <div class="glass-card report-results">
+                <div class="results-header">
+                    <h3>Boarding Logs</h3>
+                    <button class="btn-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                </div>
                 <table class="modern-table">
                     <thead>
-                        <tr><th>Student Name</th><th>LRN</th><th>Bus</th><th>Time Boarded</th></tr>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>LRN</th>
+                            <th>Assigned Driver</th>
+                            <th>Check-in Time</th>
+                            <th>Status</th>
+                        </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Jose Rizal</td><td>111222333</td><td>Bus Line C</td><td>08:15 AM</td></tr>
+                        <tr>
+                            <td><strong>Jose Rizal</strong></td>
+                            <td><span class="lrn-tag">111222333</span></td>
+                            <td>Dalisay</td>
+                            <td>08:15 AM</td>
+                           
+                        </tr>
+                       
                     </tbody>
                 </table>
             </div>
         </section>
 
-        
         <section class="main-content" id="user">
-            <h1>User Management</h1>
+            <div class="section-header">
+                <div class="header-info">
+                    <span class="badge">Security Console</span>
+                    <h2>User Management & Access Control</h2>
+                </div>
+            </div>
+
+            <div class="user-management-grid">
+
+                <!-- REGISTRATION FORM -->
+                <div class="glass-card form-box">
+                    <div class="card-header-icon">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <h3>Create New Account</h3>
+                    </div>
+                    <form class="modern-form">
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" placeholder="Your Full Name">
+                        </div>
+                        <div class="input-group">
+                            <label>Username</label>
+                            <input type="text" placeholder="Enter Username">
+                        </div>
+                        <div class="input-group">
+                            <label>Access Role</label>
+                            <select>
+                                <option value="lgu">LGU Official</option>
+                                <option value="school">School Administrator</option>
+                                <option value="driver">Driver</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>Password</label>
+                            <input type="password" placeholder="Enter Password">
+                        </div>
+                        <button type="submit" class="btn-primary-wide">Register Account</button>
+                    </form>
+                </div>
+
+                
+                <div class="glass-card account-list">
+                    <div class="card-header-row">
+                        <h3>System Accounts</h3>
+                        <div class="search-mini">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" placeholder="Search users...">
+                        </div>
+                    </div>
+                    <div class="user-scroll-area">
+                        
+                        <div class="user-account-item">
+                            <div class="u-avatar"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                            <div class="u-details">
+                                <strong>Admin Chief</strong>
+                                <p>lgu.admin@bantayan.gov</p>
+                            </div>
+                            <span class="role-tag lgu">LGU</span>
+                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        </div>
+                      
+                        <div class="user-account-item">
+                            <div class="u-avatar school"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                            <div class="u-details">
+                                <strong>Bantayan National High</strong>
+                                <p>admin@bnhs.edu.ph</p>
+                            </div>
+                            <span class="role-tag school">School Admin</span>
+                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        </div>
+                        
+                        <div class="user-account-item">
+                            <div class="u-avatar driver"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                            <div class="u-details">
+                                <strong>Ricardo Dalisay</strong>
+                                <p>r.dalisay@stms.ph</p>
+                            </div>
+                            <span class="role-tag driver">Driver</span>
+                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PART 3: LOGIN AUDIT LOGS -->
+            <div class="glass-card mt-4">
+                <div class="card-header-icon">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <h3>Security Audit Logs</h3>
+                </div>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Action</th>
+                            <th>Timestamp</th>
+                            <th>Device/IP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Admin Chief</strong></td>
+                            <td><span class="role-tag lgu">LGU</span></td>
+                            <td><span class="status success">Login Successful</span></td>
+                            <td>Today, 08:30 AM</td>
+                            <td><small>192.168.1.45 (Desktop)</small></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ricardo Dalisay</strong></td>
+                            <td><span class="role-tag driver">Driver</span></td>
+                            <td><span class="status success">Login Successful</span></td>
+                            <td>Today, 07:15 AM</td>
+                            <td><small>Android Mobile</small></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
     </div>
