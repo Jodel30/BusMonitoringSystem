@@ -1,0 +1,274 @@
+﻿@{
+    // THIS LINE TELLS THE PAGE WHICH NAVBAR TO USE
+    Layout = "~/Views/Shared/SchoolLayout.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STMS | LGU Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true">
+    <style>
+
+    </style>
+</head>
+<body>
+
+
+
+    <div class="main-wrapper">
+
+        <!-- SECTION: DASHBOARD HOME -->
+        <section class="main-content" id="dashboard">
+            <div class="hero-banner">
+                <div class="hero-text">
+                    <h1>Student Transport<br>Monitoring System</h1>
+
+                </div>
+                <div class="hero-visual">
+                    <img src="~/freebus.jpg" alt="Bus Image">
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
+                    <div class="info"><h3>Students</h3><p>0</p></div>
+                    <img src="~/students-removebg-preview.png" class="bg-icon">
+                </div>
+            </div>
+
+            <div class="glass-card mt-5">
+                <div class="card-header">
+                    <h2>Recent Activity</h2>
+
+                </div>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Time Stamp</th>
+                            <th>Total Boarded</th>
+                            <th>Driver Assigned</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Today, 07:45 AM</td><td>45 Students</td><td>D-102 (Cardo)</td><td><span class="status success">Completed</span></td></tr>
+                        <tr><td>Today, 08:30 AM</td><td>32 Students</td><td>D-105 (Juan)</td><td><span class="status warning">In Route</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECTION: STUDENTS -->
+        <section class="main-content" id="students">
+
+            <section class="title-card2">
+                <div class="overlay2">
+                    <div class="title-content2">
+                        <h1>Registered Students</h1>
+                    </div>
+                </div>
+            </section>
+
+            <div class="studentcard">
+                <h3>Total Registered Students</h3>
+                <p>0</p>
+                <img src="~/students-removebg-preview.png">
+            </div>
+
+            <!-- NEW: STUDENT REGISTRATION FORM -->
+            <div class="glass-card registration-section">
+                <div class="card-header">
+                    <div class="header-icon-box">
+                        <i class="fa-solid fa-user-plus"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2>New Student Registration</h2>
+                        <p>Fill in the details to generate a student profile and QR code.</p>
+                    </div>
+                </div>
+
+                <form class="modern-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Learner Reference Number (LRN) *</label>
+                            <input type="text" placeholder="e.g. 123456789012" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name *</label>
+                            <input type="text" placeholder="First Name, M.I., Last Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Grade Level *</label>
+                            <select required>
+                                <option value="" disabled selected>Select Level</option>
+                                <option>Grade 7</option>
+                                <option>Grade 8</option>
+                                <option>Grade 9</option>
+                                <option>Grade 10</option>
+                                <option>Grade 11</option>
+                                <option>Grade 12</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Section *</label>
+                            <input type="text" placeholder="e.g. Rizal / Einstein" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Student Id</label>
+                            <input type="tel" placeholder="e.g. 12345">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" placeholder="e.g. NHA Kabac" required>
+                        </div>
+                        <div class="form-group profile-upload-group">
+                            <label>Student Picture *</label>
+                            <div class="photo-upload-container">
+                                <div class="photo-preview" id="imagePreview">
+                                    
+                                    <i class="fa-solid fa-user-plus" id="placeholderIcon"></i>
+                                    <img src="" alt="Preview" id="previewImg" style="display:none;">
+                                </div>
+                                <div class="upload-controls">
+                                    <input type="file" id="studentPhoto" accept="image/*" hidden onchange="previewFile()">
+                                    <button type="button" class="btn-browse" onclick="document.getElementById('studentPhoto').click()">
+                                        <i class="fa-solid fa-camera"></i> Browse Photo
+                                    </button>
+                                    <p class="upload-hint">JPG or PNG. Max 2MB.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="form-footer">
+                        <button type="reset" class="btn-secondary">Clear Form</button>
+                        <button type="submit" class="btn-primary-form">Register & Generate QR</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- EXISTING: LIST OF STUDENTS -->
+            <div class="glass-card mt-4">
+                <div class="section-heading-row">
+                    <h2>List Of Students</h2>
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="Search LRN or Name...">
+                    </div>
+                </div>
+
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>LRN</th>
+                            <th>Name</th>
+                            <th>Level / Section</th>
+                            <th>Address</th>
+                            <th>Contact</th>
+                            <th>QR Code</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="id-tag">123456789</span></td>
+                            <td><strong>Jodel</strong></td>
+                            <td>Grade 10 - Rizal</td>
+                            <td>Kabac</td>
+                            <td>0912-345-678</td>
+                            <td><button class="icon-btn"><i class="fa-solid fa-qrcode"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        
+
+        <!-- SECTION: REPORTS -->
+        <section class="main-content" id="reports">
+
+
+
+
+            <!-- QUICK INSIGHTS CARDS -->
+            <div class="report-banner">
+                <div class="report-text">
+                    <h1>Transport Activity</h1>
+                </div>
+
+            </div>
+            <div class="analytics-summary">
+                <div class="insight-card">
+                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="insight-data">
+                        <span class="label">Total Boardings</span>
+                        <p>0</p>
+
+                    </div>
+                    <img src="~/students-removebg-preview.png">
+                </div>
+                <div class="section-header-reports">
+                    <div class="report-view-toggle">
+                        <button class="toggle-btn active" onclick="setReportView('daily')">Daily</button>
+                        <button class="toggle-btn" onclick="setReportView('monthly')">Monthly</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILTER BAR -->
+            <div class="report-filters glass-card">
+                <div class="filter-controls" id="daily-filter">
+                    <label><i class="fa-solid fa-calendar-day"></i> Select Date:</label>
+                    <input type="date" class="modern-input">
+                </div>
+                <div class="filter-controls" id="monthly-filter" style="display:none;">
+                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
+                    <input type="month" class="modern-input">
+                </div>
+                <button class="btn-generate">Generate Report <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <!-- THE REPORT TABLE -->
+            <div class="glass-card report-results">
+                <div class="results-header">
+                    <h3>Boarding Logs</h3>
+                    <button class="btn-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                </div>
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>LRN</th>
+                            <th>Assigned Driver</th>
+                            <th>Check-in Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Jose Rizal</strong></td>
+                            <td><span class="lrn-tag">111222333</span></td>
+                            <td>Dalisay</td>
+                            <td>08:15 AM</td>
+
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+       
+
+    </div>
+
+    <script src="LguDashboard.js"></script>
+    <script src="~/js/School.js" asp-append-version="true"></script>
+</body>
+</html>

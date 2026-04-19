@@ -140,6 +140,9 @@ body {
 #reports.main-content {
     padding-top: 100px;
 }
+#user.main-content {
+    padding-top: 100px;
+}
     .hero-banner {
     background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
     border-radius: 30px;
