@@ -25,6 +25,11 @@ namespace MonitoringSystem.Controllers
                 // REDIRECTS to DriverDashboard Controller -> Index Action
                 return RedirectToAction("Driver", "DriverDashboard");
             }
+            if (username == "PNHS" && password == "1234")
+            {
+                // REDIRECTS to DriverDashboard Controller -> Index Action
+                return RedirectToAction("SchoolAdmin", "SchoolDashboard");
+            }
 
             ViewBag.Error = "Invalid Username or Password";
             return View();

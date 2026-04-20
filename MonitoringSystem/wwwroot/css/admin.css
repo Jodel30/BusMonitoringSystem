@@ -63,7 +63,7 @@ body {
 .top-nav ul {
     display: flex;
     list-style: none;
-    gap: 15px;
+    gap: 80px;
     font-size: 20px;
 }
 
@@ -287,7 +287,12 @@ body {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
 }
-
+.filter-controls h1 {
+    font-size: 30px;
+    margin: 15px 0;
+    font-weight: 800;
+    line-height: 1.1;
+}
 .form-group {
     display: flex;
     flex-direction: column;
@@ -420,6 +425,63 @@ body {
 .btn-primary-form:hover {
     background: #102a43;
     transform: translateY(-2px);
+}
+/* MODAL OVERLAY */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(16, 42, 67, 0.4); 
+    backdrop-filter: blur(8px); /* Modern blur effect */
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+}
+
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+
+.modal-content {
+    width: 90%;
+    max-width: 800px;
+    transform: translateY(-50px); 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: white !important;
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 0 30px 60px rgba(0, 119, 182, 0.2) !important;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0); 
+}
+
+/* CLOSE BUTTON (X) */
+.btn-close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 30px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: 0.3s;
+    line-height: 1;
+}
+
+.btn-close-modal:hover {
+    color: #ef4444; /* Turns red on hover */
+    
 }
 
 /* MISC REFINEMENT */

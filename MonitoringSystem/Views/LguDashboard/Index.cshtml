@@ -56,21 +56,20 @@
 
             <div class="glass-card mt-5">
                 <div class="card-header">
-                    <h2>Recent Activity</h2>
+                    <h2>Recent Transport Activity</h2>
                     
                 </div>
                 <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Time Stamp</th>
+                            <th>Date</th>
+                            <th>TimeStamp</th>
                             <th>Total Boarded</th>
                             <th>Driver Assigned</th>
-                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Today, 07:45 AM</td><td>45 Students</td><td>D-102 (Cardo)</td><td><span class="status success">Completed</span></td></tr>
-                        <tr><td>Today, 08:30 AM</td><td>32 Students</td><td>D-105 (Juan)</td><td><span class="status warning">In Route</span></td></tr>
+                        <tr><td>1/2/2026</td><td>7:30 AM</td><td>30 students</td><td>Dalisay</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -129,23 +128,21 @@
 
         <!-- SECTION: DRIVERS  -->
         <section class="main-content" id="driverlogs">
-            
-                <div class="driver-banner">
-                    <div class="driver-text">
-                        <h1>Driver Information</h1>
 
-                    </div>
-                   
+            <div class="report-banner">
+                <div class="report-text">
+                    <h1>Driver Information</h1>
                 </div>
 
-                <div class="stats-driver">
-                    <div class="card-driver">
+            </div>
+            <div class="analytics-summary">
+                <div class="stat-card">
                     <div class="icon-box navy"><i class="fa-solid fa-user-tie"></i></div>
                     <div class="info"><h3>Total Drivers</h3><p>0</p></div>
                     <img src="~/driver-removebg-preview.png" class="bg-icon">
-                    </div>
-                   
                 </div>
+            </div>
+                
 
 
             <div class="driver-grid">
@@ -254,50 +251,147 @@
             </div>
         </section>
 
+
+        <!-- user section -->
         <section class="main-content" id="user">
-            <div class="section-header">
-                <div class="header-info">
-                    <h2>User Management</h2>
+            <div class="report-banner">
+                <div class="report-text">
+                    <h1>User Management</h1>
+                </div>
+
+            </div>
+            <div class="analytics-summary">
+                <div class="stat-card">
+                    <div class="icon-box grey"><i class="fa-solid fa-user-shield"></i></div>
+                    <div class="info"><h3>Users</h3><p>0</p></div>
+                    <img src="~/users-removebg-preview.png" class="bg-icon">
                 </div>
             </div>
 
-            <div class="user-management-grid">
+            <div class="report-filters glass-card">
+                <div class="filter-controls" id="daily-filter">
+                    <h1>System Accounts</h1>
+                </div>
+                <button class="btn-generate" onclick="openAccountModal()">
+                    <i class="fa-solid fa-user-plus"></i> Create New Account
+                </button>
+            </div>
 
-                <!-- REGISTRATION FORM -->
-                <div class="glass-card form-box">
-                    <div class="card-header-icon">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <h3>Create New Account</h3>
+            <!-- ACCOUNT MODAL OVERLAY -->
+            <div class="modal-overlay" id="accountModalOverlay" onclick="closeAccountModalOutside(event)">
+
+                <div class="modal-content glass-card account-registration-box" onclick="event.stopPropagation()">
+
+                    <button class="btn-close-modal" onclick="closeAccountModal()">&times;</button>
+
+                    <div class="card-header">
+                        <div class="header-icon-box">
+                            <i class="fa-solid fa-id-card-clip"></i>
+                        </div>
+                        <div class="header-text">
+                            <h2>Create System Account</h2>
+                            <p>Register new personnel with specific access levels.</p>
+                        </div>
                     </div>
+
                     <form class="modern-form">
-                        <div class="input-group">
-                            <label>Full Name</label>
-                            <input type="text" placeholder="Your Full Name">
+                        <div class="form-grid">
+                            <!-- COMMON FIELDS -->
+                            <div class="form-group">
+                                <label>First Name *</label>
+                                <input type="text" placeholder="Enter First Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" placeholder="Enter Last Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Middle Name *</label>
+                                <input type="text" placeholder="Enter Middle Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" placeholder="e.g. jodel_admin" required>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Access Role *</label>
+                                <select id="roleSelector" onchange="updateRoleFields()" required>
+                                    <option value="" disabled selected>Choose Account Type</option>
+                                    <option value="lgu">LGU Official</option>
+                                    <option value="school">School Administrator</option>
+                                    <option value="driver">Driver</option>
+                                </select>
+                            </div>
+
+                            <!-- DYNAMIC SECTION: LGU -->
+                            <div id="fields-lgu" class="role-specific-fields full-width" style="display:none;">
+                                <div class="form-group">
+                                    <label>Address</label>
+                                    <input type="text" placeholder="Enter Address">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact No.</label>
+                                    <input type="text" placeholder="Enter Contact No.">
+                                </div>
+                            </div>
+
+                            <!-- DYNAMIC SECTION: SCHOOL -->
+                            <div id="fields-school" class="role-specific-fields full-width" style="display:none;">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Address</label>
+                                        <input type="text" placeholder="Enter Address">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Contact No.</label>
+                                        <input type="text" placeholder="Enter Contact No.">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email Address</label>
+                                        <input type="text" placeholder="e.g. example@gmail.com">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>School ID</label>
+                                        <input type="text" placeholder="6-digit DepEd ID">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- DYNAMIC SECTION: DRIVER -->
+                            <div id="fields-driver" class="role-specific-fields full-width" style="display:none;">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>License Number</label>
+                                        <input type="text" placeholder="XXX-XX-XXXXXX">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Assigned Bus Number</label>
+                                        <input type="text" placeholder="e.g. Bus-01">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- COMMON FIELDS -->
+                            <div class="form-group full-width">
+                                <label>Account Password *</label>
+                                <input type="password" placeholder="••••••••" required>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label>Username</label>
-                            <input type="text" placeholder="Enter Username">
+
+                        <div class="form-footer">
+                            <button type="reset" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                            <button type="submit" class="btn-primary-form">Create Account</button>
                         </div>
-                        <div class="input-group">
-                            <label>Access Role</label>
-                            <select>
-                                <option value="lgu">LGU Official</option>
-                                <option value="school">School Administrator</option>
-                                <option value="driver">Driver</option>
-                            </select>
-                        </div>
-                        <div class="input-group">
-                            <label>Password</label>
-                            <input type="password" placeholder="Enter Password">
-                        </div>
-                        <button type="submit" class="btn-primary-wide">Register Account</button>
                     </form>
                 </div>
+            </div>
 
+           
                 
                 <div class="glass-card account-list">
                     <div class="card-header-row">
-                        <h3>System Accounts</h3>
+                        <h3>Account List</h3>
                         <div class="search-mini">
                             <i class="fa-solid fa-search"></i>
                             <input type="text" placeholder="Search users...">
@@ -336,7 +430,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            
 
             <!-- PART 3: LOGIN AUDIT LOGS -->
             <div class="glass-card mt-4">

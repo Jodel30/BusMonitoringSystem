@@ -28,3 +28,39 @@ function setReportView(view) {
         document.getElementById('monthly-filter').style.display = 'flex';
     }
 }
+// OPEN ACCOUNT MODAL
+function openAccountModal() {
+    document.getElementById('accountModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+// CLOSE ACCOUNT MODAL
+function closeAccountModal() {
+    document.getElementById('accountModalOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// DYNAMIC FIELDS LOGIC
+function updateRoleFields() {
+    const role = document.getElementById('roleSelector').value;
+
+    // Hide all sections first
+    const sections = document.querySelectorAll('.role-specific-fields');
+    sections.forEach(s => s.style.display = 'none');
+
+    // Show the relevant section
+    if (role === 'lgu') {
+        document.getElementById('fields-lgu').style.display = 'block';
+    } else if (role === 'school') {
+        document.getElementById('fields-school').style.display = 'block';
+    } else if (role === 'driver') {
+        document.getElementById('fields-driver').style.display = 'block';
+    }
+}
+
+// Close when clicking outside
+function closeAccountModalOutside(e) {
+    if (e.target.id === "accountModalOverlay") {
+        closeAccountModal();
+    }
+}

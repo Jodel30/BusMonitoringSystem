@@ -18,3 +18,30 @@
         icon.style.display = "block";
     }
 }
+function openModal() {
+    document.getElementById('modalOverlay').classList.add('active');
+    // Prevents scrolling the background when modal is open
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('active');
+    // Restores scrolling
+    document.body.style.overflow = 'auto';
+}
+
+// Function to preview the profile picture
+function previewFile() {
+    const preview = document.getElementById('previewImg');
+    const icon = document.getElementById('placeholderIcon');
+    const file = document.getElementById('studentPhoto').files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = function () {
+        preview.src = reader.result;
+        preview.style.display = "block";
+        icon.style.display = "none";
+    }
+
+    if (file) { reader.readAsDataURL(file); }
+}
