@@ -27,7 +27,7 @@ namespace MonitoringSystem.Controllers
             }
             if (username == "PNHS" && password == "1234")
             {
-                // REDIRECTS to DriverDashboard Controller -> Index Action
+                
                 return RedirectToAction("SchoolAdmin", "SchoolDashboard");
             }
 

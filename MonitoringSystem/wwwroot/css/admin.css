@@ -188,7 +188,10 @@ body {
     .stat-card:hover {
         transform: translateY(-10px);
     }
-
+.students-heading{
+    display: flex;
+    margin-top: 10px;
+}
 .icon-box {
     width: 55px;
     height: 55px;
