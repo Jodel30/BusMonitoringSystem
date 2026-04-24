@@ -45,3 +45,17 @@ function previewFile() {
 
     if (file) { reader.readAsDataURL(file); }
 }
+function viewQRCode(base64Data) {
+    // 1. Find the image in the modal and set the source
+    const qrImg = document.getElementById('fullSizeQR');
+    qrImg.src = "data:image/png;base64," + base64Data;
+
+    // 2. Show the modal
+    document.getElementById('qrModalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeQRView() {
+    document.getElementById('qrModalOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}

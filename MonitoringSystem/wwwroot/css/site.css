@@ -30,7 +30,7 @@ body {
     transform: translateX(-50%);
     width: 95%;
     max-width: 1400px;
-    height: 75px;
+    height: 85px;
     background: #0077b6 !important;
     backdrop-filter: blur(15px);
     border-radius: 20px;
@@ -203,45 +203,6 @@ body {
         line-height: 1.1;
         margin-bottom: 10px;
     }
-.title-card2:hover {
-    transform: translateY(-10px);
-}
-.studentcard {
-    width: 310px;
-    height: 200px;
-    padding: 12px;
-    align-items: center;
-    border-radius: 30px;
-    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
-    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
-    position: absolute;
-    transition: 0.3s;
-    top: 140%;
-    right: 10%;
-}
-
-    .studentcard h3 {
-        font-size: 25px;
-        color: #ffffff;
-        margin-top: 25px;
-    }
-
-    .studentcard p {
-        font-size: 35px;
-        font-weight: bold;
-        color: #fbfcfc;
-        margin: 40px 0 50px 0;
-    }
-
-    .studentcard img {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        width: 90px;
-    }
-.studentcard:hover {
-    transform: translateY(-10px);
-}
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -260,14 +221,9 @@ body {
     align-items: center;
     gap: 15px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    transition: 0.3s;
     overflow: hidden;
     position: relative;
 }
-
-    .stat-card:hover {
-        transform: translateY(-10px);
-    }
 
 .icon-box {
     width: 55px;
@@ -368,15 +324,11 @@ body {
     align-items: center;
     gap: 12px;
     box-shadow: 0 10px 25px rgba(0, 119, 182, 0.15);
-    transition: 0.3s;
+    
     overflow: hidden;
     position: relative;
     color: white; 
 }
-
-    .card-driver:hover {
-        transform: translateY(-5px);
-    }
 
 
 .icon-box {
@@ -682,6 +634,7 @@ body {
     padding: 20px;
     border-radius: 20px;
     display: flex;
+    width: 400px;
     align-items: center;
     gap: 20px;
     box-shadow: 0 10px 30px rgba(0, 119, 182, 0.05);
@@ -1026,6 +979,9 @@ body {
     background: rgba(16, 42, 67, 0.4);
     backdrop-filter: blur(8px); /* Modern blur effect */
     z-index: 2000;
+    align-items: flex-start; /* Change from center to flex-start */
+    padding: 40px 0; /* Adds space at top/bottom when scrolling */
+    overflow-y: auto; /* THIS ENABLES THE SCROLLING */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1070,9 +1026,9 @@ body {
 }
 
     .btn-close-modal:hover {
-        color: #ef4444; /* Turns red on hover */
+        color: #ef4444; 
     }
-/* Specific styling for the role-based fields inside the modal */
+
 .role-specific-fields {
     background: #f1f8ff;
     padding: 20px;
@@ -1116,3 +1072,30 @@ body {
     font-weight: 700;
     font-size: 13px;
 }
+.account-registration-box {
+    width: 90%;
+    max-width: 650px;
+    background: white !important;
+    position: relative;
+    margin-bottom: 40px;
+    max-height: fit-content;
+}
+.modern-form {
+    max-height: 60vh; /* Limits form height to 60% of the screen */
+    overflow-y: auto; /* Adds scrollbar to the form only */
+    padding-right: 10px; /* Space for the scrollbar */
+}
+
+    /* Optional: Make the scrollbar look "cool" */
+    .modern-form::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .modern-form::-webkit-scrollbar-thumb {
+        background: #0077b6;
+        border-radius: 10px;
+    }
+
+    .modern-form::-webkit-scrollbar-track {
+        background: #f1f5f9;
+    }

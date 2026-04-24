@@ -44,7 +44,7 @@
 
             <div class="glass-card mt-5">
                 <div class="card-header">
-                    <h2>Recent Activity</h2>
+                    <h2>Recent Transport Activity</h2>
 
                 </div>
                 <table class="modern-table">
@@ -65,64 +65,64 @@
         </section>
 
         <!-- SECTION: STUDENTS -->
-        <section class="main-content" id="students">
-           <div class="students-heading">
-            <section class="title-card2">
-                <div class="overlay2">
-                    <div class="title-content2">
-                        <h1>Students</h1>
-                    </div>
-                </div>
-            </section>
+        @model List<MonitoringSystem.Models.Student>
 
-            <div class="studentcard">
-                <h3>Total Registered Students</h3>
-                <p>0</p>
-                <img src="~/students-removebg-preview.png">
+        <section class="main-content" id="students">
+            <div class="report-banner">
+                <div class="report-text"><h1>Students</h1></div>
             </div>
-           </div>
-            <div class="report-filters glass-card">
-                <div class="filter-controls" id="daily-filter">
-                    <h1>Register New Student</h1>
+
+            <div class="analytics-summary">
+                <div class="insight-card">
+                    <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
+                    <div class="insight-data">
+                        <span class="label">Total Registered Students</span>
+                        <p>@Model.Count</p>
+                    </div>
+                    <img src="~/students-removebg-preview.png">
                 </div>
+            </div>
+
+            <div class="report-filters glass-card">
+                <div class="filter-controls"><h1>Register New Student</h1></div>
                 <button class="btn-generate" onclick="openModal()">
                     <i class="fa-solid fa-user-plus"></i> Add new Student
                 </button>
             </div>
-            
-            <!-- NEW: STUDENT REGISTRATION FORM -->
-            <!-- THE MODAL OVERLAY (The dark blurred background) -->
+
+            <!-- REGISTRATION MODAL -->
             <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
-
-                <!-- THE ACTUAL POP-UP FORM -->
                 <div class="modal-content glass-card registration-section" onclick="event.stopPropagation()">
-
-                    <!-- CLOSE BUTTON -->
                     <button class="btn-close-modal" onclick="closeModal()">&times;</button>
-
                     <div class="card-header">
-                        <div class="header-icon-box">
-                            <i class="fa-solid fa-user-plus"></i>
-                        </div>
+                        <div class="header-icon-box"><i class="fa-solid fa-user-plus"></i></div>
                         <div class="header-text">
                             <h2>New Student Registration</h2>
-                            <p>Fill in the details to generate a student profile and QR code.</p>
+                            <p>Fill in details to generate profile and QR identity.</p>
                         </div>
                     </div>
 
-                    <form class="modern-form">
+                    <form asp-action="RegisterStudent" asp-controller="SchoolDashboard" method="post" enctype="multipart/form-data" class="modern-form">
                         <div class="form-grid">
-                            <div class="form-group">
+                            <div class="form-group full-width">
                                 <label>Learner Reference Number (LRN) *</label>
-                                <input type="text" placeholder="e.g. 123456789012" required>
+                                <input type="text" name="LRN" placeholder="12-digit LRN" required>
                             </div>
                             <div class="form-group">
-                                <label>Full Name *</label>
-                                <input type="text" placeholder="First Name, M.I., Last Name" required>
+                                <label>First Name *</label>
+                                <input type="text" name="FirstName" placeholder="Enter First Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Middle Name</label>
+                                <input type="text" name="MiddleName" placeholder="Enter Middle Name">
+                            </div>
+                            <div class="form-group">
+                                <label>Last Name *</label>
+                                <input type="text" name="LastName" placeholder="Enter Last Name" required>
                             </div>
                             <div class="form-group">
                                 <label>Grade Level *</label>
-                                <select required>
+                                <select name="GradeLevel" required>
                                     <option value="" disabled selected>Select Level</option>
                                     <option>Grade 7</option>
                                     <option>Grade 8</option>
@@ -134,17 +134,17 @@
                             </div>
                             <div class="form-group">
                                 <label>Section *</label>
-                                <input type="text" placeholder="e.g. Rizal / Einstein" required>
+                                <input type="text" name="Section" placeholder="e.g. Rizal" required>
                             </div>
                             <div class="form-group">
                                 <label>Student Id</label>
-                                <input type="tel" placeholder="e.g. 12345">
+                                <input type="text" name="StudentId" placeholder="Internal ID">
                             </div>
                             <div class="form-group">
-                                <label>Address</label>
-                                <input type="text" placeholder="e.g. NHA Kabac" required>
+                                <label>Address *</label>
+                                <input type="text" name="Address" placeholder="e.g. NHA Kabac" required>
                             </div>
-                            <div class="form-group profile-upload-group">
+                            <div class="form-group profile-upload-group full-width">
                                 <label>Student Picture *</label>
                                 <div class="photo-upload-container">
                                     <div class="photo-preview" id="imagePreview">
@@ -152,24 +152,23 @@
                                         <img src="" alt="Preview" id="previewImg" style="display:none;">
                                     </div>
                                     <div class="upload-controls">
-                                        <input type="file" id="studentPhoto" accept="image/*" hidden onchange="previewFile()">
+                                        <input type="file" name="studentPhoto" id="studentPhoto" accept="image/*" hidden onchange="previewFile()">
                                         <button type="button" class="btn-browse" onclick="document.getElementById('studentPhoto').click()">
                                             <i class="fa-solid fa-camera"></i> Browse Photo
                                         </button>
-                                        <p class="upload-hint">JPG or PNG. Max 2MB.</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-footer">
-                            <button type="reset" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                            <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
                             <button type="submit" class="btn-primary-form">Register & Generate QR</button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- EXISTING: LIST OF STUDENTS -->
+            <!-- STUDENT LIST TABLE -->
             <div class="glass-card mt-4">
                 <div class="section-heading-row">
                     <h2>List Of Students</h2>
@@ -183,24 +182,44 @@
                     <thead>
                         <tr>
                             <th>LRN</th>
-                            <th>Name</th>
+                            <th>Name</th> <!-- COMBINED HEADER -->
                             <th>Level / Section</th>
                             <th>Address</th>
-                            <th>Contact</th>
+                            <th>Student ID</th>
                             <th>QR Code</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><span class="id-tag">123456789</span></td>
-                            <td><strong>Jodel</strong></td>
-                            <td>Grade 10 - Rizal</td>
-                            <td>Kabac</td>
-                            <td>0912-345-678</td>
-                            <td><button class="icon-btn"><i class="fa-solid fa-qrcode"></i></button></td>
-                        </tr>
+                        @foreach (var student in Model)
+                        {
+                            <tr>
+                                <td><span class="id-tag">@student.LRN</span></td>
+                                <!-- COMBINED NAME DISPLAY -->
+                                <td><strong>@student.FirstName @student.MiddleName @student.LastName</strong></td>
+                                <td>@student.GradeLevel - @student.Section</td>
+                                <td>@student.Address</td>
+                                <td>@student.StudentId</td>
+                                <td>
+                                    <!-- The Clickable Icon -->
+                                    <button type="button" class="icon-qr-trigger" onclick="viewQRCode('@student.QRCodeBase64')">
+                                        <i class="fa-solid fa-qrcode"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
+            </div>
+            <!-- QR VIEW MODAL -->
+            <div class="modal-overlay" id="qrModalOverlay" onclick="closeQRView()">
+                <div class="modal-content qr-view-box" onclick="event.stopPropagation()">
+                    <button class="btn-close-modal" onclick="closeQRView()">&times;</button>
+                    <h3>Student QR Identity</h3>
+                    <div class="qr-container-full">
+                        <img id="fullSizeQR" src="" alt="QR Code">
+                    </div>
+                    <p>Scan this code to verify boarding</p>
+                </div>
             </div>
         </section>
 
