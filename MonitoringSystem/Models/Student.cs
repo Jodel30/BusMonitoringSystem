@@ -16,7 +16,7 @@ namespace MonitoringSystem.Models
         public string PhotoPath { get; set; }
         public string QRCodeBase64 { get; set; }
 
-        // This helper property combines them for easy use in the table
+       
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
     }
 }

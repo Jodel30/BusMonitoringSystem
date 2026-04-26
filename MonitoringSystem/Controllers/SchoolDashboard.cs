@@ -50,7 +50,26 @@ namespace MonitoringSystem.Controllers
             _studentList.Add(model);
 
             // 4. Refresh the page
-            return RedirectToAction("SchoolAdmin");
+            return Redirect(Url.Action("SchoolAdmin") + "#students");
+        }
+        [HttpGet]
+        public IActionResult GetStudentData(string lrn)
+        {
+            // Search our static list for the student with this LRN
+            var student = _studentList.FirstOrDefault(s => s.LRN == lrn);
+
+            if (student != null)
+            {
+                return Json(new
+                {
+                    success = true,
+                    name = $"{student.FirstName} {student.LastName}",
+                    photo = student.PhotoPath, // Path to the uploaded image
+                    level = student.GradeLevel
+                });
+            }
+
+            return Json(new { success = false, message = "Student not found" });
         }
     }
 }
