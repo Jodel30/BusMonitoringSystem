@@ -53,50 +53,56 @@
                     <img src="~/users-removebg-preview.png" class="bg-icon">
                 </div>
             </div>
-
-            <div class="glass-card mt-5">
-                <div class="card-header">
-                    <h2>Recent Transport Activity</h2>
-                    
-                </div>
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>TimeStamp</th>
-                            <th>Total Boarded</th>
-                            <th>Driver Assigned</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>1/2/2026</td><td>7:30 AM</td><td>30 students</td><td>Dalisay</td></tr>
-                    </tbody>
-                </table>
-            </div>
         </section>
 
         <!-- SECTION: STUDENTS -->
         <section class="main-content" id="students">
             <div class="report-banner">
                 <div class="report-text">
-                    <h1>Students</h1>
+                    <h1>Student Transport Logs</h1>
                 </div>
 
             </div>
             <div class="analytics-summary">
-                <div class="analytics-summary">
-                    <div class="insight-card">
-                        <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
-                        <div class="insight-data">
-                            <span class="label">Total Registered Students</span>
-                            <p>0</p>
+                <div class="insight-card">
+                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="insight-data">
+                        <span class="label">Total Boardings</span>
+                        <p>0</p>
 
-                        </div>
-                        <img src="~/students-removebg-preview.png">
+                    </div>
+                    <img src="~/students-removebg-preview.png">
+                </div>
+                <div class="section-header-reports">
+                    <div class="report-view-toggle">
+                        <button class="toggle-btn active" onclick="setStudentView('daily')">Weekly</button>
+                        <button class="toggle-btn" onclick="setStudentView('monthly')">Monthly</button>
                     </div>
                 </div>
             </div>
 
+            <!-- FILTER BAR -->
+            <div class="report-filters glass-card">
+                <div class="filter-controls" id="weekly-filter">
+                    <label><i class="fa-solid fa-calendar-week"></i> Select Week:</label>
+                    <input type="week" class="modern-input">
+                </div>
+                <div class="filter-controls" id="monthly-filter" style="display:none;">
+                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
+                    <input type="month" class="modern-input">
+                </div>
+                <div class="filter-controls">
+                    <label>Address *</label>
+                    <select name="Address" required class="modern-input">
+                        <option value="" disabled selected>Select Address</option>
+                        <option>NHA Kabac</option>
+                        <option>NHA Kampingganon</option>
+                    </select>
+                </div>
+                <button class="btn-generate">
+                    View Trip Summary <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
             <div class="glass-card">
                 <div class="section-heading">
                     <h2>List Of Students</h2>
@@ -130,67 +136,8 @@
             </div>
         </section>
 
-        <!-- SECTION: DRIVERS  -->
-        <section class="main-content" id="driverlogs">
-
-            <div class="report-banner">
-                <div class="report-text">
-                    <h1>Driver Information</h1>
-                </div>
-
-            </div>
-            <div class="analytics-summary">
-                <div class="analytics-summary">
-                    <div class="insight-card">
-                        <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
-                        <div class="insight-data">
-                            <span class="label">Total Registered Drivers</span>
-                            <p>0</p>
-
-                        </div>
-                        <img src="~/driver-removebg-preview.png">
-                    </div>
-                </div>
-            </div>
-                
-
-
-            <div class="driver-grid">
-                <!-- Driver Card 1 -->
-                <div class="driver-card glass-card">
-                    <div class="driver-top">
-                        <div class="online-indicator"></div>
-                        <img src="~/driver-removebg-preview.png" alt="driver">
-                    </div>
-                    <h3>Ricardo Dalisay</h3>
-                    <p class="driver-id">ID: DRV-001</p>
-                    <div class="driver-details">
-                        <span><i class="fa-solid fa-bus"></i> Bus A-01</span>
-                        <span><i class="fa-solid fa-phone"></i> 0917-000-000</span>
-                    </div>
-                
-                </div>
-                <!-- Driver Card 2 -->
-                <div class="driver-card glass-card">
-                    <div class="driver-top">
-                        <div class="online-indicator offline"></div>
-                        <img src="~/driver-removebg-preview.png" alt="driver">
-                    </div>
-                    <h3>Juan Dela Cruz</h3>
-                    <p class="driver-id">ID: DRV-002</p>
-                    <div class="driver-details">
-                        <span><i class="fa-solid fa-bus"></i> Bus B-05</span>
-                        <span><i class="fa-solid fa-phone"></i> 0918-111-222</span>
-                    </div>
-                    
-                </div>
-            </div>
-        </section>
-
         <!-- SECTION: REPORTS -->
         <section class="main-content" id="reports">
-
-        
             
 
             <!-- QUICK INSIGHTS CARDS -->

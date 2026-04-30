@@ -41,27 +41,6 @@
                     <img src="~/students-removebg-preview.png" class="bg-icon">
                 </div>
             </div>
-
-            <div class="glass-card mt-5">
-                <div class="card-header">
-                    <h2>Recent Transport Activity</h2>
-
-                </div>
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>Time Stamp</th>
-                            <th>Total Boarded</th>
-                            <th>Driver Assigned</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Today, 07:45 AM</td><td>45 Students</td><td>D-102 (Cardo)</td><td><span class="status success">Completed</span></td></tr>
-                        <tr><td>Today, 08:30 AM</td><td>32 Students</td><td>D-105 (Juan)</td><td><span class="status warning">In Route</span></td></tr>
-                    </tbody>
-                </table>
-            </div>
         </section>
 
         <!-- SECTION: STUDENTS -->
@@ -109,6 +88,10 @@
                                 <input type="text" name="LRN" placeholder="12-digit LRN" required>
                             </div>
                             <div class="form-group">
+                                <label>Student Id</label>
+                                <input type="text" name="StudentId" placeholder="Internal ID">
+                            </div>
+                            <div class="form-group">
                                 <label>First Name *</label>
                                 <input type="text" name="FirstName" placeholder="Enter First Name" required>
                             </div>
@@ -137,12 +120,20 @@
                                 <input type="text" name="Section" placeholder="e.g. Rizal" required>
                             </div>
                             <div class="form-group">
-                                <label>Student Id</label>
-                                <input type="text" name="StudentId" placeholder="Internal ID">
+                                <label>Address *</label>
+                                <select name="Address" required>
+                                    <option value="" disabled selected>Select Address</option>
+                                    <option>NHA Kabac</option>
+                                    <option>NHA Kampingganon</option>
+                                </select>
                             </div>
                             <div class="form-group">
-                                <label>Address *</label>
-                                <input type="text" name="Address" placeholder="e.g. NHA Kabac" required>
+                                <label>Parents/Guardian Name *</label>
+                                <input type="text" name="Parent" placeholder="Enter FullName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Parents/Guardian Contact No. *</label>
+                                <input type="text" name="ParentContact" placeholder="Enter Contact Number" required>
                             </div>
                             <div class="form-group profile-upload-group full-width">
                                 <label>Student Picture *</label>
@@ -182,10 +173,12 @@
                     <thead>
                         <tr>
                             <th>LRN</th>
-                            <th>Name</th> <!-- COMBINED HEADER -->
-                            <th>Level / Section</th>
+                            <th>Name</th> 
+                            <th>Level/Section</th>
                             <th>Address</th>
                             <th>Student ID</th>
+                            <th>Parent/Guardian Name</th>
+                            <th>Contact No.</th>
                             <th>QR Code</th>
                         </tr>
                     </thead>
@@ -199,6 +192,8 @@
                                 <td>@student.GradeLevel - @student.Section</td>
                                 <td>@student.Address</td>
                                 <td>@student.StudentId</td>
+                                <td>@student.Parent</td>
+                                <td>@student.ParentContact</td>
                                 <td>
                                     <!-- The Clickable Icon -->
                                     <button type="button" class="icon-qr-trigger" onclick="viewQRCode('@student.QRCodeBase64')">

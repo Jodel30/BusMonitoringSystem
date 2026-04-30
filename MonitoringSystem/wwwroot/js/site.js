@@ -28,6 +28,21 @@ function setReportView(view) {
         document.getElementById('monthly-filter').style.display = 'flex';
     }
 }
+function setStudentView(view) {
+    // 1. Update buttons
+    const btns = document.querySelectorAll('.toggle-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    // 2. Switch Filter inputs
+    if (view === 'daily') {
+        document.getElementById('weekly-filter').style.display = 'flex';
+        document.getElementById('monthly-filter').style.display = 'none';
+    } else {
+        document.getElementById('weekly-filter').style.display = 'none';
+        document.getElementById('monthly-filter').style.display = 'flex';
+    }
+}
 // OPEN ACCOUNT MODAL
 function openAccountModal() {
     document.getElementById('accountModalOverlay').classList.add('active');

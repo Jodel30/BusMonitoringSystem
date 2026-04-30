@@ -151,3 +151,17 @@ function resetScanner() {
     document.getElementById('reader').style.display = 'none';
     document.getElementById('stop-btn').style.display = 'none';
 }
+function endTrip() {
+    if (confirm(`Finish current trip? Total students boarded: ${currentBoardedCount}`)) {
+        // Reset everything for the next trip
+        currentBoardedCount = 0;
+        document.getElementById('live-count').innerText = "0";
+        document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
+
+        alert("Trip Logged successfully. All lists have been reset.");
+
+        // Go back to the scanner start
+        switchSection('scan');
+        resetScanner();
+    }
+}

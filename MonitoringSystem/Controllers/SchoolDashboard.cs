@@ -66,6 +66,7 @@ namespace MonitoringSystem.Controllers
                     name = $"{student.FirstName} {student.LastName}",
                     photo = student.PhotoPath, // Path to the uploaded image
                     level = student.GradeLevel
+
                 });
             }
 

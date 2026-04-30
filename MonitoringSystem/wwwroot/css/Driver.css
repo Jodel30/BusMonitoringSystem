@@ -149,7 +149,7 @@
 
 .scan-container {
     text-align: center;
-    margin-top: 50px;
+    margin-top: 30px;
 }
 
 .qr-frame {
@@ -181,6 +181,99 @@
     font-size: 16px;
 }
 
+/* CONTAINER SPACING */
+.analytics-summary {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.insight-card {
+    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden; /* Clips the background image */
+    display: flex;
+    align-items: center;
+    min-height: 50px;
+    box-shadow: 0 10px 25px rgba(0, 119, 182, 0.2);
+}
+
+/* CONTENT ALIGNMENT */
+.card-inner {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 2; /* Ensures text is above the background image */
+}
+
+/* THE ICON BOX (Phone Style) */
+.icon-box-mobile {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+}
+
+/* THE NUMBERS AND LABELS */
+.insight-data .label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 2px;
+}
+
+.insight-data h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    line-height: 1;
+}
+
+/* BACKGROUND DECORATIVE IMAGE */
+.card-bg-icon {
+    position: absolute;
+    bottom: -15px;
+    right: -10px;
+    width: 100px;
+    opacity: 0.15; /* Keeps it subtle */
+    transform: rotate(-10deg);
+    z-index: 1;
+    pointer-events: none; /* User can't click the image */
+}
+
+
+/* END TRIP BUTTON */
+.btn-end-trip {
+    margin-top: 20px;
+    width: 100%;
+    background: white;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    padding: 15px;
+    border-radius: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+    .btn-end-trip:hover {
+        background: #e74c3c;
+        color: white;
+    }
 .overlay-bg {
     position: absolute;
     inset: 0;

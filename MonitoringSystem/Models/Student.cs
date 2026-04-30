@@ -15,6 +15,8 @@ namespace MonitoringSystem.Models
         public string Address { get; set; }
         public string PhotoPath { get; set; }
         public string QRCodeBase64 { get; set; }
+        public string Parent { get; set; }
+        public string ParentContact { get; set; }
 
        
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
