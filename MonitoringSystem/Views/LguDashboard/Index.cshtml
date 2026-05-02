@@ -44,7 +44,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="icon-box navy"><i class="fa-solid fa-user-tie"></i></div>
-                    <div class="info"><h3>Drivers</h3><p>0</p></div>
+                    <div class="info"><h3>Bus Aide</h3><p>0</p></div>
                     <img src="~/driver-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card">
@@ -59,47 +59,40 @@
         <section class="main-content" id="students">
             <div class="report-banner">
                 <div class="report-text">
-                    <h1>Student Transport Logs</h1>
+                    <h1>Student Transport Records</h1>
                 </div>
 
-            </div>
-            <div class="analytics-summary">
-                <div class="insight-card">
-                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div class="insight-data">
-                        <span class="label">Total Boardings</span>
-                        <p>0</p>
-
-                    </div>
-                    <img src="~/students-removebg-preview.png">
-                </div>
-                <div class="section-header-reports">
-                    <div class="report-view-toggle">
-                        <button class="toggle-btn active" onclick="setStudentView('daily')">Weekly</button>
-                        <button class="toggle-btn" onclick="setStudentView('monthly')">Monthly</button>
-                    </div>
-                </div>
             </div>
 
             <!-- FILTER BAR -->
             <div class="report-filters glass-card">
-                <div class="filter-controls" id="weekly-filter">
-                    <label><i class="fa-solid fa-calendar-week"></i> Select Week:</label>
-                    <input type="week" class="modern-input">
+
+                <!-- LEFT SIDE: PICTURE (Visible by default) -->
+                <div id="report-img-wrapper">
+                    <img src="~/studenttst.jpg" id="report-img" alt="Report Design" style="height: 60px; width: auto; transition: 0.3s;">
                 </div>
-                <div class="filter-controls" id="monthly-filter" style="display:none;">
-                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
-                    <input type="month" class="modern-input">
+
+                <!-- CENTER: THE HIDDEN FILTERS -->
+                <div id="filter-container" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
+
+                    <div class="filter-controls">
+                        <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
+                        <input type="month" class="modern-input">
+                    </div>
+
+                    <div class="filter-controls">
+                        <label><i class="fa-solid fa-location-dot"></i> Address:</label>
+                        <select name="Address" required class="modern-input">
+                            <option value="" disabled selected>Select Address</option>
+                            <option>NHA Kabac</option>
+                            <option>NHA Kampingganon</option>
+                        </select>
+                    </div>
+
                 </div>
-                <div class="filter-controls">
-                    <label>Address *</label>
-                    <select name="Address" required class="modern-input">
-                        <option value="" disabled selected>Select Address</option>
-                        <option>NHA Kabac</option>
-                        <option>NHA Kampingganon</option>
-                    </select>
-                </div>
-                <button class="btn-generate">
+
+                <!-- RIGHT SIDE: TRIGGER BUTTON -->
+                <button class="btn-generate" id="filter-toggle-btn" onclick="toggleReportFilters()">
                     View Trip Summary <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
@@ -114,19 +107,17 @@
                 <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>LRN</th>
                             <th>Name</th>
-                            <th>Level</th>
+                            <th>LRN</th>
+                            <th>Grade & Section</th>
                             <th>Address</th>
-                            <th>Contact</th>
-                            <th>QR Code</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><span class="id-tag">123456789</span></td>
                             <td><strong>Jodel</strong></td>
-                            <td>Grade 10</td>
+                            <td><span class="id-tag">123456789</span></td>
+                            <td>Grade 10-Love</td>
                             <td>Kabac</td>
                             <td>0912-345-678</td>
                             <td><button class="icon-btn"><i class="fa-solid fa-qrcode"></i></button></td>
@@ -148,15 +139,6 @@
 
             </div>
             <div class="analytics-summary">
-                <div class="insight-card">
-                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div class="insight-data">
-                        <span class="label">Total Boardings</span>
-                        <p>0</p>
-                        
-                    </div>
-                    <img src="~/students-removebg-preview.png" >
-                </div>
                 <div class="section-header-reports">
                     <div class="report-view-toggle">
                         <button class="toggle-btn active" onclick="setReportView('daily')">Daily</button>
@@ -181,16 +163,15 @@
             <!-- THE REPORT TABLE -->
             <div class="glass-card report-results">
                 <div class="results-header">
-                    <h3>Boarding Logs</h3>
+                    <h3>Trip Overview</h3>
                     <button class="btn-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
                 </div>
                 <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>LRN</th>
-                            <th>Assigned Driver</th>
-                            <th>Check-in Time</th>
+                            <th>Trip ID</th>
+                            <th>Date</th>
+                            <th>Assigned Bus Aide</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -281,9 +262,9 @@
                                 <label>Access Role *</label>
                                 <select id="roleSelector" onchange="updateRoleFields()" required>
                                     <option value="" disabled selected>Choose Account Type</option>
-                                    <option value="lgu">LGU Official</option>
-                                    <option value="school">School Administrator</option>
-                                    <option value="driver">Driver</option>
+                                    <option value="lgu">LGU School Bus Supervisor</option>
+                                    <option value="school">School Aide</option>
+                                    <option value="driver">Bus Aide</option>
                                 </select>
                             </div>
 

@@ -146,7 +146,46 @@
     .btn-check.boarded {
         background: #2ecc71;
     }
+.hero-banner {
+    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
+    border-radius: 20px;
+    padding: 20px; /* Reduced padding to fit phone width */
+    display: flex;
+    flex-direction: row; /* Keeps items side-by-side */
+    align-items: center; /* Vertically centers both */
+    justify-content: space-between;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0, 119, 182, 0.2);
+    overflow: hidden;
+    min-height: 120px; /* Compact height for mobile */
+}
 
+.hero-text {
+    flex: 1; /* Takes up all available left space */
+    text-align: left;
+}
+
+    .hero-text h1 {
+        font-size: 18px; /* Much smaller to prevent huge line breaks */
+        margin: 0;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+.hero-visual {
+    flex-shrink: 0; /* Prevents the image from getting squashed */
+    margin-left: 10px; /* Gap between text and image */
+}
+
+    .hero-visual img {
+        width: 100px; /* Fixed small width to fit on the right */
+        height: auto;
+        border-radius: 10px;
+        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    }
+.hide-banner {
+    display: none !important;
+}
 .scan-container {
     text-align: center;
     margin-top: 30px;
@@ -285,3 +324,93 @@
     .overlay-bg.active {
         display: block;
     }
+
+.trip-action-container {
+    padding: 10px 0;
+    display: block;
+    justify-content: center;
+}
+
+.btn-trip {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: 800;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+    /* START TRIP STYLE */
+    .btn-trip.start {
+        background: linear-gradient(135deg, #2ecc71 0%, #15803d 100%);
+        margin-top: 20px;
+    }
+
+        .btn-trip.start:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(0, 180, 216, 0.3);
+        }
+
+    .btn-trip:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-trip.active {
+        background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+        margin-top: 20px;
+    }
+
+        .btn-trip.active:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px rgba(0, 180, 216, 0.3);
+        }
+
+/* Active trip */
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+    .history-table th {
+        text-align: left;
+        padding: 10px 5px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .history-table td {
+        padding: 12px 5px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #102a43;
+        font-weight: 600;
+    }
+
+/* Trip ID Highlight */
+.trip-id-tag {
+    background: #f1f5f9;
+    padding: 3px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    color: #0077b6;
+}
+
+.count-pill {
+    display: inline-block;
+    background: #0077b6;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 10px;
+}

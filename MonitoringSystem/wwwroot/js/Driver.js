@@ -1,4 +1,9 @@
-﻿function toggleMenu() {
+﻿let html5QrCode;
+let currentBoardedCount = 0;
+let tripStartTime = ""; // Stores when the trip began
+let tripIdCounter = 1;  // Local counter for Trip IDs
+
+function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('active');
     document.getElementById('overlay').classList.toggle('active');
 }
@@ -8,92 +13,91 @@ function switchSection(id) {
     sections.forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
 
-
-    let titles = { 'scan': 'Scanner', 'register': 'Manual Check-in', 'onboard': 'On-Board', 'profile': 'Profile' };
+    // Update titles - 'active-trip' is now your History section
+    let titles = {
+        'scan': 'Scanner',
+        'register': 'Manual Check-in',
+        'onboard': 'On-Board',
+        'active-trip': 'Trip History'
+    };
     document.getElementById('header-title').innerText = titles[id];
-
     toggleMenu();
 }
 
-// Search Functionality
-function filterStudents() {
-    let input = document.getElementById('studentSearch').value.toLowerCase();
-    let items = document.querySelectorAll('.student-item');
+// --- 1. START TRIP LOGIC ---
+function handleStart() {
+    console.log("Trip Started");
 
-    items.forEach(item => {
-        let name = item.getAttribute('data-name').toLowerCase();
-        let lrn = item.getAttribute('data-lrn').toLowerCase();
-        if (name.includes(input) || lrn.includes(input)) {
-            item.style.display = "flex";
-        } else {
-            item.style.display = "none";
-        }
-    });
+    // RECORD START TIME
+    tripStartTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const banner = document.getElementById('main-title');
+    const idleState = document.getElementById('trip-idle-state');
+    const activeUI = document.getElementById('active-scanner-ui');
+
+    if (banner) {
+        banner.classList.add('hide-banner');
+    }
+
+    if (idleState) idleState.style.display = 'none';
+    if (activeUI) activeUI.style.display = 'block';
+
+    currentBoardedCount = 0;
+    const liveCountEl = document.getElementById('live-count');
+    if (liveCountEl) liveCountEl.innerText = "0";
 }
 
-// Boarding Logic (Simulated)
-function boardStudent(btn) {
-    btn.innerText = "Boarded ✓";
-    btn.classList.add('boarded');
-    btn.disabled = true;
-
-    let studentName = btn.parentElement.querySelector('h4').innerText;
-    alert(studentName + " has been manually boarded.");
-}
-let html5QrCode; 
-
+// --- 2. SCANNER LOGIC ---
 async function startScanner() {
-    
-    document.getElementById('static-frame').style.display = 'none'; // Hide static icon
-    document.getElementById('start-btn').style.display = 'none';   // Hide "Tap to Scan"
-    document.getElementById('reader').style.display = 'block';     // Show camera feed container
-    document.getElementById('stop-btn').style.display = 'block';   // Show "Stop Scanner"
+    const banner = document.getElementById('main-title');
+    if (banner) {
+        banner.classList.add('hide-banner');
+    }
 
-    // Initialize Scanner
+    document.getElementById('static-frame').style.display = 'none';
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('reader').style.display = 'block';
+    document.getElementById('stop-btn').style.display = 'block';
+
     html5QrCode = new Html5Qrcode("reader");
     const config = { fps: 10, qrbox: { width: 250, height: 250 } };
 
     try {
         await html5QrCode.start(
-            { facingMode: "environment" }, // Uses back camera
+            { facingMode: "environment" },
             config,
-            (decodedText, decodedResult) => {
-                // SUCCESS: When a QR is scanned
-                onScanSuccess(decodedText);
-            }
+            (decodedText) => { onScanSuccess(decodedText); }
         );
     } catch (err) {
-        alert("Camera permission denied or not found. Please ensure you allow camera access and try again.");
-        resetScanner(); // Go back to initial state on error
+        alert("Camera error: " + err);
+        resetScanner();
     }
 }
-
 
 function onScanSuccess(decodedText) {
     stopScanner();
 
     let lrn = decodedText.includes('LRN:') ? decodedText.split('LRN:')[1].split('|')[0] : decodedText;
+    lrn = lrn.trim();
 
     fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 1. UPDATE THE UI ELEMENTS
-                const nameEl = document.getElementById('scanned-name');
-                const photoEl = document.getElementById('scanned-photo');
-                const levelEl = document.getElementById('scanned-level');
+                const banner = document.getElementById('main-title');
+                if (banner) banner.classList.add('hide-banner');
 
-                if (nameEl) nameEl.innerText = data.name;
-                if (photoEl) photoEl.src = data.photo || '/lib/default-avatar.png';
-                if (levelEl) levelEl.innerText = "Grade: " + data.level;
+                document.getElementById('scanned-name').innerText = data.name;
+                document.getElementById('scanned-photo').src = data.photo || '/lib/default-avatar.png';
+                document.getElementById('scanned-level').innerText = "Grade: " + data.level;
 
-                // 2. SWITCH THE SCREEN VIEW
-                // Hide the scanner UI
-                document.getElementById('scanner-ui').style.display = 'none';
-                // Show the success screen
+                currentBoardedCount++;
+                const liveCountEl = document.getElementById('live-count');
+                if (liveCountEl) liveCountEl.innerText = currentBoardedCount;
+
+                document.getElementById('active-scanner-ui').style.display = 'none';
                 document.getElementById('scan-success').style.display = 'block';
 
-                // 3. RECORD TO LIST (This part is already working for you)
                 addToOnBoardList(data);
             } else {
                 alert("Student not found!");
@@ -102,66 +106,110 @@ function onScanSuccess(decodedText) {
         });
 }
 
-// THIS ADDS THE SCANNED STUDENT TO THE LOG SECTION
-function addToOnBoardList(student) {
-    const list = document.getElementById('onboardList');
+function resetScanner() {
+    const banner = document.getElementById('main-title');
+    if (banner) banner.classList.add('hide-banner');
 
-    // Remove the "No students scanned yet" message if it's there
-    if (list.innerText.includes("No students")) {
-        list.innerHTML = "";
+    document.getElementById('scan-success').style.display = 'none';
+    document.getElementById('active-scanner-ui').style.display = 'block';
+    document.getElementById('scanner-ui').style.display = 'block';
+    document.getElementById('static-frame').style.display = 'flex';
+    document.getElementById('start-btn').style.display = 'block';
+    document.getElementById('reader').style.display = 'none';
+    document.getElementById('stop-btn').style.display = 'none';
+}
+
+// --- 3. END TRIP LOGIC (WITH BACKEND SYNC) ---
+function endTrip() {
+    if (confirm(`Finish current trip? Total students boarded: ${currentBoardedCount}`)) {
+        stopScanner();
+
+        // 1. Prepare Data
+        const tripData = {
+            tripId: "TRP-" + String(tripIdCounter++).padStart(3, '0'),
+            date: new Date().toLocaleDateString(),
+            startTime: tripStartTime,
+            endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            boardedCount: currentBoardedCount,
+            driverName: "Ricardo Dalisay"
+        };
+
+        // 2. SEND TO CONTROLLER
+        fetch('/DriverDashboard/SaveTrip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tripData)
+        })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    // 3. Update the History Table in the UI
+                    addTripToHistoryTable(tripData.tripId, tripData.date, tripData.startTime, tripData.endTime, tripData.boardedCount);
+
+                    // 4. Reset Scan UI
+                    currentBoardedCount = 0;
+                    const liveCountEl = document.getElementById('live-count');
+                    if (liveCountEl) liveCountEl.innerText = "0";
+                    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
+
+                    // 5. Show Banner again
+                    const banner = document.getElementById('main-title');
+                    if (banner) {
+                        banner.classList.remove('hide-banner');
+                        banner.style.removeProperty('display');
+                    }
+
+                    alert("Trip Logged and Saved to Database.");
+
+                    // 6. Return to Home
+                    document.getElementById('active-scanner-ui').style.display = 'none';
+                    document.getElementById('scan-success').style.display = 'none';
+                    document.getElementById('trip-idle-state').style.display = 'block';
+                }
+            });
     }
+}
 
-    // Create the item HTML
-    const newItem = `
-        <div class="student-item" style="border-left: 5px solid #2ecc71; animation: slideInLeft 0.3s ease;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="${student.photo || '/lib/default-avatar.png'}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #eee;">
-                <div class="student-info">
-                    <h4>${student.name}</h4>
-                    <p><i class="far fa-clock"></i> Boarded: ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                </div>
-            </div>
-            <i class="fas fa-check-circle" style="color: #2ecc71; font-size: 18px;"></i>
-        </div>
-    `;
+// FUNCTION TO ADD TRIP TO THE VISUAL TABLE
+function addTripToHistoryTable(id, date, start, end, count) {
+    const tbody = document.getElementById('historyBody');
+    const noData = document.getElementById('no-data-row');
 
-    // Add new student to the top of the list
-    list.insertAdjacentHTML('afterbegin', newItem);
+    if (noData) noData.remove(); // Remove placeholder row
+
+    const row = `
+        <tr>
+            <td><span class="trip-id-tag">${id}</span></td>
+            <td>${date}</td>
+            <td style="font-size:10px; color:#64748b;">In: ${start}<br>Out: ${end}</td>
+            <td style="text-align:center;"><span class="count-pill">${count}</span></td>
+        </tr>`;
+
+    tbody.insertAdjacentHTML('afterbegin', row);
 }
 
 async function stopScanner() {
     if (html5QrCode) {
-        await html5QrCode.stop(); // Stop the camera feed
-        html5QrCode = null; // Clear the scanner instance
+        await html5QrCode.stop();
+        html5QrCode = null;
     }
-    resetScanner(); 
 }
 
-// This function resets the UI to the initial "Tap to Scan" state
-function resetScanner() {
-    // Hide success message if it's visible
-    document.getElementById('scan-success').style.display = 'none';
-
-    // Show the main scanner UI (static frame + start button)
-    document.getElementById('scanner-ui').style.display = 'block';
-    document.getElementById('static-frame').style.display = 'flex'; // Show static icon frame
-    document.getElementById('start-btn').style.display = 'block';   // Show "Tap to Scan" button
-
-    // Hide camera feed and stop button
-    document.getElementById('reader').style.display = 'none';
-    document.getElementById('stop-btn').style.display = 'none';
-}
-function endTrip() {
-    if (confirm(`Finish current trip? Total students boarded: ${currentBoardedCount}`)) {
-        // Reset everything for the next trip
-        currentBoardedCount = 0;
-        document.getElementById('live-count').innerText = "0";
-        document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
-
-        alert("Trip Logged successfully. All lists have been reset.");
-
-        // Go back to the scanner start
-        switchSection('scan');
-        resetScanner();
+function addToOnBoardList(student) {
+    const list = document.getElementById('onboardList');
+    if (list.innerText.includes("No students")) {
+        list.innerHTML = "";
     }
+
+    const newItem = `<div class="student-item" style="border-left: 5px solid #2ecc71;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="${student.photo || '/lib/default-avatar.png'}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover;">
+            <div class="student-info">
+                <h4>${student.name}</h4>
+                <p>Boarded: ${new Date().toLocaleTimeString()}</p>
+            </div>
+        </div>
+        <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+    </div>`;
+    list.insertAdjacentHTML('afterbegin', newItem);
 }

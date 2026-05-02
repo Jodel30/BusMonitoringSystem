@@ -16,14 +16,13 @@
 
     <div class="mobile-container">
 
-
         <div class="sidebar" id="sidebar">
             <h3>Driver Menu</h3>
             <ul>
-                <li onclick="switchSection('scan')"><i class="fas fa-qrcode"></i> QR Scanner</li>
+                <li onclick="switchSection('scan')"><i class="fas fa-qrcode"></i> Dashboard</li>
+                <li onclick="switchSection('active-trip')"><i class="fas fa-user"></i> Trip History</li>
                 <li onclick="switchSection('register')"><i class="fas fa-search"></i> Manual Check-in</li>
                 <li onclick="switchSection('onboard')"><i class="fas fa-users"></i> On-Board Students</li>
-                <li onclick="switchSection('profile')"><i class="fas fa-user"></i> Driver Profile</li>
                 <li style="color: #ff4d4d; margin-top: 50px;"><i class="fas fa-sign-out-alt"></i> Logout</li>
             </ul>
         </div>
@@ -31,34 +30,59 @@
 
         <div class="app-header">
             <i class="fas fa-bars fa-lg" onclick="toggleMenu()" style="cursor:pointer"></i>
-            <h2 id="header-title">Scanner</h2>
+            <h2 id="header-title">STMS</h2>
             <i class="fas fa-user"></i>
         </div>
 
         <!-- SECTION 1: SCAN -->
         <div id="scan" class="content-section active">
             <div class="scan-container">
+                <!-- HEADER HERO -->
+                <div class="hero-banner" id="main-title">
+                    <div class="hero-text">
+                        <h1>Student Transport<br>Monitoring System</h1>
 
-                <div id="scanner-ui">
-                    <p style="color: #102a43; font-weight: 500; margin-top: 20px;">Align Student QR Code</p>
+                    </div>
+                    <div class="hero-visual">
+                        <img src="~/freebus.jpg" alt="Bus Image">
+                    </div>
+                </div>
 
-                    <div id="reader" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; display: none;"></div>
-
-                    <div class="qr-frame" id="static-frame"><i class="fas fa-qrcode"></i></div>
-
-                    <button class="btn-main" id="start-btn" onclick="startScanner()">
-                        <i class="fa-solid fa-camera"></i> Tap to Scan
+                <!-- STATE 1: TRIP SELECTION (START SCREEN) -->
+                <div id="trip-idle-state" class="trip-action-container">
+                    <button id="btn-start" class="btn-trip start" onclick="handleStart()">
+                        <i class="fa-solid fa-play"></i> Start Trip
                     </button>
-                   
-                    <button class="btn-main" id="stop-btn" style="display:none; background: #e74c3c;" onclick="stopScanner()">
-                        <i class="fa-solid fa-stop"></i> Stop Scanner
+                    
+                </div>
+
+                <!-- STATE 2: SCANNER UI (HIDDEN BY DEFAULT) -->
+                <div id="active-scanner-ui" style="display: none;">
+                    <div id="scanner-ui">
+                        <p style="color: #102a43; font-weight: 600; text-align: center; margin-top: 20px;">
+                            <span class="dot-pulse"></span> Scanner Active
+                        </p>
+
+                        <div id="reader" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; display: none;"></div>
+
+                        <div class="qr-frame" id="static-frame"><i class="fas fa-qrcode"></i></div>
+
+                        <button class="btn-main" id="start-btn" onclick="startScanner()">
+                            <i class="fa-solid fa-camera"></i> Tap to Scan
+                        </button>
+
+                        <button class="btn-main" id="stop-btn" style="display:none; background: #e74c3c;" onclick="stopScanner()">
+                            <i class="fa-solid fa-stop"></i> Stop Scanner
+                        </button>
+                    </div>
+
+                    <!-- END TRIP BUTTON (Visible only when trip is active) -->
+                    <button class="btn-end-trip" onclick="endTrip()" style="margin-top: 20px;">
+                        <i class="fa-solid fa-route"></i> End Current Trip
                     </button>
                 </div>
-                <!-- END TRIP BUTTON -->
-                <button class="btn-end-trip" onclick="endTrip()">
-                    <i class="fa-solid fa-route"></i> End Current Trip
-                </button>
-                <!-- Success Message -->
+
+                <!-- STATE 3: SUCCESS MESSAGE (HIDDEN BY DEFAULT) -->
                 <div id="scan-success" style="display:none; text-align:center; padding: 20px;">
                     <div style="width: 130px; height: 130px; margin: 0 auto 15px; border-radius: 50%; overflow: hidden; border: 5px solid #2ecc71;">
                         <img id="scanned-photo" src="" style="width: 100%; height: 100%; object-fit: cover;">
@@ -74,22 +98,6 @@
                     <button class="btn-main" onclick="resetScanner()">Scan Next Student</button>
                 </div>
 
-                <div class="analytics-summary">
-                    <div class="insight-card">
-                        <!-- ICON AND DATA WRAPPER -->
-                        <div class="card-inner">
-                            <div class="icon-box-mobile">
-                                <i class="fa-solid fa-users"></i>
-                            </div>
-                            <div class="insight-data">
-                                <span class="label">Currently On-board</span>
-                                <h1 id="live-count">0</h1>
-                            </div>
-                        </div>
-                        <!-- DECORATIVE BG IMAGE -->
-                        <img src="/students-removebg-preview.png" class="card-bg-icon">
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -130,17 +138,60 @@
             </div>
         </div>
 
-        <div id="profile" class="content-section">
-            <div style="background:white; padding:30px; border-radius:20px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.05)">
-                <div style="width:80px; height:80px; background:#0077b6; border-radius:50%; margin: 0 auto 15px; display:flex; justify-content:center; align-items:center; color:white; font-size:30px;">
-                    <i class="fas fa-user-tie"></i>
+        <!-- SECTION: Active trip -->
+        @model List<MonitoringSystem.Models.TripLog>
+
+        <div id="active-trip" class="content-section">
+            <div class="glass-card" style="padding: 20px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="color: #102a43; margin: 0; font-size: 18px;">
+                        <i class="fa-solid fa-clock-history" style="color:#0077b6;"></i> Trip History
+                    </h3>
+                    <div style="text-align:right">
+                        <span class="badge-role" style="background:#eef6fc; color:#0077b6; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700;">LOGS</span>
+                    </div>
                 </div>
-                <h3 style="margin:0">Ricardo Dalisay</h3>
-                <p style="color:#8898aa; margin:5px 0 20px">Driver ID: DRV-001</p>
-                <button class="btn-main" style="background:#102a43">Edit Profile</button>
+
+                <div style="overflow-x: auto;">
+                    <table class="history-table" id="tripLogTable">
+                        <thead>
+                            <tr>
+                                <th>Trip ID</th>
+                                <th>Date</th>
+                                <th>Times</th>
+                                <th style="text-align:center;">Boarded</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var log in Model)
+                                {
+                                    <tr>
+                                        <td><span class="trip-id-tag">@log.TripId</span></td>
+                                        <td>@log.Date</td>
+                                        <td style="font-size:10px; color:#64748b;">
+                                            In: @log.StartTime<br>Out: @log.EndTime
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <span class="count-pill">@log.BoardedCount</span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <!-- Only shows if the database/list is empty -->
+                                <tr id="no-data-row">
+                                    <td colspan="4" style="text-align:center; color:#94a3b8; padding: 30px 0;">No trips recorded yet.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
     </div>
 
     <script src="~/js/Driver.js"></script>

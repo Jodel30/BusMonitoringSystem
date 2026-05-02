@@ -79,3 +79,36 @@ function closeAccountModalOutside(e) {
         closeAccountModal();
     }
 }
+function toggleReportFilters() {
+    const container = document.getElementById('filter-container');
+    const btn = document.getElementById('filter-toggle-btn');
+    const parent = document.querySelector('.report-filters');
+    const image = document.getElementById('report-image'); // Target the picture
+
+    // 1. If hidden: SHOW filters, HIDE picture
+    if (container.style.display === 'none' || container.style.display === '') {
+        container.style.display = 'flex';
+        if (image) image.style.display = 'none'; // Picture disappears
+
+        parent.style.justifyContent = 'space-between';
+        btn.classList.add('active');
+
+        // Change button text
+        btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
+    }
+    // 2. If visible: HIDE filters, SHOW picture (Go back)
+    else {
+        // Logic for "Generating"
+        container.style.display = 'none';
+        if (image) image.style.display = 'block'; // Picture comes back
+
+        parent.style.justifyContent = 'space-between';
+        btn.classList.remove('active');
+
+        // Reset button text
+        btn.innerHTML = 'View Trip Summary <i class="fa-solid fa-arrow-right"></i>';
+
+        // Optional logic to trigger the report processing
+        console.log("Report generated!");
+    }
+}

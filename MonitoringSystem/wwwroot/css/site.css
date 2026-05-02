@@ -455,6 +455,43 @@ body {
     border-radius: 5px;
 }
 
+.report-filters {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    padding: 15px 30px;
+    min-height: 100px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+
+#report-img-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+#filter-container {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn-generate {
+    min-width: 220px;
+}
+
 /* Reports */
 
 /* REPORTS HEADER & TOGGLE */

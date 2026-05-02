@@ -47,10 +47,12 @@
         @model List<MonitoringSystem.Models.Student>
 
         <section class="main-content" id="students">
+            <!-- BANNER -->
             <div class="report-banner">
                 <div class="report-text"><h1>Students</h1></div>
             </div>
 
+            <!-- STAT CARD -->
             <div class="analytics-summary">
                 <div class="insight-card">
                     <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
@@ -62,6 +64,7 @@
                 </div>
             </div>
 
+            <!-- REGISTRATION TRIGGER -->
             <div class="report-filters glass-card">
                 <div class="filter-controls"><h1>Register New Student</h1></div>
                 <button class="btn-generate" onclick="openModal()">
@@ -69,22 +72,21 @@
                 </button>
             </div>
 
-            <!-- REGISTRATION MODAL -->
+            <!-- 1. REGISTRATION MODAL -->
             <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
                 <div class="modal-content glass-card registration-section" onclick="event.stopPropagation()">
                     <button class="btn-close-modal" onclick="closeModal()">&times;</button>
-                    <div class="card-header">
-                        <div class="header-icon-box"><i class="fa-solid fa-user-plus"></i></div>
-                        <div class="header-text">
+                    <div class="card-header-gradient">
+                        <i class="fa-solid fa-user-plus"></i>
                             <h2>New Student Registration</h2>
                             <p>Fill in details to generate profile and QR identity.</p>
-                        </div>
+                        
                     </div>
 
                     <form asp-action="RegisterStudent" asp-controller="SchoolDashboard" method="post" enctype="multipart/form-data" class="modern-form">
                         <div class="form-grid">
                             <div class="form-group full-width">
-                                <label>Learner Reference Number (LRN) *</label>
+                                <label> LRN *</label>
                                 <input type="text" name="LRN" placeholder="12-digit LRN" required>
                             </div>
                             <div class="form-group">
@@ -93,15 +95,15 @@
                             </div>
                             <div class="form-group">
                                 <label>First Name *</label>
-                                <input type="text" name="FirstName" placeholder="Enter First Name" required>
+                                <input type="text" name="FirstName" placeholder="First Name" required>
                             </div>
                             <div class="form-group">
                                 <label>Middle Name</label>
-                                <input type="text" name="MiddleName" placeholder="Enter Middle Name">
+                                <input type="text" name="MiddleName" placeholder="Middle Name">
                             </div>
                             <div class="form-group">
                                 <label>Last Name *</label>
-                                <input type="text" name="LastName" placeholder="Enter Last Name" required>
+                                <input type="text" name="LastName" placeholder="Last Name" required>
                             </div>
                             <div class="form-group">
                                 <label>Grade Level *</label>
@@ -120,6 +122,10 @@
                                 <input type="text" name="Section" placeholder="e.g. Rizal" required>
                             </div>
                             <div class="form-group">
+                                <label>Emergency Contact *</label>
+                                <input type="text" name="ParentContact" placeholder="09XX-XXX-XXXX" required>
+                            </div>
+                            <div class="form-group full-width">
                                 <label>Address *</label>
                                 <select name="Address" required>
                                     <option value="" disabled selected>Select Address</option>
@@ -129,17 +135,13 @@
                             </div>
                             <div class="form-group">
                                 <label>Parents/Guardian Name *</label>
-                                <input type="text" name="Parent" placeholder="Enter FullName" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Parents/Guardian Contact No. *</label>
-                                <input type="text" name="ParentContact" placeholder="Enter Contact Number" required>
+                                <input type="text" name="Parent" placeholder="Full Name" required>
                             </div>
                             <div class="form-group profile-upload-group full-width">
                                 <label>Student Picture *</label>
                                 <div class="photo-upload-container">
                                     <div class="photo-preview" id="imagePreview">
-                                        <i class="fa-solid fa-user-plus" id="placeholderIcon"></i>
+                                        <i class="fa-solid fa-user-astronaut" id="placeholderIcon"></i>
                                         <img src="" alt="Preview" id="previewImg" style="display:none;">
                                     </div>
                                     <div class="upload-controls">
@@ -173,13 +175,10 @@
                     <thead>
                         <tr>
                             <th>LRN</th>
-                            <th>Name</th> 
-                            <th>Level/Section</th>
-                            <th>Address</th>
-                            <th>Student ID</th>
-                            <th>Parent/Guardian Name</th>
-                            <th>Contact No.</th>
+                            <th>Full Name</th>
+                            <th>Grade/Section</th>
                             <th>QR Code</th>
+                            <th>Student Info</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,25 +186,31 @@
                         {
                             <tr>
                                 <td><span class="id-tag">@student.LRN</span></td>
-                                <!-- COMBINED NAME DISPLAY -->
                                 <td><strong>@student.FirstName @student.MiddleName @student.LastName</strong></td>
                                 <td>@student.GradeLevel - @student.Section</td>
-                                <td>@student.Address</td>
-                                <td>@student.StudentId</td>
-                                <td>@student.Parent</td>
-                                <td>@student.ParentContact</td>
                                 <td>
-                                    <!-- The Clickable Icon -->
-                                    <button type="button" class="icon-qr-trigger" onclick="viewQRCode('@student.QRCodeBase64')">
-                                        <i class="fa-solid fa-qrcode"></i>
-                                    </button>
+                                    <div>
+                                        <!-- QR BUTTON -->
+                                        <button type="button" class="icon-qr-trigger" onclick="viewQRCode('@student.QRCodeBase64')" title="View QR">
+                                            <i class="fa-solid fa-qrcode"></i>
+                                        </button>
+                                    </div>
                                 </td>
+                                <td>
+                                    <!-- INFO BUTTON -->
+                                    <button type="button" class="btn-view-info"
+                                            onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.LRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.Parent', '@student.ParentContact', '@student.StudentId')"
+                                            title="Student Profile">
+                                        <i class="fa-solid fa-circle-info"></i> View Student Info
+                                    </button>
+                                    </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
-            <!-- QR VIEW MODAL -->
+
+            <!-- 2. QR VIEW MODAL -->
             <div class="modal-overlay" id="qrModalOverlay" onclick="closeQRView()">
                 <div class="modal-content qr-view-box" onclick="event.stopPropagation()">
                     <button class="btn-close-modal" onclick="closeQRView()">&times;</button>
@@ -216,6 +221,37 @@
                     <p>Scan this code to verify boarding</p>
                 </div>
             </div>
+
+            <!-- 3. STUDENT FULL INFO MODAL (Two-Column Design) -->
+            <div class="modal-overlay" id="studentInfoOverlay" onclick="closeInfoView()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()">
+                    <button class="btn-close-modal" onclick="closeInfoView()">&times;</button>
+                    <div class="profile-container">
+                        <!-- LEFT SIDE: PICTURE -->
+                        <div class="profile-sidebar">
+                            <div class="profile-photo-frame">
+                                <img id="info-photo" src="" alt="Student Profile">
+                            </div>
+                            <h3 id="info-name">Student Name</h3>
+                            <span class="badge-role">Verified Student</span>
+                        </div>
+                        <!-- RIGHT SIDE: DATA -->
+                        <div class="profile-details">
+                            <h4><i class="fa-solid fa-user-graduate"></i> Student Information</h4>
+                            <div class="info-grid">
+                                <div class="info-item"><strong>LRN</strong> <span id="info-lrn"></span></div>
+                                <div class="info-item"><strong>Student ID</strong> <span id="info-id"></span></div>
+                                <div class="info-item"><strong>Grade Level</strong> <span id="info-grade"></span></div>
+                                <div class="info-item"><strong>Section</strong> <span id="info-section"></span></div>
+                                <div class="info-item"><strong>Home Address</strong> <span id="info-address"></span></div>
+                                <div class="info-item"><strong>Guardian Name</strong> <span id="info-parent"></span></div>
+                                <div class="info-item"><strong>Contact Number</strong> <span id="info-contact"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </section>
 
         
