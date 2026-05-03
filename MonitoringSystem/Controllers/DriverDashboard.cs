@@ -6,7 +6,7 @@ namespace MonitoringSystem.Controllers
     public class DriverDashboard : Controller
     {
         // This static list will store all trips in memory while the app is running
-        private static List<TripLog> _tripHistory = new List<TripLog>();
+        public static List<TripLog> _tripHistory = new List<TripLog>();
 
         public IActionResult Driver()
         {

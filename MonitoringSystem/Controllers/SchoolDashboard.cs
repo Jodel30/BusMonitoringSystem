@@ -7,8 +7,7 @@ namespace MonitoringSystem.Controllers
     public class SchoolDashboard : Controller
     {
         // For Capstone Prototype: Use a static list to store students in memory
-        private static List<Student> _studentList = new List<Student>();
-
+        public static List<Student> _studentList = new List<Student>();
         public IActionResult SchoolAdmin()
         {
             // Pass the list to the View so it can be displayed in the table

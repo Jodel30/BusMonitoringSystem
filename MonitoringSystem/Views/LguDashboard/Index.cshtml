@@ -1,4 +1,4 @@
-﻿
+﻿@model MonitoringSystem.Models.LguDashboardViewModel
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,12 +10,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
     <style>
-       
+
     </style>
 </head>
 <body>
 
-  
+
 
     <div class="main-wrapper">
 
@@ -61,20 +61,19 @@
                 <div class="report-text">
                     <h1>Student Transport Records</h1>
                 </div>
-
             </div>
 
-            <!-- FILTER BAR -->
+            <!-- FILTER BAR (Unique IDs for Students) -->
             <div class="report-filters glass-card">
 
-                <!-- LEFT SIDE: PICTURE (Visible by default) -->
-                <div id="report-img-wrapper">
-                    <img src="~/studenttst.jpg" id="report-img" alt="Report Design" style="height: 60px; width: auto; transition: 0.3s;">
+                <!-- LEFT SIDE: BADGE (Disappears on click) -->
+                <div id="stu-badge-wrapper" class="report-brand-box">
+                    <img src="~/studenttst.jpg" id="report-img" alt="Report Design">
+                    <h3 class="report-brand-title">PNHS Students</h3>
                 </div>
 
-                <!-- CENTER: THE HIDDEN FILTERS -->
-                <div id="filter-container" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
-
+                <!-- CENTER: FILTERS (Hidden by default) -->
+                <div id="stu-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
                     <div class="filter-controls">
                         <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
                         <input type="month" class="modern-input">
@@ -88,104 +87,249 @@
                             <option>NHA Kampingganon</option>
                         </select>
                     </div>
-
                 </div>
 
                 <!-- RIGHT SIDE: TRIGGER BUTTON -->
-                <button class="btn-generate" id="filter-toggle-btn" onclick="toggleReportFilters()">
+                <button class="btn-generate" id="stu-toggle-btn" onclick="toggleStudentReports()">
                     View Trip Summary <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
+
+            <!-- DATA TABLE -->
             <div class="glass-card">
                 <div class="section-heading">
                     <h2>List Of Students</h2>
                 </div>
+
                 <div class="search-wrapper">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" placeholder="Search LRN or Name...">
+                    <input type="text" id="lguStudentSearch" placeholder="Search LRN or Name..." onkeyup="filterLguTable()">
                 </div>
-                <table class="modern-table">
+
+                <table class="modern-table" id="lguStudentTable">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>LRN</th>
                             <th>Grade & Section</th>
                             <th>Address</th>
+                            <th style="text-align:center;">Student Trip</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Jodel</strong></td>
-                            <td><span class="id-tag">123456789</span></td>
-                            <td>Grade 10-Love</td>
-                            <td>Kabac</td>
-                            <td>0912-345-678</td>
-                            <td><button class="icon-btn"><i class="fa-solid fa-qrcode"></i></button></td>
-                        </tr>
+                        @if (Model.Students != null && Model.Students.Any())
+                        {
+                            @foreach (var student in Model.Students)
+                            {
+                                <tr>
+                                    <td><strong>@student.FirstName @student.MiddleName @student.LastName</strong></td>
+                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td>@student.GradeLevel - @student.Section</td>
+                                    <td>@student.Address</td>
+                                    <td style="text-align:center;">
+                                        <button type="button" class="btn-view-info"
+                                                onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.LRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.Parent', '@student.ParentContact', '@student.StudentId')"
+                                                title="Student Profile">
+                                            <i class="fa-solid fa-circle-info"></i> View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" style="text-align:center; color:#94a3b8; padding: 40px;">
+                                    <i class="fa-solid fa-user-slash" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                                    No students registered yet.
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
-        </section>
 
-        <!-- SECTION: REPORTS -->
-        <section class="main-content" id="reports">
-            
+            <!-- STUDENT FULL INFO MODAL -->
+            <div class="modal-overlay" id="studentInfoOverlay" onclick="closeInfoView()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()">
+                    <button class="btn-close-modal" onclick="closeInfoView()">&times;</button>
 
-            <!-- QUICK INSIGHTS CARDS -->
-            <div class="report-banner">
-                <div class="report-text">
-                    <h1>Transport Activity</h1>
-                </div>
+                    <div class="modal-scroll-container">
+                        <div class="profile-container">
+                            <div class="profile-sidebar">
+                                <div class="profile-photo-frame">
+                                    <img id="info-photo" src="" alt="Student Profile">
+                                </div>
+                                <h3 id="info-name">Student Name</h3>
+                                <span class="badge-role">Verified Student</span>
+                            </div>
 
-            </div>
-            <div class="analytics-summary">
-                <div class="section-header-reports">
-                    <div class="report-view-toggle">
-                        <button class="toggle-btn active" onclick="setReportView('daily')">Daily</button>
-                        <button class="toggle-btn" onclick="setReportView('monthly')">Monthly</button>
+                            <div class="profile-details">
+                                <h4><i class="fa-solid fa-user-graduate"></i> Student Information</h4>
+                                <div class="info-grid">
+                                    <div class="info-item"><strong>LRN</strong> <span id="info-lrn"></span></div>
+                                    <div class="info-item"><strong>Student ID</strong> <span id="info-id"></span></div>
+                                    <div class="info-item"><strong>Grade Level</strong> <span id="info-grade"></span></div>
+                                    <div class="info-item"><strong>Section</strong> <span id="info-section"></span></div>
+                                    <div class="info-item full"><strong>Home Address</strong> <span id="info-address"></span></div>
+                                    <div class="info-item"><strong>Guardian Name</strong> <span id="info-parent"></span></div>
+                                    <div class="info-item"><strong>Contact Number</strong> <span id="info-contact"></span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-history-section">
+                            <div class="history-header">
+                                <h4><i class="fa-solid fa-chart-line"></i> Trip Activity & Analytics</h4>
+                                <div class="trip-summary-pill">
+                                    <span>Total Trips (This Month):</span>
+                                    <strong>24</strong>
+                                </div>
+                            </div>
+
+                            <div class="history-table-wrapper">
+                                <table class="modern-table mini">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Trip ID</th>
+                                            <th>Time Scanned</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Oct 24, 2023</td>
+                                            <td><span class="id-tag">TRP-902</span></td>
+                                            <td>07:15 AM</td>
+                                            <td><span class="status success">Boarded</span></td>
+                                        </tr>
+                                        <!-- More mock rows here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- FILTER BAR -->
-            <div class="report-filters glass-card">
-                <div class="filter-controls" id="daily-filter">
-                    <label><i class="fa-solid fa-calendar-day"></i> Select Date:</label>
-                    <input type="date" class="modern-input">
-                </div>
-                <div class="filter-controls" id="monthly-filter" style="display:none;">
-                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
-                    <input type="month" class="modern-input">
-                </div>
-                <button class="btn-generate">Generate Report <i class="fa-solid fa-arrow-right"></i></button>
+        <!-- SECTION: REPORTS (Transport Activity) -->
+        <section class="main-content" id="reports">
+            <div class="report-banner">
+                <div class="report-text"><h1>Transport Activity</h1></div>
             </div>
 
-            <!-- THE REPORT TABLE -->
-            <div class="glass-card report-results">
-                <div class="results-header">
-                    <h3>Trip Overview</h3>
-                    <button class="btn-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+            <div class="report-filters glass-card">
+                <div id="rp-visual-badge" class="report-brand-box">
+                    <img src="~/freebus.jpg" id="report-img" alt="Report Design">
+                    <h3 class="report-brand-title">Transport Activity</h3>
                 </div>
+
+                <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
+                    <div class="report-view-toggle">
+                        <button class="toggle-btn active" onclick="rp_switchSubView('daily')">Daily</button>
+                        <button class="toggle-btn" onclick="rp_switchSubView('monthly')">Monthly</button>
+                    </div>
+                    <div class="filter-controls" id="rp-daily-box">
+                        <input type="date" class="modern-input">
+                    </div>
+                    <div class="filter-controls" id="rp-monthly-box" style="display:none;">
+                        <input type="month" class="modern-input">
+                    </div>
+                </div>
+
+                <button class="btn-generate" id="rp-toggle-btn" onclick="rp_handleMainToggle()">
+                    View Transport Activity <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="glass-card report-results">
+                <div class="results-header"><h3>Trip Overview</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
                             <th>Trip ID</th>
                             <th>Date</th>
                             <th>Assigned Bus Aide</th>
+                            <th>Total Boarded</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Jose Rizal</strong></td>
-                            <td><span class="lrn-tag">111222333</span></td>
-                            <td>Dalisay</td>
-                            <td>08:15 AM</td>
-                           
-                        </tr>
-                       
+                        @foreach (var trip in Model.TripLogs)
+                        {
+                            <tr>
+                                <td><span class="id-tag">@trip.TripId</span></td>
+                                <td>@trip.Date</td>
+                                <td><strong>@trip.DriverName</strong></td>
+                                <td>@trip.BoardedCount Students</td>
+                                <td><span class="status success">Completed</span></td>
+                                <td>
+                                    <!-- ACTION BUTTON -->
+                                    <button type="button" class="btn-view-info"
+                                            onclick="viewTripDetails('@trip.TripId', '@trip.Date', '@trip.DriverName', '@trip.StartTime', '@trip.EndTime', '@trip.BoardedCount')">
+                                        <i class="fa-solid fa-circle-info"></i> View Details
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
+            </div>
+            <!-- TRIP DETAILS MODAL -->
+            <div class="modal-overlay" id="tripDetailOverlay" onclick="closeTripView()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()">
+
+                    <button class="btn-close-modal" onclick="closeTripView()">&times;</button>
+
+                    <div class="profile-container">
+                        <!-- LEFT SIDE: VISUAL -->
+                        <div class="profile-sidebar" style="background: linear-gradient(180deg, #102a43 0%, #0077b6 100%);">
+                            <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); border: none; display: flex; align-items: center; justify-content: center;">
+                                <i class="fa-solid fa-bus" style="font-size: 60px; color: white;"></i>
+                            </div>
+                            <h3 id="det-trip-id">TRP-000</h3>
+                            <span class="badge-role" style="background: #2ecc71; color: white; border: none;">Completed Trip</span>
+                        </div>
+
+                        <!-- RIGHT SIDE: TRIP DATA -->
+                        <div class="profile-details">
+                            <h4><i class="fa-solid fa-route"></i> Trip Operational Data</h4>
+
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Date of Trip</strong> <span id="det-date"></span></div>
+                                <div class="info-item"><strong>Assigned Bus Aide</strong> <span id="det-driver"></span></div>
+                            </div>
+
+                            <hr>
+
+                            <h4><i class="fa-solid fa-clock"></i> Time Tracking</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <strong>Departure (Start)</strong>
+                                    <span id="det-start" style="color: #0077b6;"></span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Arrival (End)</strong>
+                                    <span id="det-end" style="color: #e74c3c;"></span>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <div class="trip-summary-box">
+                                <div class="summary-item">
+                                    <i class="fa-solid fa-users"></i>
+                                    <div>
+                                        <strong>Total Boarded</strong>
+                                        <p><span id="det-count">0</span> Students</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -331,50 +475,50 @@
                 </div>
             </div>
 
-           
-                
-                <div class="glass-card account-list">
-                    <div class="card-header-row">
-                        <h3>Account List</h3>
-                        <div class="search-mini">
-                            <i class="fa-solid fa-search"></i>
-                            <input type="text" placeholder="Search users...">
-                        </div>
-                    </div>
-                    <div class="user-scroll-area">
-                        
-                        <div class="user-account-item">
-                            <div class="u-avatar"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                            <div class="u-details">
-                                <strong>LGU</strong>
-                                
-                            </div>
-                            <span class="role-tag lgu">LGU</span>
-                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                        </div>
-                      
-                        <div class="user-account-item">
-                            <div class="u-avatar school"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                            <div class="u-details">
-                                <strong>Patao National High School</strong>
-                                
-                            </div>
-                            <span class="role-tag school">School Admin</span>
-                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                        </div>
-                        
-                        <div class="user-account-item">
-                            <div class="u-avatar driver"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                            <div class="u-details">
-                                <strong>Ricardo Dalisay</strong>
-                                
-                            </div>
-                            <span class="role-tag driver">Driver</span>
-                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                        </div>
+
+
+            <div class="glass-card account-list">
+                <div class="card-header-row">
+                    <h3>Account List</h3>
+                    <div class="search-mini">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" placeholder="Search users...">
                     </div>
                 </div>
-            
+                <div class="user-scroll-area">
+
+                    <div class="user-account-item">
+                        <div class="u-avatar"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                        <div class="u-details">
+                            <strong>LGU</strong>
+
+                        </div>
+                        <span class="role-tag lgu">LGU</span>
+                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+
+                    <div class="user-account-item">
+                        <div class="u-avatar school"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                        <div class="u-details">
+                            <strong>Patao National High School</strong>
+
+                        </div>
+                        <span class="role-tag school">School Admin</span>
+                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+
+                    <div class="user-account-item">
+                        <div class="u-avatar driver"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
+                        <div class="u-details">
+                            <strong>Ricardo Dalisay</strong>
+
+                        </div>
+                        <span class="role-tag driver">Driver</span>
+                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- PART 3: LOGIN AUDIT LOGS -->
             <div class="glass-card mt-4">
@@ -389,7 +533,7 @@
                             <th>Role</th>
                             <th>Action</th>
                             <th>Timestamp</th>
-                            
+
                         </tr>
                     </thead>
                     <tbody>
@@ -398,14 +542,14 @@
                             <td><span class="role-tag lgu">LGU</span></td>
                             <td><span class="status success">Login Successful</span></td>
                             <td>Today, 08:30 AM</td>
-                            
+
                         </tr>
                         <tr>
                             <td><strong>Ricardo Dalisay</strong></td>
                             <td><span class="role-tag driver">Driver</span></td>
                             <td><span class="status success">Login Successful</span></td>
                             <td>Today, 07:15 AM</td>
-                            
+
                         </tr>
                     </tbody>
                 </table>

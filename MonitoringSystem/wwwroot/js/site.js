@@ -79,36 +79,151 @@ function closeAccountModalOutside(e) {
         closeAccountModal();
     }
 }
-function toggleReportFilters() {
-    const container = document.getElementById('filter-container');
-    const btn = document.getElementById('filter-toggle-btn');
-    const parent = document.querySelector('.report-filters');
-    const image = document.getElementById('report-image'); // Target the picture
+function toggleStudentReports() {
+    // 1. Correct the IDs to match your HTML (added the 'stu-' prefix)
+    const container = document.getElementById('stu-filter-area');
+    const btn = document.getElementById('stu-toggle-btn');
+    const badge = document.getElementById('stu-badge-wrapper');
 
-    // 1. If hidden: SHOW filters, HIDE picture
+    // We target the specific parent for the students section
+    const parent = document.querySelector('#students .report-filters');
+
+    // 2. LOGIC
     if (container.style.display === 'none' || container.style.display === '') {
+        // SHOW filters
         container.style.display = 'flex';
-        if (image) image.style.display = 'none'; // Picture disappears
 
-        parent.style.justifyContent = 'space-between';
-        btn.classList.add('active');
+        // HIDE badge
+        if (badge) badge.style.display = 'none';
 
-        // Change button text
+        // Update Button Appearance
         btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
+        btn.classList.add('active');
+        btn.style.background = '#102a43'; // Navy Blue
     }
-    // 2. If visible: HIDE filters, SHOW picture (Go back)
     else {
-        // Logic for "Generating"
+        // HIDE filters (GO BACK)
         container.style.display = 'none';
-        if (image) image.style.display = 'block'; // Picture comes back
 
-        parent.style.justifyContent = 'space-between';
-        btn.classList.remove('active');
+        // SHOW badge again
+        if (badge) badge.style.display = 'flex';
 
-        // Reset button text
+        // Reset Button
         btn.innerHTML = 'View Trip Summary <i class="fa-solid fa-arrow-right"></i>';
+        btn.classList.remove('active');
+        btn.style.background = ''; // Reverts to CSS gradient
 
-        // Optional logic to trigger the report processing
-        console.log("Report generated!");
+        console.log("Student report generated.");
     }
+}
+
+function filterLguTable() {
+    const input = document.getElementById("lguStudentSearch");
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById("lguStudentTable");
+    const tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) { // Start at 1 to skip header
+        let tdName = tr[i].getElementsByTagName("td")[0];
+        let tdLrn = tr[i].getElementsByTagName("td")[1];
+
+        if (tdName || tdLrn) {
+            let txtValueName = tdName.textContent || tdName.innerText;
+            let txtValueLrn = tdLrn.textContent || tdLrn.innerText;
+
+            if (txtValueName.toUpperCase().indexOf(filter) > -1 || txtValueLrn.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }
+    }
+}
+
+// --- 4. STUDENT INFO (PROFILE) MODAL ---
+function viewStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
+    // Set Profile Picture (fallback to default avatar if photo path is empty)
+    document.getElementById('info-photo').src = photo ? photo : '/lib/default-avatar.png';
+
+    // Fill in Student details
+    document.getElementById('info-name').innerText = name;
+    document.getElementById('info-lrn').innerText = lrn;
+    document.getElementById('info-id').innerText = sid || "Not Assigned";
+    document.getElementById('info-grade').innerText = grade;
+    document.getElementById('info-section').innerText = section;
+    document.getElementById('info-address').innerText = address;
+    document.getElementById('info-parent').innerText = parent;
+    document.getElementById('info-contact').innerText = contact;
+
+    // Show the modal
+    document.getElementById('studentInfoOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeInfoView() {
+    document.getElementById('studentInfoOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+
+function rp_handleMainToggle() {
+    const filterArea = document.getElementById('rp-filter-area');
+    const actionBtn = document.getElementById('rp-toggle-btn');
+    const badge = document.getElementById('rp-visual-badge');
+    const parentRow = document.querySelector('#reports .report-filters');
+
+    // 1. IF HIDDEN -> SHOW FILTERS
+    if (filterArea.style.display === 'none' || filterArea.style.display === '') {
+        filterArea.style.display = 'flex';
+        if (badge) badge.style.display = 'none'; // Hide PNHS Badge
+
+        actionBtn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
+        actionBtn.style.background = '#102a43'; // Dark Navy
+    }
+    // 2. IF VISIBLE -> HIDE FILTERS (GO BACK)
+    else {
+        filterArea.style.display = 'none';
+        if (badge) badge.style.display = 'flex'; // Bring back PNHS Badge
+
+        actionBtn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
+        actionBtn.style.background = ''; // Reverts to your CSS Gradient
+
+        console.log("Report Processed");
+    }
+}
+
+function rp_switchSubView(type) {
+    const daily = document.getElementById('rp-daily-box');
+    const monthly = document.getElementById('rp-monthly-box');
+    const btns = document.querySelectorAll('#reports .report-view-toggle .toggle-btn');
+
+    btns.forEach(b => b.classList.remove('active'));
+
+    if (type === 'daily') {
+        daily.style.display = 'block';
+        monthly.style.display = 'none';
+        btns[0].classList.add('active');
+    } else {
+        daily.style.display = 'none';
+        monthly.style.display = 'block';
+        btns[1].classList.add('active');
+    }
+}
+function viewTripDetails(id, date, driver, start, end, count) {
+    // 1. Set the data in the modal
+    document.getElementById('det-trip-id').innerText = id;
+    document.getElementById('det-date').innerText = date;
+    document.getElementById('det-driver').innerText = driver;
+    document.getElementById('det-start').innerText = start || "N/A";
+    document.getElementById('det-end').innerText = end || "N/A";
+    document.getElementById('det-count').innerText = count;
+
+    // 2. Open Modal
+    document.getElementById('tripDetailOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTripView() {
+    document.getElementById('tripDetailOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
 }
