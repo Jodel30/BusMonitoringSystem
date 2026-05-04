@@ -79,3 +79,47 @@ function closeInfoView() {
     document.getElementById('studentInfoOverlay').classList.remove('active');
     document.body.style.overflow = 'auto';
 }
+
+// scan students
+function viewTripDetails(id, date, driver, start, end, count) {
+    document.getElementById('det-trip-id').innerText = id;
+    document.getElementById('det-date').innerText = date;
+    document.getElementById('det-driver').innerText = driver;
+    document.getElementById('det-start').innerText = start || "N/A";
+    document.getElementById('det-end').innerText = end || "N/A";
+    document.getElementById('det-count').innerText = count;
+
+    
+    const tbody = document.querySelector('#tripManifestTable tbody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">Loading...</td></tr>';
+
+    fetch(`/SchoolDashboard/GetTripManifest?tripId=${id}`)
+        .then(res => res.text())
+        .then(html => { tbody.innerHTML = html; });
+
+    document.getElementById('tripDetailOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTripView() {
+    document.getElementById('tripDetailOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function rp_handleMainToggle() {
+    const area = document.getElementById('rp-filter-area');
+    const badge = document.getElementById('rp-visual-badge');
+    const btn = document.getElementById('rp-toggle-btn');
+
+    if (area.style.display === 'none' || area.style.display === '') {
+        area.style.display = 'flex';
+        if (badge) badge.style.display = 'none';
+        btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
+        btn.style.background = '#102a43';
+    } else {
+        area.style.display = 'none';
+        if (badge) badge.style.display = 'flex';
+        btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
+        btn.style.background = '';
+    }
+}

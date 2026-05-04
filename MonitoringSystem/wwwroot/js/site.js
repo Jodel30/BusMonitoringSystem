@@ -209,8 +209,10 @@ function rp_switchSubView(type) {
         btns[1].classList.add('active');
     }
 }
+
+// scan students
 function viewTripDetails(id, date, driver, start, end, count) {
-    // 1. Set the data in the modal
+  
     document.getElementById('det-trip-id').innerText = id;
     document.getElementById('det-date').innerText = date;
     document.getElementById('det-driver').innerText = driver;
@@ -218,7 +220,54 @@ function viewTripDetails(id, date, driver, start, end, count) {
     document.getElementById('det-end').innerText = end || "N/A";
     document.getElementById('det-count').innerText = count;
 
-    // 2. Open Modal
+    
+    document.getElementById('tripDetailOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTripView() {
+    document.getElementById('tripDetailOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function viewTripDetails(id, date, driver, start, end, count) {
+    // 1. Map top-level data
+    document.getElementById('det-trip-id').innerText = id;
+    document.getElementById('det-date').innerText = date;
+    document.getElementById('det-driver').innerText = driver;
+    document.getElementById('det-start').innerText = start || "N/A";
+    document.getElementById('det-end').innerText = end || "N/A";
+    document.getElementById('det-count').innerText = count;
+
+    // 2. Fetch Passenger Data
+    const tbody = document.querySelector('#tripManifestTable tbody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Loading Passenger List...</td></tr>';
+
+    fetch(`/SchoolDashboard/GetTripManifest?tripId=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            tbody.innerHTML = ""; // Clear loader
+
+            if (data.students && data.students.length > 0) {
+                data.students.forEach(stu => {
+                    tbody.innerHTML += `
+                    <tr>
+                        <td style="padding: 15px;"><strong>${stu.name}</strong></td>
+                        <td style="font-size: 13px;">${stu.level} - ${stu.section}</td>
+                        <td style="font-size: 11px; color: #64748b; max-width: 200px;">${stu.address}</td>
+                        <td style="font-weight: 700; color: #0077b6;">${stu.time}</td>
+                        <td style="text-align:center;">
+                            <span class="status success" style="font-size: 10px; padding: 4px 10px;">${stu.status}</span>
+                        </td>
+                    </tr>
+                `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:40px; color:#94a3b8;">No records found for this trip.</td></tr>';
+            }
+        });
+
+    // 3. Show Modal
     document.getElementById('tripDetailOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 }

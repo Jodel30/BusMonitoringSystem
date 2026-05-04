@@ -130,7 +130,7 @@
                                         <button type="button" class="btn-view-info"
                                                 onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.LRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.Parent', '@student.ParentContact', '@student.StudentId')"
                                                 title="Student Profile">
-                                            <i class="fa-solid fa-circle-info"></i> View Details
+                                            <i class="fa-solid fa-circle-info"></i> View Trip Details
                                         </button>
                                     </td>
                                 </tr>
@@ -180,7 +180,7 @@
 
                         <div class="profile-history-section">
                             <div class="history-header">
-                                <h4><i class="fa-solid fa-chart-line"></i> Trip Activity & Analytics</h4>
+                                <h4><i class="fa-solid fa-chart-line"></i> Boarding History Logs</h4>
                                 <div class="trip-summary-pill">
                                     <span>Total Trips (This Month):</span>
                                     <strong>24</strong>
@@ -279,56 +279,63 @@
             </div>
             <!-- TRIP DETAILS MODAL -->
             <div class="modal-overlay" id="tripDetailOverlay" onclick="closeTripView()">
-                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 900px !important;">
 
                     <button class="btn-close-modal" onclick="closeTripView()">&times;</button>
 
-                    <div class="profile-container">
-                        <!-- LEFT SIDE: VISUAL -->
-                        <div class="profile-sidebar" style="background: linear-gradient(180deg, #102a43 0%, #0077b6 100%);">
-                            <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); border: none; display: flex; align-items: center; justify-content: center;">
-                                <i class="fa-solid fa-bus" style="font-size: 60px; color: white;"></i>
-                            </div>
-                            <h3 id="det-trip-id">TRP-000</h3>
-                            <span class="badge-role" style="background: #2ecc71; color: white; border: none;">Completed Trip</span>
-                        </div>
+                    
+                    <div class="modal-scroll-container" style="max-height: 85vh; overflow-y: auto;">
 
-                        <!-- RIGHT SIDE: TRIP DATA -->
-                        <div class="profile-details">
-                            <h4><i class="fa-solid fa-route"></i> Trip Operational Data</h4>
-
-                            <div class="info-grid">
-                                <div class="info-item"><strong>Date of Trip</strong> <span id="det-date"></span></div>
-                                <div class="info-item"><strong>Assigned Bus Aide</strong> <span id="det-driver"></span></div>
-                            </div>
-
-                            <hr>
-
-                            <h4><i class="fa-solid fa-clock"></i> Time Tracking</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <strong>Departure (Start)</strong>
-                                    <span id="det-start" style="color: #0077b6;"></span>
+                        <!-- TOP SECTION: TRIP INFO -->
+                        <div class="profile-container">
+                            <div class="profile-sidebar" style="background: linear-gradient(180deg, #102a43 0%, #0077b6 100%);">
+                                <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); border: none; display: flex; align-items: center; justify-content: center;">
+                                    <i class="fa-solid fa-bus-simple" style="font-size: 50px; color: white;"></i>
                                 </div>
-                                <div class="info-item">
-                                    <strong>Arrival (End)</strong>
-                                    <span id="det-end" style="color: #e74c3c;"></span>
-                                </div>
+                                <h3 id="det-trip-id">TRP-000</h3>
+                                <span class="badge-role" style="background: #2ecc71; color: white; border: none;">LOG COMPLETED</span>
                             </div>
 
-                            <hr>
-
-                            <div class="trip-summary-box">
-                                <div class="summary-item">
-                                    <i class="fa-solid fa-users"></i>
-                                    <div>
-                                        <strong>Total Boarded</strong>
-                                        <p><span id="det-count">0</span> Students</p>
-                                    </div>
+                            <div class="profile-details">
+                                <h4><i class="fa-solid fa-route"></i> Trip Operational Data</h4>
+                                <div class="info-grid">
+                                    <div class="info-item"><strong>Date of Trip</strong> <span id="det-date"></span></div>
+                                    <div class="info-item"><strong>Assigned Bus Aide</strong> <span id="det-driver"></span></div>
+                                    <div class="info-item"><strong>Departure Time</strong> <span id="det-start"></span></div>
+                                    <div class="info-item"><strong>Arrival Time</strong> <span id="det-end"></span></div>
+                                </div>
+                                <div class="trip-summary-pill" style="margin-top:20px; border: 1px dashed #0077b6; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="color:#94a3b8; font-size: 13px; font-weight:700;">TOTAL BOARDED:</span>
+                                    <strong id="det-count" style="font-size: 24px; color:#0077b6;">0</strong>
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- student list -->
+                        <div class="manifest-section" style="padding: 30px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                            <h4 style="color: #102a43; margin-bottom: 20px; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 800;">
+                                <i class="fa-solid fa-clipboard-list" style="color: #0077b6;"></i> Student List
+                            </h4>
+
+                            <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 15px; border: 1px solid #e2e8f0;">
+                                <table class="modern-table mini" id="tripManifestTable">
+                                    <thead>
+                                        <tr style="background: #f1f5f9;">
+                                            <th style="padding: 15px;">Student Name</th>
+                                            <th>Grade & Section</th>
+                                            <th>Home Address</th>
+                                            <th>Scanned At</th>
+                                            <th style="text-align:center;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- JavaScript will inject rows here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div> 
                 </div>
             </div>
         </section>
@@ -357,7 +364,7 @@
             </div>
 
             <div class="report-filters glass-card">
-                <div class="filter-controls" id="daily-filter">
+                <div class="report-text" id="daily-filter">
                     <h1>System Accounts</h1>
                 </div>
                 <button class="btn-generate" onclick="openAccountModal()">

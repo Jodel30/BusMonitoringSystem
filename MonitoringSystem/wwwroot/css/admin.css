@@ -129,14 +129,14 @@ body {
     min-height: 100vh;
 }
 #students.main-content {
-    padding-top: 100px;
+    padding-top: 150px;
 }
 
 #dashboard.main-content {
     padding-top: 50px;
 }
 #reports.main-content {
-    padding-top: 100px;
+    padding-top: 150px;
 }
 
 .hero-banner {

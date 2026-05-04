@@ -2,7 +2,7 @@
     // THIS LINE TELLS THE PAGE WHICH NAVBAR TO USE
     Layout = "~/Views/Shared/SchoolLayout.cshtml";
 }
-
+@model MonitoringSystem.Models.SchoolAdminViewModel
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -44,7 +44,6 @@
         </section>
 
         <!-- SECTION: STUDENTS -->
-        @model List<MonitoringSystem.Models.Student>
 
         <section class="main-content" id="students">
             <!-- BANNER -->
@@ -58,7 +57,7 @@
                     <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
                     <div class="insight-data">
                         <span class="label">Total Registered Students</span>
-                        <p>@Model.Count</p>
+                        <p>@Model.Students.Count</p>
                     </div>
                     <img src="~/students-removebg-preview.png">
                 </div>
@@ -182,7 +181,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var student in Model)
+                        @foreach (var student in Model.Students)
                         {
                             <tr>
                                 <td><span class="id-tag">@student.LRN</span></td>
@@ -233,7 +232,7 @@
                                 <img id="info-photo" src="" alt="Student Profile">
                             </div>
                             <h3 id="info-name">Student Name</h3>
-                            <span class="badge-role">Verified Student</span>
+                            <span class="badge-role">Student</span>
                         </div>
                         <!-- RIGHT SIDE: DATA -->
                         <div class="profile-details">
@@ -244,7 +243,7 @@
                                 <div class="info-item"><strong>Grade Level</strong> <span id="info-grade"></span></div>
                                 <div class="info-item"><strong>Section</strong> <span id="info-section"></span></div>
                                 <div class="info-item"><strong>Home Address</strong> <span id="info-address"></span></div>
-                                <div class="info-item"><strong>Guardian Name</strong> <span id="info-parent"></span></div>
+                                <div class="info-item"><strong>Parent/Guardian Name</strong> <span id="info-parent"></span></div>
                                 <div class="info-item"><strong>Contact Number</strong> <span id="info-contact"></span></div>
                             </div>
                         </div>
@@ -256,77 +255,112 @@
 
         
 
-        <!-- SECTION: REPORTS -->
+        <!-- SECTION: REPORTS (Transport Activity) -->
         <section class="main-content" id="reports">
-
-
-
-
-            <!-- QUICK INSIGHTS CARDS -->
             <div class="report-banner">
-                <div class="report-text">
-                    <h1>Transport Activity</h1>
-                </div>
-
-            </div>
-            <div class="analytics-summary">
-                <div class="insight-card">
-                    <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                    <div class="insight-data">
-                        <span class="label">Total Boardings</span>
-                        <p>0</p>
-
-                    </div>
-                    <img src="~/students-removebg-preview.png">
-                </div>
-                <div class="section-header-reports">
-                    <div class="report-view-toggle">
-                        <button class="toggle-btn active" onclick="setReportView('daily')">Daily</button>
-                        <button class="toggle-btn" onclick="setReportView('monthly')">Monthly</button>
-                    </div>
-                </div>
+                <div class="report-text"><h1>Transport Activity</h1></div>
             </div>
 
-            <!-- FILTER BAR -->
             <div class="report-filters glass-card">
-                <div class="filter-controls" id="daily-filter">
-                    <label><i class="fa-solid fa-calendar-day"></i> Select Date:</label>
-                    <input type="date" class="modern-input">
+                <div id="rp-visual-badge" class="report-brand-box">
+                    <img src="~/freebus.jpg" id="report-img" alt="Report Design">
+                    <h3 class="report-brand-title">Transport Activity</h3>
                 </div>
-                <div class="filter-controls" id="monthly-filter" style="display:none;">
-                    <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
-                    <input type="month" class="modern-input">
+
+                <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
+                    <div class="report-view-toggle">
+                        <button class="toggle-btn active" onclick="rp_switchSubView('daily')">Daily</button>
+                        <button class="toggle-btn" onclick="rp_switchSubView('monthly')">Monthly</button>
+                    </div>
+                    <div class="filter-controls" id="rp-daily-box">
+                        <input type="date" class="modern-input">
+                    </div>
+                    <div class="filter-controls" id="rp-monthly-box" style="display:none;">
+                        <input type="month" class="modern-input">
+                    </div>
                 </div>
-                <button class="btn-generate">Generate Report <i class="fa-solid fa-arrow-right"></i></button>
+
+                <button class="btn-generate" id="rp-toggle-btn" onclick="rp_handleMainToggle()">
+                    View Transport Activity <i class="fa-solid fa-arrow-right"></i>
+                </button>
             </div>
 
-            <!-- THE REPORT TABLE -->
             <div class="glass-card report-results">
-                <div class="results-header">
-                    <h3>Boarding Logs</h3>
-                    <button class="btn-export"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
-                </div>
+                <div class="results-header"><h3>Trip Overview</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
-                            <th>Student Name</th>
-                            <th>LRN</th>
-                            <th>Assigned Driver</th>
-                            <th>Check-in Time</th>
+                            <th>Trip ID</th>
+                            <th>Date</th>
+                            <th>Assigned Bus Aide</th>
+                            <th>Total Boarded</th>
                             <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><strong>Jose Rizal</strong></td>
-                            <td><span class="lrn-tag">111222333</span></td>
-                            <td>Dalisay</td>
-                            <td>08:15 AM</td>
-
-                        </tr>
-
+                        @foreach (var trip in Model.TripLogs)
+                        {
+                            <tr>
+                                <td><span class="id-tag">@trip.TripId</span></td>
+                                <td>@trip.Date</td>
+                                <td><strong>@trip.DriverName</strong></td>
+                                <td>@trip.BoardedCount Students</td>
+                                <td><span class="status success">Completed</span></td>
+                                <td>
+                                    <!-- ACTION BUTTON -->
+                                    <button type="button" class="btn-view-info"
+                                            onclick="viewTripDetails('@trip.TripId', '@trip.Date', '@trip.DriverName', '@trip.StartTime', '@trip.EndTime', '@trip.BoardedCount')">
+                                        <i class="fa-solid fa-circle-info"></i> View Details
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
+            </div>
+            <!-- TRIP DETAILS MODAL -->
+            <div class="modal-overlay" id="tripDetailOverlay" onclick="closeTripView()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 900px !important;">
+                    <button class="btn-close-modal" onclick="closeTripView()">&times;</button>
+
+                    <div class="modal-scroll-container" style="max-height: 85vh; overflow-y: auto;">
+                        <div class="profile-container">
+                            <div class="profile-sidebar" style="background: linear-gradient(180deg, #102a43 0%, #0077b6 100%);">
+                                <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; border:none;">
+                                    <i class="fa-solid fa-bus-simple" style="font-size: 50px; color: white;"></i>
+                                </div>
+                                <h3 id="det-trip-id">TRP-000</h3>
+                                <span class="badge-role" style="background: #2ecc71; color: white; border: none;">LOG COMPLETED</span>
+                            </div>
+                            <div class="profile-details">
+                                <h4><i class="fa-solid fa-route"></i> Trip Data</h4>
+                                <div class="info-grid">
+                                    <div class="info-item"><strong>Date</strong> <span id="det-date"></span></div>
+                                    <div class="info-item"><strong>Bus Aide</strong> <span id="det-driver"></span></div>
+                                    <div class="info-item"><strong>Start</strong> <span id="det-start"></span></div>
+                                    <div class="info-item"><strong>End</strong> <span id="det-end"></span></div>
+                                </div>
+                                <div class="trip-summary-pill" style="margin-top:20px; border:1px dashed #0077b6; padding:15px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="color:#94a3b8; font-size:13px; font-weight:700;">TOTAL BOARDED:</span>
+                                    <strong id="det-count" style="font-size:24px; color:#0077b6;">0</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Student LIST -->
+                        <div class="manifest-section" style="padding: 30px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0;">
+                            <h4 style="color: #102a43; margin-bottom: 20px; font-size: 14px; text-transform: uppercase; font-weight: 800;">
+                                <i class="fa-solid fa-clipboard-list" style="color:#0077b6;"></i> Students List
+                            </h4>
+                            <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 15px;">
+                                <table class="modern-table mini" id="tripManifestTable">
+                                    <thead><tr style="background:#f1f5f9;"><th>Name</th><th>Grade/Section</th><th>Address</th><th>Time</th><th>Status</th></tr></thead>
+                                    <tbody><!-- Injected by JavaScript --></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
