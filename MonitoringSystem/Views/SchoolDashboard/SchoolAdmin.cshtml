@@ -178,6 +178,7 @@
                             <th>Grade/Section</th>
                             <th>QR Code</th>
                             <th>Student Info</th>
+                            <th>Update Student</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -196,13 +197,17 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <!-- INFO BUTTON -->
                                     <button type="button" class="btn-view-info"
-                                            onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.LRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.Parent', '@student.ParentContact', '@student.StudentId')"
-                                            title="Student Profile">
+                                            onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.MiddleName) @Html.Raw(student.LastName)', '@student.LRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.Parent)', '@student.ParentContact', '@student.StudentId')">
                                         <i class="fa-solid fa-circle-info"></i> View Student Info
                                     </button>
-                                    </td>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn-view-info" style="background:#1e293b;"
+                                            onclick="openUpdateModal('@student.StudentId', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ParentContact', '@student.Status')">
+                                        <i class="fa-solid fa-pen-to-square"></i> Update
+                                    </button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -222,35 +227,111 @@
             </div>
 
             <!-- 3. STUDENT FULL INFO MODAL (Two-Column Design) -->
-            <div class="modal-overlay" id="studentInfoOverlay" onclick="closeInfoView()">
+            <div class="modal-overlay" id="schStudentInfoOverlay" onclick="closeSchInfoView()">
                 <div class="modal-content profile-modal-box" onclick="event.stopPropagation()">
-                    <button class="btn-close-modal" onclick="closeInfoView()">&times;</button>
-                    <div class="profile-container">
-                        <!-- LEFT SIDE: PICTURE -->
-                        <div class="profile-sidebar">
-                            <div class="profile-photo-frame">
-                                <img id="info-photo" src="" alt="Student Profile">
+                    <button class="btn-close-modal" onclick="closeSchInfoView()">&times;</button>
+
+                    <div class="modal-scroll-container">
+                        <div class="profile-container">
+                            <div class="profile-sidebar">
+                                <div class="profile-photo-frame">
+                                    <img id="sch-info-photo" src="" alt="Student Profile">
+                                </div>
+                                <h3 id="sch-info-name">Student Name</h3>
+                                <span class="badge-role" style="background: #A3DE83; color: black; border:none; margin-top:10px;">Active</span>
                             </div>
-                            <h3 id="info-name">Student Name</h3>
-                            <span class="badge-role">Student</span>
-                        </div>
-                        <!-- RIGHT SIDE: DATA -->
-                        <div class="profile-details">
-                            <h4><i class="fa-solid fa-user-graduate"></i> Student Information</h4>
-                            <div class="info-grid">
-                                <div class="info-item"><strong>LRN</strong> <span id="info-lrn"></span></div>
-                                <div class="info-item"><strong>Student ID</strong> <span id="info-id"></span></div>
-                                <div class="info-item"><strong>Grade Level</strong> <span id="info-grade"></span></div>
-                                <div class="info-item"><strong>Section</strong> <span id="info-section"></span></div>
-                                <div class="info-item"><strong>Home Address</strong> <span id="info-address"></span></div>
-                                <div class="info-item"><strong>Parent/Guardian Name</strong> <span id="info-parent"></span></div>
-                                <div class="info-item"><strong>Contact Number</strong> <span id="info-contact"></span></div>
+
+                            <div class="profile-details">
+                                <h4><i class="fa-solid fa-user-graduate"></i> Student Information</h4>
+                                <div class="info-grid">
+                                    <div class="info-item"><strong>LRN</strong> <span id="sch-info-lrn"></span></div>
+                                    <div class="info-item"><strong>Student ID</strong> <span id="sch-info-id"></span></div>
+                                    <div class="info-item"><strong>Grade Level</strong> <span id="sch-info-grade"></span></div>
+                                    <div class="info-item"><strong>Section</strong> <span id="sch-info-section"></span></div>
+                                    <div class="info-item full"><strong>Home Address</strong> <span id="sch-info-address"></span></div>
+                                    <div class="info-item"><strong>Guardian Name</strong> <span id="sch-info-parent"></span></div>
+                                    <div class="info-item"><strong>Contact Number</strong> <span id="sch-info-contact"></span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <!--  UPDATE STUDENT -->
+            <div class="modal-overlay" id="updateStudentOverlay" onclick="closeUpdateModalOutside(event)">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 800px !important;">
 
+                    <button class="btn-close-modal" onclick="closeUpdateModal()">&times;</button>
+
+                    <div class="profile-container">
+                        <!-- LEFT SIDE: VISUAL IDENTITY -->
+                        <div class="profile-sidebar" style="background: linear-gradient(180deg, #1e293b 0%, #0077b6 100%);">
+                            <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; border: 4px solid rgba(255,255,255,0.2);">
+                                <i class="fa-solid fa-user-pen" style="font-size: 60px; color: white;"></i>
+                            </div>
+                            <h3 style="color:white; margin:0;">Edit Profile</h3>
+                            <span class="badge-role" style="background: #A3DE83; color: black; border:none; margin-top:10px;">Active</span>
+                        </div>
+
+                        <!-- RIGHT SIDE: EDIT FORM -->
+                        <div class="profile-details">
+                            <h4><i class="fa-solid fa-pen-to-square"></i> Edit Student Information</h4>
+
+                            <form asp-action="UpdateStudent" asp-controller="SchoolDashboard" method="post" class="modern-form">
+                                
+                                <input type="hidden" name="StudentId" id="upd-id">
+
+                                <div class="info-grid">
+                                    <div class="info-item full">
+                                        <strong>Student Status</strong>
+                                        <select name="Status" id="upd-status" class="status-select" style="margin-top:5px; border: 2px solid #0077b6; font-weight:700;">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="info-item">
+                                        <strong>First Name</strong>
+                                        <input type="text" name="FirstName" id="upd-fname" required>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Middle Name</strong>
+                                        <input type="text" name="MiddleName" id="upd-mname">
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Last Name</strong>
+                                        <input type="text" name="LastName" id="upd-lname" required>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Grade Level</strong>
+                                        <select name="GradeLevel" id="upd-grade">
+                                            <option>Grade 7</option>
+                                            <option>Grade 8</option>
+                                            <option>Grade 9</option>
+                                            <option>Grade 10</option>
+                                            <option>Grade 11</option>
+                                            <option>Grade 12</option>
+                                        </select>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Section</strong>
+                                        <input type="text" name="Section" id="upd-section" required>
+                                    </div>
+                                    <div class="info-item">
+                                        <strong>Emergency Contact</strong>
+                                        <input type="text" name="ParentContact" id="upd-contact" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-footer" style="margin-top:20px; padding-top:15px;">
+                                    <button type="button" class="btn-secondary" onclick="closeUpdateModal()">Cancel</button>
+                                    <button type="submit" class="btn-primary-form" style="background:#1e293b;">Save Changes</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
 
         
@@ -264,7 +345,7 @@
             <div class="report-filters glass-card">
                 <div id="rp-visual-badge" class="report-brand-box">
                     <img src="~/freebus.jpg" id="report-img" alt="Report Design">
-                    <h3 class="report-brand-title">Transport Activity</h3>
+                    
                 </div>
 
                 <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">

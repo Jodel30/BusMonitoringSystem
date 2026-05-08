@@ -69,22 +69,26 @@
                 <!-- LEFT SIDE: BADGE (Disappears on click) -->
                 <div id="stu-badge-wrapper" class="report-brand-box">
                     <img src="~/studenttst.jpg" id="report-img" alt="Report Design">
-                    <h3 class="report-brand-title">PNHS Students</h3>
                 </div>
 
                 <!-- CENTER: FILTERS (Hidden by default) -->
                 <div id="stu-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
-                    <div class="filter-controls">
-                        <label><i class="fa-solid fa-calendar-days"></i> Select Month:</label>
-                        <input type="month" class="modern-input">
-                    </div>
-
                     <div class="filter-controls">
                         <label><i class="fa-solid fa-location-dot"></i> Address:</label>
                         <select name="Address" required class="modern-input">
                             <option value="" disabled selected>Select Address</option>
                             <option>NHA Kabac</option>
                             <option>NHA Kampingganon</option>
+                        </select>
+                        <label>Grade:</label>
+                        <select name="Grade" required class="modern-input">
+                            <option value="" disabled selected>Select Grade Level</option>
+                            <option>Grade 7</option>
+                            <option>Grade 8</option>
+                            <option>Grade 9</option>
+                            <option>Grade 10</option>
+                            <option>Grade 11</option>
+                            <option>Grade 12</option>
                         </select>
                     </div>
                 </div>
@@ -180,10 +184,30 @@
 
                         <div class="profile-history-section">
                             <div class="history-header">
-                                <h4><i class="fa-solid fa-chart-line"></i> Boarding History Logs</h4>
+                                <div class="header-main-info">
+                                    <h4><i class="fa-solid fa-clock-rotate-left"></i> Boarding History</h4>
+
+                                    <!-- STEP 1: SELECT MODE -->
+                                    <div class="stu-history-filter">
+                                        <button class="stu-filter-btn active" onclick="toggleStuInput('all', this)">All</button>
+                                        <button class="stu-filter-btn" onclick="toggleStuInput('weekly', this)">Weekly</button>
+                                        <button class="stu-filter-btn" onclick="toggleStuInput('monthly', this)">Monthly</button>
+                                    </div>
+
+                                    <!-- STEP 2: DYNAMIC INPUTS -->
+                                    <div class="stu-input-area">
+                                        <div id="stu-weekly-box" style="display:none;">
+                                            <input type="week" id="stu-date-input" class="stu-modern-input" onchange="applyStuFilter('weekly')">
+                                        </div>
+                                        <div id="stu-monthly-box" style="display:none;">
+                                            <input type="month" id="stu-month-input" class="stu-modern-input" onchange="applyStuFilter('monthly')">
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="trip-summary-pill">
-                                    <span>Total Trips (This Month):</span>
-                                    <strong>24</strong>
+                                    <span>Filtered Trips:</span>
+                                    <strong id="info-total-trips">0</strong>
                                 </div>
                             </div>
 
@@ -197,17 +221,12 @@
                                             <th>Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Oct 24, 2023</td>
-                                            <td><span class="id-tag">TRP-902</span></td>
-                                            <td>07:15 AM</td>
-                                            <td><span class="status success">Boarded</span></td>
-                                        </tr>
-                                        <!-- More mock rows here -->
+                                    <tbody id="boarding-history-body">
+                                        <!-- Rows injected here -->
                                     </tbody>
                                 </table>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -223,7 +242,6 @@
             <div class="report-filters glass-card">
                 <div id="rp-visual-badge" class="report-brand-box">
                     <img src="~/freebus.jpg" id="report-img" alt="Report Design">
-                    <h3 class="report-brand-title">Transport Activity</h3>
                 </div>
 
                 <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">

@@ -56,30 +56,69 @@ function closeQRView() {
 }
 
 // --- 4. STUDENT INFO (PROFILE) MODAL ---
-function viewStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
-    // Set Profile Picture (fallback to default avatar if photo path is empty)
-    document.getElementById('info-photo').src = photo ? photo : '/lib/default-avatar.png';
 
-    // Fill in Student details
-    document.getElementById('info-name').innerText = name;
-    document.getElementById('info-lrn').innerText = lrn;
-    document.getElementById('info-id').innerText = sid || "Not Assigned";
-    document.getElementById('info-grade').innerText = grade;
-    document.getElementById('info-section').innerText = section;
-    document.getElementById('info-address').innerText = address;
-    document.getElementById('info-parent').innerText = parent;
-    document.getElementById('info-contact').innerText = contact;
+function viewSchStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
+    // 1. Get the Modal by its unique School ID
+    const modal = document.getElementById('schStudentInfoOverlay');
+    if (!modal) return;
 
-    // Show the modal
-    document.getElementById('studentInfoOverlay').classList.add('active');
+    // 2. Map data to the unique sch- IDs
+    const photoEl = document.getElementById('sch-info-photo');
+    if (photoEl) photoEl.src = photo || '/lib/default-avatar.png';
+
+    // Helper to set text safely
+    const setSchField = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value || "N/A";
+    };
+
+    setSchField('sch-info-name', name);
+    setSchField('sch-info-lrn', lrn);
+    setSchField('sch-info-id', sid);
+    setSchField('sch-info-grade', grade);
+    setSchField('sch-info-section', section);
+    setSchField('sch-info-address', address);
+    setSchField('sch-info-parent', parent);
+    setSchField('sch-info-contact', contact);
+
+    // 3. Open Modal
+    modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
 
-function closeInfoView() {
-    document.getElementById('studentInfoOverlay').classList.remove('active');
+function closeSchInfoView() {
+    const modal = document.getElementById('schStudentInfoOverlay');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+/* --- UPDATE STUDENT MODAL LOGIC --- */
+function openUpdateModal(id, fname, mname, lname, grade, section, contact, status) {
+    // 1. Fill the form fields with current data
+    document.getElementById('upd-id').value = id;
+    document.getElementById('upd-fname').value = fname;
+    document.getElementById('upd-mname').value = mname;
+    document.getElementById('upd-lname').value = lname;
+    document.getElementById('upd-grade').value = grade;
+    document.getElementById('upd-section').value = section;
+    document.getElementById('upd-contact').value = contact;
+    document.getElementById('upd-status').value = status || "Active";
+
+    // 2. Open the Modal
+    document.getElementById('updateStudentOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUpdateModal() {
+    document.getElementById('updateStudentOverlay').classList.remove('active');
     document.body.style.overflow = 'auto';
 }
 
+function closeUpdateModalOutside(e) {
+    if (e.target.id === "updateStudentOverlay") closeUpdateModal();
+}
 // scan students
 function viewTripDetails(id, date, driver, start, end, count) {
     document.getElementById('det-trip-id').innerText = id;

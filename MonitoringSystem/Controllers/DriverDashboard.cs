@@ -38,16 +38,22 @@ namespace MonitoringSystem.Controllers
             var newScan = new StudentScan
             {
                 LRN = lrn.Trim(),
-                TripId = tripId.Trim(), // Matches the current Trip ID
+                TripId = tripId.Trim(),
                 Date = DateTime.Now.ToString("MMM dd, yyyy"),
                 ScanTime = DateTime.Now.ToString("hh:mm tt"),
                 Status = "Boarded"
             };
 
-            
+            // Save to the static list
             SchoolDashboard._scanHistory.Add(newScan);
 
-            return Json(new { success = true });
+            // --- THE FIX: GET THE REAL COUNT FROM THE BACKEND LIST ---
+            // This counts how many records in the history have the same TripId
+            int totalCount = SchoolDashboard._scanHistory.Count(s => s.TripId == tripId.Trim());
+
+            // Return success and the actual count from the "database"
+            return Json(new { success = true, currentCount = totalCount });
         }
+
     }
 }

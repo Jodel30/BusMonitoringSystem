@@ -58,33 +58,41 @@ namespace MonitoringSystem.Controllers
         [HttpGet]
         public IActionResult GetStudentData(string lrn)
         {
-            
             string cleanLrn = lrn?.Trim();
             if (!string.IsNullOrEmpty(cleanLrn) && cleanLrn.Contains("LRN:"))
             {
-                
                 cleanLrn = cleanLrn.Split("LRN:")[1].Split("|")[0].Trim();
             }
 
-            
             var student = _studentList.FirstOrDefault(s => s.LRN == cleanLrn);
 
             if (student != null)
             {
-                
+                // Fetch only this student's scans
+                var history = _scanHistory
+                    .Where(h => h.LRN == cleanLrn)
+                    .OrderByDescending(h => h.Date)      // Newest Date first
+                    .ThenByDescending(h => h.ScanTime)  // Newest Time first
+                    .ToList();
+
                 return Json(new
                 {
                     success = true,
                     name = $"{student.FirstName} {student.LastName}",
                     photo = student.PhotoPath,
                     level = student.GradeLevel,
-                    section = student.Section,  
-                    address = student.Address,    
-                    status = "Boarded"           // Default status for successful scan
+                    section = student.Section,
+                    address = student.Address,
+                    id = student.StudentId,
+                    parent = student.Parent,
+                    contact = student.ParentContact,
+
+                    // This list contains the Date, TripId, ScanTime, and Status
+                    tripHistory = history,
+                    totalTrips = history.Count
                 });
             }
 
-        
             return Json(new { success = false, message = "Student record not found." });
         }
         [HttpGet]
@@ -109,6 +117,26 @@ namespace MonitoringSystem.Controllers
             }).ToList();
 
             return Json(new { success = true, students = manifest });
+        }
+        [HttpPost]
+        public IActionResult UpdateStudent(Student updatedData)
+        {
+            // Find the existing student by their unique StudentId
+            var student = _studentList.FirstOrDefault(s => s.StudentId == updatedData.StudentId);
+
+            if (student != null)
+            {
+                student.FirstName = updatedData.FirstName;
+                student.MiddleName = updatedData.MiddleName;
+                student.LastName = updatedData.LastName;
+                student.GradeLevel = updatedData.GradeLevel;
+                student.Section = updatedData.Section;
+                student.ParentContact = updatedData.ParentContact;
+                student.Status = updatedData.Status; // Can be "Active" or "Inactive"
+            }
+
+            // Return to the student section
+            return Redirect(Url.Action("SchoolAdmin") + "#students");
         }
     }
 }

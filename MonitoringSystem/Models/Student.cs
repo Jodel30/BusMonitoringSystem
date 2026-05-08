@@ -18,7 +18,7 @@ namespace MonitoringSystem.Models
         public string Parent { get; set; }
         public string ParentContact { get; set; }
 
-       
+        public string Status { get; set; } = "Active";
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
     }
 }

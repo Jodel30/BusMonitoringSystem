@@ -414,3 +414,60 @@
     border-radius: 50px;
     font-size: 10px;
 }
+/* LIVE BOARDING CARD */
+.boarding-stats-card {
+    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
+    padding: 15px 25px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    box-shadow: 0 10px 20px rgba(0, 119, 182, 0.2);
+    margin-bottom: 10px;
+}
+
+.stats-icon {
+    font-size: 24px;
+    opacity: 0.8;
+}
+
+.stats-info span {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.7;
+}
+
+.stats-info h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+.stats-badge {
+    background: #e74c3c;
+    font-size: 9px;
+    font-weight: 900;
+    padding: 4px 10px;
+    border-radius: 50px;
+}
+
+
+/* SUCCESS SCREEN MINI COUNTER */
+.mini-count-success {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #102a43;
+    padding: 6px 15px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+    .mini-count-success strong {
+        color: #0077b6;
+    }

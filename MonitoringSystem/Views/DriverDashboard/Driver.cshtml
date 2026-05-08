@@ -56,34 +56,45 @@
                     
                 </div>
 
-                <!-- STATE 2: SCANNER UI (HIDDEN BY DEFAULT) -->
+                <!-- STATE 2: SCANNER UI -->
                 <div id="active-scanner-ui" style="display: none;">
+                    <!-- LIVE COUNTER CARD -->
+                    <div class="boarding-stats-card" onclick="switchSection('onboard')" style="cursor: pointer;">
+                        <div class="stats-icon">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stats-info">
+                            <span>Current On-Board</span>
+                            <h2 id="active-live-count">0</h2>
+                        </div>
+                    </div>
+
                     <div id="scanner-ui">
                         <p style="color: #102a43; font-weight: 600; text-align: center; margin-top: 20px;">
                             <span class="dot-pulse"></span> Scanner Active
                         </p>
-
                         <div id="reader" style="width: 100%; border-radius: 20px; overflow: hidden; margin-bottom: 20px; display: none;"></div>
-
                         <div class="qr-frame" id="static-frame"><i class="fas fa-qrcode"></i></div>
-
                         <button class="btn-main" id="start-btn" onclick="startScanner()">
                             <i class="fa-solid fa-camera"></i> Tap to Scan
                         </button>
-
                         <button class="btn-main" id="stop-btn" style="display:none; background: #e74c3c;" onclick="stopScanner()">
                             <i class="fa-solid fa-stop"></i> Stop Scanner
                         </button>
                     </div>
 
-                    <!-- END TRIP BUTTON (Visible only when trip is active) -->
-                    <button class="btn-end-trip" onclick="endTrip()" style="margin-top: 20px;">
+                    <button class="btn-end-trip" onclick="endTrip()" style="margin-top: 30px;">
                         <i class="fa-solid fa-route"></i> End Current Trip
                     </button>
                 </div>
 
-                <!-- STATE 3: SUCCESS MESSAGE (HIDDEN BY DEFAULT) -->
+                <!-- STATE 3: SUCCESS MESSAGE -->
                 <div id="scan-success" style="display:none; text-align:center; padding: 20px;">
+                    <!-- SUCCESS COUNTER MINI-CARD -->
+                    <div class="mini-count-success">
+                        Total Boarded: <strong id="success-live-count">0</strong>
+                    </div>
+
                     <div style="width: 130px; height: 130px; margin: 0 auto 15px; border-radius: 50%; overflow: hidden; border: 5px solid #2ecc71;">
                         <img id="scanned-photo" src="" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
