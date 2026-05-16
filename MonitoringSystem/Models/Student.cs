@@ -18,7 +18,20 @@ namespace MonitoringSystem.Models
         public string Parent { get; set; }
         public string ParentContact { get; set; }
 
+        public string DateRegistered { get; set; }
         public string Status { get; set; } = "Active";
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
+
+        public bool NeedsUpdate
+        {
+            get
+            {
+                if (DateTime.TryParse(DateRegistered, out DateTime regDate))
+                {
+                    return (DateTime.Now - regDate).TotalDays >= 365;
+                }
+                return false;
+            }
+        }
     }
 }

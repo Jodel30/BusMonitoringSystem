@@ -10,7 +10,20 @@ namespace MonitoringSystem.Controllers
 
         public IActionResult Driver()
         {
-            return View(_tripHistory);
+            // 1. Create the package
+            var viewModel = new DriverDashboardViewModel
+            {
+                // Get the history from THIS controller
+                TripHistory = _tripHistory,
+
+                // Get the students from the SCHOOL controller (filtered to only show Active)
+                RegisteredStudents = SchoolDashboard._studentList
+                                        .Where(s => s.Status == "Active" || string.IsNullOrEmpty(s.Status))
+                                        .ToList()
+            };
+
+            // 2. Return the package to the View
+            return View(viewModel);
         }
 
         // 1. SAVE THE TRIP SUMMARY (Triggered when "End Trip" is clicked)

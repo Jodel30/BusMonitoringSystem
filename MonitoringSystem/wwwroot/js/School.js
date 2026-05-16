@@ -57,16 +57,15 @@ function closeQRView() {
 
 // --- 4. STUDENT INFO (PROFILE) MODAL ---
 
-function viewSchStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
-    // 1. Get the Modal by its unique School ID
+function viewSchStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid, regDate) {
     const modal = document.getElementById('schStudentInfoOverlay');
+    const alertBox = document.getElementById('sch-info-update-alert'); // Target the alert div
     if (!modal) return;
 
-    // 2. Map data to the unique sch- IDs
+    // 1. Map basic data
     const photoEl = document.getElementById('sch-info-photo');
     if (photoEl) photoEl.src = photo || '/lib/default-avatar.png';
 
-    // Helper to set text safely
     const setSchField = (id, value) => {
         const el = document.getElementById(id);
         if (el) el.innerText = value || "N/A";
@@ -81,7 +80,33 @@ function viewSchStudentInfo(photo, name, lrn, grade, section, address, parent, c
     setSchField('sch-info-parent', parent);
     setSchField('sch-info-contact', contact);
 
-    // 3. Open Modal
+    // 2. Set Registered Date
+    const dateEl = document.getElementById('sch-info-registered-date');
+    if (dateEl) {
+        dateEl.innerText = regDate && regDate !== "" ? regDate : "Not Recorded";
+    }
+
+    // --- 3. NEW: 1-YEAR REVIEW PERIOD LOGIC ---
+    if (regDate && regDate !== "" && alertBox) {
+        const registrationDate = new Date(regDate);
+        const today = new Date();
+
+        // Calculate difference in days
+        const diffTime = Math.abs(today - registrationDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays >= 365) {
+            // Show the notification if 1 year has passed
+            alertBox.style.display = 'flex';
+        } else {
+            // Hide it if student is still within the first year
+            alertBox.style.display = 'none';
+        }
+    } else if (alertBox) {
+        alertBox.style.display = 'none';
+    }
+
+    // 4. Open Modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 }
@@ -106,6 +131,16 @@ function openUpdateModal(id, fname, mname, lname, grade, section, contact, statu
     document.getElementById('upd-contact').value = contact;
     document.getElementById('upd-status').value = status || "Active";
 
+    const badge = document.querySelector('#updateStudentOverlay .badge-role');
+    if (status === "Inactive") {
+        badge.innerText = "Inactive";
+        badge.style.background = "#fee2e2";
+        badge.style.color = "#991b1b";
+    } else {
+        badge.innerText = "Active";
+        badge.style.background = "#A3DE83";
+        badge.style.color = "black";
+    }
     // 2. Open the Modal
     document.getElementById('updateStudentOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -160,5 +195,31 @@ function rp_handleMainToggle() {
         if (badge) badge.style.display = 'flex';
         btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
         btn.style.background = '';
+    }
+}
+function filterArchiveTable() {
+    let input = document.getElementById("archiveSearch").value.toUpperCase();
+    let rows = document.querySelectorAll("#archiveTable tbody tr.archived-row");
+
+    rows.forEach(row => {
+        let text = row.innerText.toUpperCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+function toggleNotifModal() {
+    const modal = document.getElementById('notifModal');
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+    } else {
+        modal.style.display = 'block';
+    }
+}
+
+// Close notifications if clicking anywhere else on the screen
+window.onclick = function (event) {
+    const modal = document.getElementById('notifModal');
+    const bell = document.querySelector('.notif-wrapper');
+    if (!bell.contains(event.target) && !modal.contains(event.target)) {
+        modal.style.display = 'none';
     }
 }

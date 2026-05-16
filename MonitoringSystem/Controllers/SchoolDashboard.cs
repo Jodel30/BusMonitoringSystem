@@ -19,7 +19,8 @@ namespace MonitoringSystem.Controllers
               
                 Students = _studentList,
                 
-                TripLogs = DriverDashboard._tripHistory
+                TripLogs = DriverDashboard._tripHistory,
+                UpdateCount = _studentList.Count(s => s.NeedsUpdate)
             };
 
             // 2. Pass the ViewModel to the View
@@ -50,6 +51,8 @@ namespace MonitoringSystem.Controllers
                 byte[] qrCodeImage = qrCode.GetGraphic(20);
                 model.QRCodeBase64 = Convert.ToBase64String(qrCodeImage);
             }
+
+            model.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
 
             _studentList.Add(model);
             return Redirect(Url.Action("SchoolAdmin") + "#students");
@@ -137,6 +140,24 @@ namespace MonitoringSystem.Controllers
 
             // Return to the student section
             return Redirect(Url.Action("SchoolAdmin") + "#students");
+        }
+        [HttpPost]
+        public IActionResult DeleteStudent(string studentId)
+        {
+            // Find the student in the shared list
+            var student = _studentList.FirstOrDefault(s => s.StudentId == studentId);
+
+            if (student != null)
+            {
+                // PERMANENT REMOVAL
+                _studentList.Remove(student);
+
+                // Optional: Also remove their boarding history if you want to clear space
+                _scanHistory.RemoveAll(h => h.LRN == student.LRN);
+            }
+
+            // Redirect back to the archive section
+            return Redirect(Url.Action("SchoolAdmin") + "#archive");
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿@{
     Layout = null;
 }
-
+@model MonitoringSystem.Models.DriverDashboardViewModel
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,6 +100,8 @@
                     </div>
 
                     <h2 id="scanned-name" style="color: #102a43; margin-bottom: 2px; font-size: 20px;">Student Name</h2>
+                    <p id="scanned-id" style="color: #8898aa; margin-bottom: 15px;">ID: 00000</p>
+                    <p id="scanned-address" style="color: #8898aa; margin-bottom: 15px;">Home Address</p>
                     <p id="scanned-level" style="color: #8898aa; margin-bottom: 15px;">Grade Level</p>
 
                     <div style="background: #dcfce7; color: #15803d; padding: 10px; border-radius: 10px; font-weight: 800; margin-bottom: 20px; font-size: 14px;">
@@ -117,27 +119,19 @@
                 <input type="text" id="studentSearch" placeholder="Search Name or LRN..." onkeyup="filterStudents()">
             </div>
             <div id="studentList">
-                <div class="student-item" data-name="Juan Dela Cruz" data-lrn="1234567890">
-                    <div class="student-info">
-                        <h4>Juan Dela Cruz</h4>
-                        <p>LRN: 1234567890</p>
+                @foreach (var student in Model.RegisteredStudents)
+                {
+                    <div class="student-item" data-name="@student.FirstName @student.LastName" data-lrn="@student.LRN">
+                        <div class="student-info">
+                            <h4>@student.FirstName @student.LastName</h4>
+                            <p>LRN: @student.LRN | @student.GradeLevel</p>
+                        </div>
+                        <!-- Call handleManualBoarding from your JS -->
+                        <button class="btn-check" onclick="handleManualBoarding(this, '@student.LRN', '@student.FirstName @student.LastName', '@student.GradeLevel', '@student.PhotoPath')">
+                            Board
+                        </button>
                     </div>
-                    <button class="btn-check" onclick="boardStudent(this)">Board</button>
-                </div>
-                <div class="student-item" data-name="Maria Clara" data-lrn="9876543211">
-                    <div class="student-info">
-                        <h4>Maria Clara</h4>
-                        <p>LRN: 9876543211</p>
-                    </div>
-                    <button class="btn-check" onclick="boardStudent(this)">Board</button>
-                </div>
-                <div class="student-item" data-name="Jose Rizal" data-lrn="5554443332">
-                    <div class="student-info">
-                        <h4>Jose Rizal</h4>
-                        <p>LRN: 5554443332</p>
-                    </div>
-                    <button class="btn-check" onclick="boardStudent(this)">Board</button>
-                </div>
+                }
             </div>
         </div>
 
@@ -150,7 +144,7 @@
         </div>
 
         <!-- SECTION: Active trip -->
-        @model List<MonitoringSystem.Models.TripLog>
+       
 
         <div id="active-trip" class="content-section">
             <div class="glass-card" style="padding: 20px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
@@ -175,9 +169,9 @@
                             </tr>
                         </thead>
                         <tbody id="historyBody">
-                            @if (Model != null && Model.Any())
+                            @if (Model != null && Model.TripHistory.Any())
                             {
-                                @foreach (var log in Model)
+                                @foreach (var log in Model.TripHistory)
                                 {
                                     <tr>
                                         <td><span class="trip-id-tag">@log.TripId</span></td>
@@ -205,6 +199,6 @@
         </div>
     </div>
 
-    <script src="~/js/Driver.js"></script>
+    <script src="~/js/Driver.js" asp-append-version="true"></script>
 </body>
 </html>

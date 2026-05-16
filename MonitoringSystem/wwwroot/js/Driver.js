@@ -83,8 +83,9 @@ function onScanSuccess(decodedText) {
                 // 3. Update Success Screen Info
                 document.getElementById('scanned-name').innerText = data.name;
                 document.getElementById('scanned-photo').src = data.photo || '/lib/default-avatar.png';
-                document.getElementById('scanned-level').innerText = "Grade: " + data.level;
-
+                document.getElementById('scanned-level').innerText = data.level;
+                document.getElementById('scanned-id').innerText = "Student ID: " + (data.id || "N/A");
+                document.getElementById('scanned-address').innerText = "Home Address: " + (data.address || "No Address Provided");
                 // 4. Switch visibility
                 document.getElementById('active-scanner-ui').style.display = 'none';
                 document.getElementById('scan-success').style.display = 'block';
@@ -236,4 +237,33 @@ function filterStudents() {
         let lrn = (item.getAttribute('data-lrn') || "").toLowerCase();
         item.style.display = (name.includes(input) || lrn.includes(input)) ? "flex" : "none";
     });
+}
+function handleManualBoarding(btn, lrn, name, level, photo) {
+    if (btn.disabled || !currentTripId) {
+        alert("Please start a trip first!");
+        return;
+    }
+
+    // 1. Sync with Backend (LGU Logs)
+    recordScanToBackend(lrn, currentTripId);
+
+    // 2. Add student to the live "On-Board" list
+    // We create a fake 'data' object that matches what the scanner returns
+    const manualData = {
+        success: true,
+        name: name,
+        level: level,
+        photo: photo,
+        address: "Manual Check-in",
+        status: "Boarded"
+    };
+
+    addToOnBoardList(manualData);
+
+    // 3. Update UI Button
+    btn.innerText = "Boarded ✓";
+    btn.style.background = "#2ecc71";
+    btn.disabled = true;
+
+    console.log(`Manual Entry: ${name} (LRN: ${lrn}) added to Trip ${currentTripId}`);
 }
