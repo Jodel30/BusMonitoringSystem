@@ -7,7 +7,6 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Driver Dashboard</title>
-    <!-- IMPORTANT: Font Awesome Link for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="~/css/Driver.css" asp-append-version="true">
     <script src="~/js/html5-qrcode.min.js"></script>
@@ -125,16 +124,27 @@
                         <div class="student-info">
                             <h4>@student.FirstName @student.LastName</h4>
                             <p>LRN: @student.LRN | @student.GradeLevel</p>
+
+                            <!-- NEW: REASON DROPDOWN -->
+                            <select class="manual-reason-select" onchange="enableBoardButton(this)" style="margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px;">
+                                <option value="" disabled selected>-- Select Reason --</option>
+                                <option value="Broken QR">Broken/Unreadable QR</option>
+                                <option value="Forgot ID">Forgot ID at Home</option>
+                                <option value="Camera Issue">Camera Issue</option>
+                            </select>
                         </div>
-                        <!-- Call handleManualBoarding from your JS -->
-                        <button class="btn-check" onclick="handleManualBoarding(this, '@student.LRN', '@student.FirstName @student.LastName', '@student.GradeLevel', '@student.PhotoPath')">
-                            Board
+
+                        <!-- FIXED: Button starts with 'opacity: 0.5' and 'pointer-events: none' -->
+                        <button class="btn-check"
+                                id="btn-@student.LRN"
+                                style="opacity: 0.5; pointer-events: none;"
+                                onclick="handleManualBoarding(this, '@student.LRN', '@student.FirstName @student.LastName', '@student.GradeLevel', '@student.PhotoPath')">
+                            Board Student
                         </button>
                     </div>
                 }
             </div>
         </div>
-
 
         <div id="onboard" class="content-section">
             <h3 style="color: #102a43;">Currently On-Board</h3>

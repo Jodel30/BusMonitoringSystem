@@ -10,6 +10,7 @@ namespace MonitoringSystem.Controllers
         public static List<Student> _studentList = new List<Student>();
 
         public static List<StudentScan> _scanHistory = new List<StudentScan>();
+           
 
         public IActionResult SchoolAdmin()
         {
@@ -136,6 +137,11 @@ namespace MonitoringSystem.Controllers
                 student.Section = updatedData.Section;
                 student.ParentContact = updatedData.ParentContact;
                 student.Status = updatedData.Status; // Can be "Active" or "Inactive"
+
+                student.ReviewStatus = "Healthy";
+
+                
+                student.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
             }
 
             // Return to the student section
@@ -158,6 +164,42 @@ namespace MonitoringSystem.Controllers
 
             // Redirect back to the archive section
             return Redirect(Url.Action("SchoolAdmin") + "#archive");
+        }
+        [HttpPost]
+        public IActionResult MarkAsPending(string lrn)
+        {
+            var student = _studentList.FirstOrDefault(s => s.LRN == lrn);
+            if (student != null)
+            {
+                // Change status so it disappears from the "Alerts" list
+                student.ReviewStatus = "Pending Update";
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+        [HttpPost]
+        public IActionResult ResolveManualAlert(string lrn)
+        {
+            var student = _studentList.FirstOrDefault(s => s.LRN.Trim() == lrn.Trim());
+            if (student != null)
+            {
+                // Mark as resolved so it disappears from notifications
+                student.ManualAlertResolved = true;
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public IActionResult ResolveAbsenceAlert(string lrn)
+        {
+            var student = _studentList.FirstOrDefault(s => s.LRN == lrn);
+            if (student != null)
+            {
+                student.AbsenceAlertResolved = true;
+                return Json(new { success = true });
+            }
+            return Json(new { success = false });
         }
     }
 }

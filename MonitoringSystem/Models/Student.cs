@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MonitoringSystem.Controllers;
+using System.ComponentModel.DataAnnotations;
 
 namespace MonitoringSystem.Models
 {
@@ -21,6 +22,9 @@ namespace MonitoringSystem.Models
         public string DateRegistered { get; set; }
         public string Status { get; set; } = "Active";
         public string FullName => $"{FirstName} {MiddleName} {LastName}";
+        public int ManualCheckInCount { get; set; } = 0;
+        public bool ManualAlertResolved { get; set; } = false;
+        public string ReviewStatus { get; set; } = "Healthy";
 
         public bool NeedsUpdate
         {
@@ -28,10 +32,58 @@ namespace MonitoringSystem.Models
             {
                 if (DateTime.TryParse(DateRegistered, out DateTime regDate))
                 {
-                    return (DateTime.Now - regDate).TotalDays >= 365;
+                    // If it's over a year AND not already marked as "Pending" or "Healthy"
+                    return (DateTime.Now - regDate).TotalDays >= 365 && ReviewStatus == "Review Due";
                 }
                 return false;
             }
         }
+        public bool NeedsNewQR => ManualCheckInCount >= 2 && !ManualAlertResolved;
+
+        public string LastBoardingDate { get; set; } // Store as string like "MMM dd, yyyy"
+        public bool AbsenceAlertResolved { get; set; } = false;
+
+        public bool IsLongAbsence
+        {
+            get
+            {
+                if (DateTime.TryParse(LastBoardingDate, out DateTime lastSeen))
+                {
+                    return (DateTime.Now - lastSeen).TotalDays >= 30 && !AbsenceAlertResolved && Status == "Active";
+                }
+                // If they registered but NEVER boarded for a month
+                if (DateTime.TryParse(DateRegistered, out DateTime regDate))
+                {
+                    return (DateTime.Now - regDate).TotalDays >= 30 && string.IsNullOrEmpty(LastBoardingDate) && !AbsenceAlertResolved && Status == "Active";
+                }
+                return false;
+            }
+        }
+        public bool LowUsageAlertResolved { get; set; } = false;
+
+        // Logic: Returns true if the student has boarded 3 or fewer times in the last 7 days
+        public bool IsLowUsage
+        {
+            get
+            {
+                if (Status != "Active" || LowUsageAlertResolved) return false;
+
+                // Count trips for this student in the last 7 days
+                int tripCount = SchoolDashboard._scanHistory.Count(s =>
+                    s.LRN == this.LRN &&
+                    DateTime.TryParse(s.Date, out DateTime tripDate) &&
+                    (DateTime.Now - tripDate).TotalDays <= 7
+                );
+
+                return tripCount <= 3;
+            }
+        }
+
+        // Helper to show the actual count in the table
+        public int WeeklyTripCount => SchoolDashboard._scanHistory.Count(s =>
+            s.LRN == this.LRN &&
+            DateTime.TryParse(s.Date, out DateTime tripDate) &&
+            (DateTime.Now - tripDate).TotalDays <= 7
+        );
     }
 }

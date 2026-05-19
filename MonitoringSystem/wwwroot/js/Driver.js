@@ -151,15 +151,17 @@ function endTrip() {
     if (confirm(`Finish current trip? Total students boarded: ${currentBoardedCount}`)) {
         stopScanner();
 
+        // 1. Prepare data
         const tripData = {
             tripId: currentTripId,
             date: new Date().toLocaleDateString(),
             startTime: tripStartTime,
             endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            boardedCount: currentBoardedCount,
+            boardedCount: currentBoardedCount, // The server will double-check this
             driverName: "Ricardo Dalisay"
         };
 
+        // 2. SEND TO CONTROLLER
         fetch('/DriverDashboard/SaveTrip', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -167,27 +169,33 @@ function endTrip() {
         })
             .then(response => response.json())
             .then(result => {
-                if (result.success) {
-                    addTripToHistoryTable(tripData.tripId, tripData.date, tripData.startTime, tripData.endTime, tripData.boardedCount);
+                // The server returns a 'message' which might contain the real count
+                alert(result.message || "Trip Logged successfully.");
 
-                    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
+                // 3. UI RESET
+                currentBoardedCount = 0;
+                updateCounterUI(0);
+                tripIdCounter++;
 
-                    const banner = document.getElementById('main-title');
-                    if (banner) {
-                        banner.classList.remove('hide-banner');
-                        banner.style.removeProperty('display');
-                    }
+                // Clear the list
+                document.getElementById('onboardList').innerHTML =
+                    '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
 
-                    document.getElementById('active-scanner-ui').style.display = 'none';
-                    document.getElementById('scan-success').style.display = 'none';
-                    document.getElementById('trip-idle-state').style.display = 'block';
-
-                    currentBoardedCount = 0;
-                    updateCounterUI(0);
-                    tripIdCounter++;
-
-                    alert("Trip Logged successfully.");
+                // Restore Banner
+                const banner = document.getElementById('main-title');
+                if (banner) {
+                    banner.classList.remove('hide-banner');
+                    banner.style.removeProperty('display');
                 }
+
+                // Return to Start State
+                document.getElementById('active-scanner-ui').style.display = 'none';
+                document.getElementById('scan-success').style.display = 'none';
+                document.getElementById('trip-idle-state').style.display = 'block';
+            })
+            .catch(err => {
+                console.error("Error ending trip:", err);
+                alert("Trip failed to save. Please check your connection.");
             });
     }
 }
@@ -238,32 +246,56 @@ function filterStudents() {
         item.style.display = (name.includes(input) || lrn.includes(input)) ? "flex" : "none";
     });
 }
+// 1. UNLOCK THE BUTTON WHEN A REASON IS CHOSEN
+function enableBoardButton(selectEl) {
+    // Find the button inside the same student-item box
+    const button = selectEl.closest('.student-item').querySelector('.btn-check');
+
+    if (selectEl.value !== "") {
+        button.style.opacity = "1";
+        button.style.pointerEvents = "auto";
+        button.style.background = "#0077b6"; // Turn to primary blue
+    }
+}
+
+// 2. HANDLE BOARDING
 function handleManualBoarding(btn, lrn, name, level, photo) {
     if (btn.disabled || !currentTripId) {
         alert("Please start a trip first!");
         return;
     }
 
-    // 1. Sync with Backend (LGU Logs)
-    recordScanToBackend(lrn, currentTripId);
+    // Get the selected reason from the dropdown
+    const selectEl = btn.closest('.student-item').querySelector('.manual-reason-select');
+    const reason = selectEl.value;
 
-    // 2. Add student to the live "On-Board" list
-    // We create a fake 'data' object that matches what the scanner returns
-    const manualData = {
-        success: true,
-        name: name,
-        level: level,
-        photo: photo,
-        address: "Manual Check-in",
-        status: "Boarded"
-    };
+    // A. Sync with Backend (Pass isManual=true and the reason)
+    fetch('/DriverDashboard/RecordScan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `lrn=${encodeURIComponent(lrn)}&tripId=${encodeURIComponent(currentTripId)}&isManual=true&reason=${encodeURIComponent(reason)}`
+    })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                // B. Update the Live Counter UI
+                if (document.getElementById('active-live-count'))
+                    document.getElementById('active-live-count').innerText = result.currentCount;
 
-    addToOnBoardList(manualData);
+                // C. Add student to the live "On-Board" list
+                const manualData = {
+                    name: name,
+                    level: level,
+                    photo: photo,
+                    status: "Manual: " + reason // Shows the reason in the list
+                };
+                addToOnBoardList(manualData);
 
-    // 3. Update UI Button
-    btn.innerText = "Boarded ✓";
-    btn.style.background = "#2ecc71";
-    btn.disabled = true;
-
-    console.log(`Manual Entry: ${name} (LRN: ${lrn}) added to Trip ${currentTripId}`);
+                // D. UI Feedback
+                btn.innerText = "Boarded ✓";
+                btn.style.background = "#2ecc71";
+                btn.disabled = true;
+                selectEl.disabled = true; // Lock dropdown
+            }
+        });
 }

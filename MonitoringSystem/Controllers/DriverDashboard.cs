@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MonitoringSystem.Models;
+using System.Linq;
 
 namespace MonitoringSystem.Controllers
 {
@@ -27,44 +28,69 @@ namespace MonitoringSystem.Controllers
         }
 
         // 1. SAVE THE TRIP SUMMARY (Triggered when "End Trip" is clicked)
-        [HttpPost]
-        public IActionResult SaveTrip([FromBody] TripLog data)
+
+[HttpPost]
+    public IActionResult SaveTrip([FromBody] TripLog data)
+    {
+        if (data != null)
         {
-            if (data != null)
+           
+            int realCount = SchoolDashboard._scanHistory.Count(s => s.TripId == data.TripId.Trim());
+
+            // Update the model with the real number before saving
+            data.BoardedCount = realCount;
+
+            // Add to the history list
+            _tripHistory.Add(data);
+
+            return Json(new
             {
-                _tripHistory.Add(data);
-                return Json(new { success = true, message = "Trip logged successfully" });
-            }
-            return Json(new { success = false, message = "Invalid data" });
+                success = true,
+                message = $"Trip {data.TripId} saved. Total students recorded: {realCount}"
+            });
         }
 
-        // 2. RECORD INDIVIDUAL STUDENT SCANS (Triggered every time a QR is scanned)
-        // This links the Student to the specific Trip
+        return Json(new { success = false, message = "Invalid trip data" });
+    }
+
         [HttpPost]
-        public IActionResult RecordScan(string lrn, string tripId)
+        public IActionResult RecordScan(string lrn, string tripId, bool isManual = false, string reason = "")
         {
             if (string.IsNullOrEmpty(lrn) || string.IsNullOrEmpty(tripId))
             {
-                return Json(new { success = false, message = "Missing LRN or Trip ID" });
+                return Json(new { success = false, message = "Missing Data" });
             }
 
+            // 1. REACH INTO THE SCHOOL DASHBOARD LIST
+            var student = SchoolDashboard._studentList.FirstOrDefault(s => s.LRN.Trim() == lrn.Trim());
+
+            if (student != null)
+            {
+                // A. Update Last Seen (For the Absence Alert)
+                student.LastBoardingDate = DateTime.Now.ToString("MMM dd, yyyy");
+                student.AbsenceAlertResolved = false; // Reset alert since they are back
+
+                // B. Handle Manual Counter (For the ID Replacement Alert)
+                if (isManual)
+                {
+                    student.ManualCheckInCount++;
+                }
+            }
+
+            // 2. CREATE THE LOG ENTRY (Same as before)
             var newScan = new StudentScan
             {
                 LRN = lrn.Trim(),
                 TripId = tripId.Trim(),
                 Date = DateTime.Now.ToString("MMM dd, yyyy"),
                 ScanTime = DateTime.Now.ToString("hh:mm tt"),
-                Status = "Boarded"
+                Status = isManual ? $"Manual ({reason})" : "QR Scanned"
             };
 
-            // Save to the static list
             SchoolDashboard._scanHistory.Add(newScan);
 
-            // --- THE FIX: GET THE REAL COUNT FROM THE BACKEND LIST ---
-            // This counts how many records in the history have the same TripId
+            // 3. RETURN DATA
             int totalCount = SchoolDashboard._scanHistory.Count(s => s.TripId == tripId.Trim());
-
-            // Return success and the actual count from the "database"
             return Json(new { success = true, currentCount = totalCount });
         }
 

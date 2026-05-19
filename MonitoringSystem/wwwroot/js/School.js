@@ -223,3 +223,135 @@ window.onclick = function (event) {
         modal.style.display = 'none';
     }
 }
+
+// 1. OPEN THE LIST MODAL
+function openFrequentManualModal() {
+    const modal = document.getElementById('frequentManualModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeFrequentModal() {
+    document.getElementById('frequentManualModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// 2. THE "REVIEW" LOGIC
+function reviewStudentQR(lrn) {
+    // 1. Tell backend to clear the alert
+    fetch(`/SchoolDashboard/ResolveManualAlert?lrn=${lrn}`, {
+        method: 'POST'
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // 2. Close the alert list modal
+                closeFrequentModal();
+
+                // 3. Smooth scroll to the Student Records section
+                window.location.hash = 'students';
+
+                // 4. Find the student and pop up their QR CODE automatically
+                setTimeout(() => {
+                    const rows = document.querySelectorAll('#lguStudentTable tbody tr');
+                    rows.forEach(row => {
+                        // Check if this row belongs to the student
+                        if (row.innerText.includes(lrn)) {
+                            // Find the QR icon button and click it
+                            const qrBtn = row.querySelector('.icon-qr-trigger');
+                            if (qrBtn) {
+                                qrBtn.click(); // This opens your existing QR View Modal
+                            }
+                        }
+                    });
+                }, 600);
+            }
+        });
+}
+// 1. MODAL CONTROLS
+function openNeedsUpdateModal() {
+    const modal = document.getElementById('needsUpdateModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeUpdateAlertModal() {
+    document.getElementById('needsUpdateModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+
+function reviewForUpdate(lrn) {
+    
+    fetch(`/SchoolDashboard/MarkAsPending?lrn=${lrn}`, {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log("Notification cleared. Proceeding to update...");
+
+                // A. Close the alert list modal
+                closeUpdateAlertModal();
+
+                // B. Smooth scroll to the Student Records section
+                window.location.hash = 'students';
+
+               
+                setTimeout(() => {
+                    const rows = document.querySelectorAll('#lguStudentTable tbody tr');
+                    rows.forEach(row => {
+                        if (row.innerText.includes(lrn)) {
+                            // Find the button that contains the pen-to-square icon
+                            const updateBtn = row.querySelector('.fa-pen-to-square')?.parentElement;
+
+                            if (updateBtn) {
+                                updateBtn.click(); // This opens your Update Student Modal
+                            }
+                        }
+                    });
+                }, 600);
+            } else {
+                console.error("Failed to clear notification.");
+                // Fallback: still try to open the modal if the status update fails
+                closeUpdateAlertModal();
+                window.location.hash = 'students';
+            }
+        })
+        .catch(err => {
+            console.error("Connection error:", err);
+        });
+}
+function openAbsenceModal() {
+    document.getElementById('absenceModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAbsenceModal() {
+    document.getElementById('absenceModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function reviewAbsence(lrn) {
+    // 1. Clear alert from backend
+    fetch(`/SchoolDashboard/ResolveAbsenceAlert?lrn=${lrn}`, { method: 'POST' })
+        .then(() => {
+            closeAbsenceModal();
+            // 2. Navigate to student list
+            window.location.hash = 'students';
+            // 3. Auto-open the profile so admin can choose to make them 'Inactive'
+            setTimeout(() => {
+                const rows = document.querySelectorAll('#lguStudentTable tbody tr');
+                rows.forEach(row => {
+                    if (row.innerText.includes(lrn)) {
+                        const infoBtn = row.querySelector('.btn-view-info');
+                        if (infoBtn) infoBtn.click();
+                    }
+                });
+            }, 600);
+        });
+}

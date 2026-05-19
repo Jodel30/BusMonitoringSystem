@@ -1,4 +1,10 @@
 ﻿@model MonitoringSystem.Models.LguDashboardViewModel
+@{
+    // Update your counts at the top of the file
+    var lowUsageCount = Model.Students.Count(s => s.IsLowUsage);
+    // Add this to your totalAlerts variable for the bell badge
+    var totalAlerts = lowUsageCount;
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -39,13 +45,16 @@
                 </div>
                 <div class="stat-card">
                     <div class="icon-box cyan"><i class="fa-solid fa-bus"></i></div>
-                    <div class="info"><h3>Total Buses</h3><p>0</p></div>
+                    <div class="info"><h3>Low Transport Usage</h3><p>0</p></div>
                     <img src="~/bus-removebg-preview.png" class="bg-icon">
                 </div>
-                <div class="stat-card">
-                    <div class="icon-box navy"><i class="fa-solid fa-user-tie"></i></div>
-                    <div class="info"><h3>Bus Aide</h3><p>0</p></div>
-                    <img src="~/driver-removebg-preview.png" class="bg-icon">
+                <div class="stat-card" onclick="openLowUsageModal()" style="cursor: pointer; border-left: 5px solid #0891b2;">
+                    <div class="icon-box cyan"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="info">
+                        <h3>Low Usage Alerts</h3>
+                        <p>@lowUsageCount</p>
+                    </div>
+                    <img src="~/bus-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card">
                     <div class="icon-box grey"><i class="fa-solid fa-user-shield"></i></div>
@@ -579,6 +588,91 @@
                     </tbody>
                 </table>
             </div>
+
+        <div class="notif-modal" id="notifModal">
+            <div class="notif-header">
+                <h3>Notifications</h3>
+                <span class="close-notif" onclick="toggleNotifModal()">&times;</span>
+            </div>
+            <div class="notif-body">
+                <!-- Notif 1: System Usage -->
+                @if (lowUsageCount > 0)
+                {
+                    <div class="notif-item warning" onclick="openLowUsageModal(); toggleNotifModal();" style="border-left: 4px solid #0891b2;">
+                        <div class="notif-icon" style="background:#ecfeff; color:#0891b2;"><i class="fa-solid fa-chart-line"></i></div>
+                        <div class="notif-text">
+                            <strong>Low Transport Usage</strong>
+                            <p>@lowUsageCount students have 3 or fewer trips this week.</p>
+                            <small>Efficiency Alert</small>
+                        </div>
+                    </div>
+                }
+                
+                else
+                {
+                <!-- EMPTY STATE -->
+                <div style="padding: 50px 20px; text-align: center; color: #94a3b8;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 40px; color: #2ecc71; margin-bottom: 15px; display: block;"></i>
+                    <p>Everything is running smoothly. No alerts at this time.</p>
+                </div>
+                }
+            </div>
+
+            @if (totalAlerts > 0)
+            {
+                <div class="notif-footer">
+                    <button class="btn-dismiss-all" onclick="toggleNotifModal()">Dismiss All</button>
+                </div>
+            }
+        </div>
+
+        <div class="modal-overlay" id="lowUsageModal" onclick="closeLowUsageModal()">
+            <div class="modal-content glass-card" onclick="event.stopPropagation()" style="max-width: 800px !important;">
+                <button class="btn-close-modal" onclick="closeLowUsageModal()">&times;</button>
+
+                <div class="card-header-gradient" style="background: linear-gradient(135deg, #0891b2 0%, #102a43 100%); padding: 25px; color:white;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <i class="fa-solid fa-bus-circle-exclamation" style="font-size: 24px;"></i>
+                        <div>
+                            <h2 style="margin:0; font-size: 20px;">Low Transport Usage</h2>
+                            <p style="margin:0; font-size: 12px; opacity: 0.8;">Students with 3 or fewer trips in the last 7 days.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 30px;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>LRN</th>
+                                <th style="text-align:center;">Trips (7 Days)</th>
+                                <th style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.Students.Where(s => s.IsLowUsage))
+                            {
+                                <tr>
+                                    <td><strong>@student.FirstName @student.LastName</strong></td>
+                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td style="text-align:center;">
+                                        <span class="status warning" style="background:#ecfeff; color:#0891b2; font-weight:800;">
+                                            @student.WeeklyTripCount Trips
+                                        </span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <button class="btn-view-info" style="background:#0891b2;" onclick="reviewLowUsage('@student.LRN')">
+                                            <i class="fa-solid fa-magnifying-glass"></i> Review Profile
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
         </section>
 
     </div>

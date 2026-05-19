@@ -245,3 +245,54 @@ function closeTripView() {
     document.getElementById('tripDetailOverlay').classList.remove('active');
     document.body.style.overflow = 'auto';
 }
+function toggleNotifModal() {
+    const modal = document.getElementById('notifModal');
+    if (modal.style.display === "block") {
+        modal.style.display = "none";
+    } else {
+        modal.style.display = "block";
+        // Animation trigger
+        modal.style.animation = "notifFadeDown 0.3s ease-out forwards";
+    }
+}
+
+// Close when clicking anywhere outside the modal
+window.addEventListener('click', function (e) {
+    const modal = document.getElementById('notifModal');
+    const wrapper = document.querySelector('.notif-wrapper');
+    if (!wrapper.contains(e.target) && !modal.contains(e.target)) {
+        modal.style.display = 'none';
+    }
+});
+
+function openLowUsageModal() {
+    document.getElementById('lowUsageModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeLowUsageModal() {
+    document.getElementById('lowUsageModal').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+function reviewLowUsage(lrn) {
+    // 1. Resolve alert in backend
+    fetch(`/SchoolDashboard/ResolveLowUsageAlert?lrn=${lrn}`, { method: 'POST' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                closeLowUsageModal();
+                // 2. Navigate and Open profile
+                window.location.hash = 'students';
+                setTimeout(() => {
+                    const rows = document.querySelectorAll('#lguStudentTable tbody tr');
+                    rows.forEach(row => {
+                        if (row.innerText.includes(lrn)) {
+                            const infoBtn = row.querySelector('.btn-view-info');
+                            if (infoBtn) infoBtn.click();
+                        }
+                    });
+                }, 600);
+            }
+        });
+}

@@ -1,9 +1,13 @@
-﻿@{
-    // THIS LINE TELLS THE PAGE WHICH NAVBAR TO USE
+﻿@model MonitoringSystem.Models.SchoolAdminViewModel
+@{
     Layout = "~/Views/Shared/SchoolLayout.cshtml";
-    var alertCount = Model.Students.Count(s => s.NeedsUpdate);
+
+    
+    var reviewAlertCount = Model.Students.Count(s => s.NeedsUpdate);
+    var qrReplacementCount = Model.Students.Count(s => s.NeedsNewQR);
+    var absenceAlertCount = Model.Students.Count(s => s.IsLongAbsence);
+    var totalAlerts = reviewAlertCount + qrReplacementCount + absenceAlertCount;
 }
-@model MonitoringSystem.Models.SchoolAdminViewModel
  
 <!DOCTYPE html>
 <html lang="en">
@@ -37,10 +41,38 @@
             </div>
 
             <div class="stats-grid">
+                <!-- Card 1: Total Students -->
                 <div class="stat-card">
                     <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
-                    <div class="info"><h3>Students</h3><p>0</p></div>
+                    <div class="info"><h3>Students</h3><p>@Model.Students.Count</p></div>
                     <img src="~/students-removebg-preview.png" class="bg-icon">
+                </div>
+
+                <!-- Card 2: Frequent Manual  -->
+                <div class="stat-card" onclick="openFrequentManualModal()" style="cursor: pointer;">
+                    <div class="icon-box navy"><i class="fa-solid fa-qrcode"></i></div>
+                    <div class="info">
+                        <h3>Frequent Manual Check-in</h3>
+                        <p>@Model.Students.Count(s => s.NeedsNewQR)</p>
+                    </div>
+                    <img src="~/bus-removebg-preview.png" class="bg-icon">
+                </div>
+
+                <!--  Card 3: Needs Update -->
+                <div class="stat-card" onclick="openNeedsUpdateModal()" style="cursor: pointer;">
+                    <div class="icon-box grey"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div class="info">
+                        <h3>Student Status Update</h3>
+                        <p>@Model.Students.Count(s => s.NeedsUpdate)</p>
+                    </div>
+                    <img src="~/users-removebg-preview.png" class="bg-icon">
+                </div>
+                <div class="stat-card" onclick="openAbsenceModal()" style="cursor: pointer; border: 1px solid #e2e8f0;">
+                    <div class="icon-box grey" style="background:#f1f5f9; color:#64748b;"><i class="fa-solid fa-user-slash"></i></div>
+                    <div class="info">
+                        <h3>Student Status Review</h3>
+                        <p>@Model.Students.Count(s => s.IsLongAbsence)</p>
+                    </div>
                 </div>
             </div>
         </section>
@@ -447,7 +479,7 @@
                             </h4>
                             <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 15px;">
                                 <table class="modern-table mini" id="tripManifestTable">
-                                    <thead><tr style="background:#f1f5f9;"><th>Name</th><th>Grade/Section</th><th>Address</th><th>Time</th><th>Status</th></tr></thead>
+                                    <thead><tr style="background:#f1f5f9;"><th>Name</th><th>Grade/Section</th><th>Address</th><th>Time</th><th>Status&Reasons</th></tr></thead>
                                     <tbody><!-- Injected by JavaScript --></tbody>
                                 </table>
                             </div>
@@ -550,23 +582,56 @@
             </div>
 
             <div class="notif-body">
-                @if (alertCount > 0)
+                @if (totalAlerts > 0)
                 {
-                    <!-- ITEM SHOWS ONLY IF ALERT EXISTS -->
-                    <div class="notif-item alert" onclick="window.location.hash='#students'; toggleNotifModal();">
-                        <div class="notif-icon" style="background:#fff1f2; color:#ef4444; width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
-                            <i class="fa-solid fa-user-pen"></i>
+                    <!-- NOTIFICATION 1: GRADE LEVEL UPDATES (Red Alert) -->
+                    @if (reviewAlertCount > 0)
+                    {
+                        <div class="notif-item alert" onclick="window.location.hash='#students'; toggleNotifModal();">
+                            <div class="notif-icon" style="background:#fff1f2; color:#ef4444; width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fa-solid fa-user-pen"></i>
+                            </div>
+                            <div class="notif-text">
+                                <strong style="display:block; font-size:13px; color:#1e293b;">Grade Level Update Due</strong>
+                                <p style="font-size:12px; color:#64748b; margin:3px 0;">@reviewAlertCount students have reached their 1-year review period.</p>
+                                <small style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Action Required</small>
+                            </div>
                         </div>
-                        <div class="notif-text">
-                            <strong style="display:block; font-size:13px; color:#1e293b;">Grade Level Update Due</strong>
-                            <p style="font-size:12px; color:#64748b; margin:3px 0;">@alertCount students have reached their 1-year review period.</p>
-                            <small style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Action Required</small>
+                    }
+
+                    <!-- NOTIFICATION 2: QR REPLACEMENT (Orange Warning) -->
+                    @if (qrReplacementCount > 0)
+                    {
+                        <div class="notif-item warning" onclick="window.location.hash='#students'; toggleNotifModal();" style="border-top: 1px solid #f1f5f9;">
+                            <div class="notif-icon" style="background:#fffbeb; color:#f59e0b; width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fa-solid fa-qrcode"></i>
+                            </div>
+                            <div class="notif-text">
+                                <strong style="display:block; font-size:13px; color:#1e293b;">ID Replacement Suggested</strong>
+                                <p style="font-size:12px; color:#64748b; margin:3px 0;">@qrReplacementCount students are using manual boarding frequently.</p>
+                                <small style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Maintenance Needed</small>
+                            </div>
                         </div>
-                    </div>
+                    }
+                    <!-- NEW ALERT 3: PROLONGED ABSENCE -->
+                    @if (absenceAlertCount > 0)
+                    {
+                        <div class="notif-item info" onclick="openAbsenceModal(); toggleNotifModal();" style="border-top: 1px solid #f1f5f9;">
+                            <div class="notif-icon" style="background:#f1f5f9; color:#64748b;">
+                                <i class="fa-solid fa-user-clock"></i>
+                            </div>
+                            <div class="notif-text">
+                                <strong>Absence Review Required</strong>
+                                <p>@absenceAlertCount students have not boarded in over 30 days.</p>
+                                <small style="color:#64748b; font-weight:700;">Operational Review</small>
+                            </div>
+                        </div>
+                    }
                 }
+
                 else
                 {
-                    <!-- EMPTY STATE: SHOWS IF NO ALERTS -->
+                    <!-- EMPTY STATE: SHOWS IF NO ALERTS AT ALL -->
                     <div style="padding: 40px 20px; text-align: center; color: #94a3b8;">
                         <i class="fa-solid fa-circle-check" style="font-size: 30px; color: #2ecc71; margin-bottom: 10px; display: block;"></i>
                         <p style="font-size: 13px; margin: 0;">Your system is all caught up!</p>
@@ -574,16 +639,160 @@
                 }
             </div>
 
-            @if (alertCount > 0)
+            @if (totalAlerts > 0)
             {
                 <div class="notif-footer">
                     <a href="#" style="text-decoration:none; font-size:12px; color:#0077b6; font-weight:700;">Mark all as read</a>
                 </div>
             }
         </div>
+        <!-- frequnt manual check in -->
+        <div class="modal-overlay" id="frequentManualModal" onclick="closeFrequentModal()">
+            <div class="modal-content glass-card" onclick="event.stopPropagation()" style="max-width: 800px !important;">
+                <button class="btn-close-modal" onclick="closeFrequentModal()">&times;</button>
+
+                <div class="card-header-gradient" style="background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%); padding: 25px; color:white; border-radius: 20px 20px 0 0;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 24px;"></i>
+                        <div>
+                            <h2 style="margin:0; font-size: 20px;">Manual Boarding Alerts</h2>
+                            <p style="margin:0; font-size: 12px; opacity: 0.8;">Students who frequently board without scanning a QR code.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 30px;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>LRN</th>
+                                <th style="text-align:center;">Manual Scans</th>
+                                <th style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.Students.Where(s => s.NeedsNewQR))
+                            {
+                                <tr>
+                                    <td><strong>@student.FirstName @student.LastName</strong></td>
+                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td style="text-align:center;">
+                                        <span style="color:#ef4444; font-weight:800;">@student.ManualCheckInCount</span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <!-- REVIEW BUTTON -->
+                                        <button class="btn-view-info"
+                                                onclick="reviewStudentQR('@student.LRN')">
+                                            <i class="fa-solid fa-magnifying-glass"></i> Review & QR
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- MODAL: STUDENTS NEEDING UPDATE LIST -->
+        <div class="modal-overlay" id="needsUpdateModal" onclick="closeUpdateAlertModal()">
+            <div class="modal-content glass-card" onclick="event.stopPropagation()" style="max-width: 800px !important;">
+                <button class="btn-close-modal" onclick="closeUpdateAlertModal()">&times;</button>
+
+                <div class="card-header-gradient" style="background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%); padding: 25px; color:white; border-radius: 20px 20px 0 0;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 24px;"></i>
+                        <div>
+                            <h2 style="margin:0; font-size: 20px;">Review Period Alerts</h2>
+                            <p style="margin:0; font-size: 12px; opacity: 0.8;">Students who have been registered for over 1 year and need a Grade Level review.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 30px;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Date Registered</th>
+                                <th style="text-align:center;">Status</th>
+                                <th style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.Students.Where(s => s.NeedsUpdate || s.ReviewStatus == "Pending Update"))
+                            {
+                                <tr id="row-@student.LRN">
+                                    <td><strong>@student.FirstName @student.LastName</strong></td>
+                                    <td>@student.DateRegistered</td>
+                                    <td style="text-align:center;">
+                                        @if (student.ReviewStatus == "Pending Update")
+                                        {
+                                            <span class="status-pill" style="background:#e0f2fe; color:#0369a1;">Pending Update</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-pill" style="background:#fee2e2; color:#ef4444;">Review Due</span>
+                                        }
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <button class="btn-view-info" style="background:#ef4444;"
+                                                onclick="reviewForUpdate('@student.LRN')">
+                                            <i class="fa-solid fa-pen-to-square"></i> Review
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="absenceModal" onclick="closeAbsenceModal()">
+            <div class="modal-content glass-card" onclick="event.stopPropagation()" style="max-width: 800px !important;">
+                <button class="btn-close-modal" onclick="closeAbsenceModal()">&times;</button>
+
+                <div class="card-header-gradient" style="background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%); padding: 25px; color:white; border-radius: 20px 20px 0 0;">
+                    <div style="display:flex; align-items:center; gap:15px;">
+                        <i class="fa-solid fa-user-clock" style="font-size: 24px;"></i>
+                        <div>
+                            <h2 style="margin:0; font-size: 20px;">Inactive Student Review</h2>
+                            <p style="margin:0; font-size: 12px; opacity: 0.8;">Students who have not boarded any bus in the last 30 days.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="padding: 30px;">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Last Seen</th>
+                                <th style="text-align:center;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.Students.Where(s => s.IsLongAbsence))
+                            {
+                                <tr>
+                                    <td><strong>@student.FirstName @student.LastName</strong></td>
+                                    <td>@(string.IsNullOrEmpty(student.LastBoardingDate) ? "Never Boarded" : student.LastBoardingDate)</td>
+                                    <td style="text-align:center;">
+                                        <button class="btn-view-info" style="background:#1e293b;"
+                                                onclick="reviewAbsence('@student.LRN')">
+                                            <i class="fa-solid fa-eye"></i> Review Profile
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="LguDashboard.js"></script>
+    <script src="LguDashboard.js" asp-append-version="true"></script>
     <script src="~/js/School.js" asp-append-version="true"></script>
 </body>
 </html>

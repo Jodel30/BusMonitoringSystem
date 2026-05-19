@@ -29,15 +29,24 @@
                 <i class="fa-solid fa-bell" style="color:white; font-size:22px;"></i>
 
                 @{
-                    // Calculate alert count once to reuse
-                    var alertCount = Model.Students.Count(s => s.NeedsUpdate);
+                    // 1. Count students needing Grade Level updates (1 year mark)
+                    var reviewCount = Model.Students.Count(s => s.NeedsUpdate);
+
+                    // 2. Count students needing QR replacements (5+ manual entries)
+                    var qrCount = Model.Students.Count(s => s.NeedsNewQR);
+
+                    // 3. Count students absent for 30+ days
+                    var absenceCount = Model.Students.Count(s => s.IsLongAbsence);
+
+                    // 4. Combine all for the total badge number
+                    var totalAlerts = reviewCount + qrCount + absenceCount;
                 }
 
-                @if (alertCount > 0)
+                @if (totalAlerts > 0)
                 {
-                    <!-- Only show badge if count > 0 -->
+                    <!-- The badge now shows the sum of all three types of alerts -->
                     <span class="notif-badge" style="position:absolute; top:-5px; right:-8px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:50px; border:2px solid #0077b6;">
-                        @alertCount
+                        @totalAlerts
                     </span>
                 }
             </div>

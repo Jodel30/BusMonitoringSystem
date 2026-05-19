@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model MonitoringSystem.Models.LguDashboardViewModel
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -24,11 +25,24 @@
                     <li><a href="#user">User Management</a></li>
                 </ul>
             </nav>
+            <div class="notif-wrapper" onclick="toggleNotifModal()" style="position:relative; cursor:pointer;">
+                <i class="fa-solid fa-bell" style="color:white; font-size:22px;"></i>
+                @{
+                    // Update your counts at the top of the file
+                    var lowUsageCount = Model.Students.Count(s => s.IsLowUsage);
+                    // Add this to your totalAlerts variable for the bell badge
+                    var totalAlerts = lowUsageCount;
+                }
+
+                @if (totalAlerts > 0)
+                {
+                    <span class="notif-badge" style="position:absolute; top:-5px; right:-8px; background:#ef4444; color:white; font-size:10px; padding:2px 6px; border-radius:50px; border:2px solid #0077b6;">
+                        @totalAlerts
+                    </span>
+                }
+            </div>
             <div class="profile-area">
-                <div class="notif-wrapper" onclick="toggleNotifModal()">
-                    <i class="fa-solid fa-bell"></i>
-                    <span class="notif-badge">3</span>
-                </div>
+                
                 <a href="/Account/Login" title="Logout">
                     <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout">
                 </a>
