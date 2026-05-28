@@ -471,3 +471,111 @@
     .mini-count-success strong {
         color: #0077b6;
     }
+
+/* SYSTEM ALERT MODAL */
+/* THE OVERLAY (Background Blur) */
+#systemAlertModal {
+    position: absolute; /* Keeps it inside the mobile-container */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(16, 42, 67, 0.6); /* Navy tint */
+    backdrop-filter: blur(5px);
+    z-index: 5000;
+    /* HIDDEN BY DEFAULT */
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+    /* THE TRIGGER (When JS adds this class) */
+    #systemAlertModal.active {
+        display: flex;
+    }
+
+/* YOUR STYLES APPLIED TO THE BOX */
+.system-alert-box {
+    background: white;
+    width: 85%; /* Fits mobile width */
+    max-width: 320px;
+    padding: 30px !important;
+    text-align: center;
+    border-radius: 28px !important;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    /* Animation */
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+}
+
+#systemAlertModal.active .system-alert-box {
+    transform: translateY(0);
+}
+
+#alert-icon-container {
+    width: 65px;
+    height: 65px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+}
+
+/* Alert Types */
+.alert-success {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    color: #f59e0b;
+}
+
+.system-alert-box h3 {
+    margin: 0 0 10px;
+    color: #102a43;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.system-alert-box p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.alert-footer {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-alert-primary {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    background: #0077b6;
+    color: white;
+}
+
+.btn-alert-secondary {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #f1f5f9;
+    color: #64748b;
+}

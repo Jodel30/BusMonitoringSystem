@@ -6,13 +6,15 @@ namespace MonitoringSystem.Controllers
 {
     public class LguDashboardController : Controller
     {
+        public static List<SystemAccount> _accountList = new List<SystemAccount>();
         public IActionResult Index()
         {
             var viewModel = new LguDashboardViewModel
             {
                 // Accessing the shared list correctly here:
                 Students = SchoolDashboard._studentList,
-                TripLogs = DriverDashboard._tripHistory
+                TripLogs = DriverDashboard._tripHistory,
+                 Accounts = _accountList
             };
 
             return View(viewModel);
@@ -30,6 +32,20 @@ namespace MonitoringSystem.Controllers
                 return Json(new { success = true });
             }
             return Json(new { success = false });
+        }
+        [HttpPost]
+        public IActionResult RegisterAccount(SystemAccount model)
+        {
+            if (model != null)
+            {
+                // 1. Add the new account to the SHARED static list
+                _accountList.Add(model);
+
+                // 2. Redirect back to the dashboard, jumping to the #user section
+                return Redirect(Url.Action("Index") + "#user");
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

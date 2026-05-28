@@ -32,8 +32,11 @@ namespace MonitoringSystem.Models
             {
                 if (DateTime.TryParse(DateRegistered, out DateTime regDate))
                 {
-                    // If it's over a year AND not already marked as "Pending" or "Healthy"
-                    return (DateTime.Now - regDate).TotalDays >= 365 && ReviewStatus == "Review Due";
+                    // Logic: Over 1 year AND the status is "Pending"
+                    bool isOverYear = (DateTime.Now - regDate).TotalDays >= 365;
+
+                    // Matches your new UI status
+                    return isOverYear && ReviewStatus == "Pending" && Status == "Active";
                 }
                 return false;
             }
@@ -66,19 +69,29 @@ namespace MonitoringSystem.Models
         {
             get
             {
+                // 1. Basic checks: Must be Active and not already resolved by Admin
                 if (Status != "Active" || LowUsageAlertResolved) return false;
 
-                // Count trips for this student in the last 7 days
+               
+                if (DateTime.Now.DayOfWeek != DayOfWeek.Friday) return false;
+
+               
+                if (DateTime.TryParse(DateRegistered, out DateTime regDate))
+                {
+                    if ((DateTime.Now - regDate).TotalDays < 5) return false;
+                }
+
+                // 4. Count trips for this student in the last 7 days
                 int tripCount = SchoolDashboard._scanHistory.Count(s =>
                     s.LRN == this.LRN &&
                     DateTime.TryParse(s.Date, out DateTime tripDate) &&
                     (DateTime.Now - tripDate).TotalDays <= 7
                 );
 
+                // 5. Final Alert: If it's Friday, they've been here a week, and have 3 or fewer trips.
                 return tripCount <= 3;
             }
         }
-
         // Helper to show the actual count in the table
         public int WeeklyTripCount => SchoolDashboard._scanHistory.Count(s =>
             s.LRN == this.LRN &&

@@ -91,7 +91,7 @@ body {
 }
 
 .top-nav a.active {
-    color: #00d4ff;
+    color: #00d4ff !important;
 }
 
     .top-nav a.active::after {
@@ -1029,8 +1029,8 @@ hr {
 }
 
     .filter-controls label {
-        font-weight: 700;
-        font-size: 14px;
+        font-weight: 600;
+        font-size: 10px;
         color: #1e293b;
     }
 
@@ -1586,3 +1586,32 @@ hr {
         cursor: pointer;
     }
 
+#rp-visual-badge h1 {
+    font-size: 25px;
+    font-weight: 700;
+    color: #102a43;
+    margin: 0;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+
+.report-brand-box .filter-controls {
+    display: flex;
+    align-items: center;
+}
+
+#stu-badge-wrapper h1 {
+    font-size: 25px;
+    font-weight: 700;
+    color: #102a43;
+    margin: 0;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+
+.report-brand-box .filter-controls {
+    display: flex;
+    align-items: center;
+}

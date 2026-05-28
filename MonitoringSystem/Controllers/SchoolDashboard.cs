@@ -9,6 +9,7 @@ namespace MonitoringSystem.Controllers
         // Static student list
         public static List<Student> _studentList = new List<Student>();
 
+
         public static List<StudentScan> _scanHistory = new List<StudentScan>();
            
 
@@ -56,9 +57,9 @@ namespace MonitoringSystem.Controllers
             model.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
 
             _studentList.Add(model);
+            TempData["RegistrationSuccess"] = true;
             return Redirect(Url.Action("SchoolAdmin") + "#students");
         }
-
         [HttpGet]
         public IActionResult GetStudentData(string lrn)
         {
@@ -72,13 +73,28 @@ namespace MonitoringSystem.Controllers
 
             if (student != null)
             {
-                // Fetch only this student's scans
+                // --- SECURITY CHECK ---
+                if (student.Status == "Inactive")
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Access Denied: This student is currently inactive/archived and is not authorized to board."
+                    });
+                }
+
+                // 1. Fetch only this student's scans
                 var history = _scanHistory
                     .Where(h => h.LRN == cleanLrn)
-                    .OrderByDescending(h => h.Date)      // Newest Date first
-                    .ThenByDescending(h => h.ScanTime)  // Newest Time first
+                    .OrderByDescending(h => h.Date)
+                    .ThenByDescending(h => h.ScanTime)
                     .ToList();
 
+                // --- NEW: CALCULATE MANUAL COUNT ---
+                // We count every record in their history where the status starts with "Manual"
+                int manualScans = history.Count(h => h.Status != null && h.Status.Contains("Manual"));
+
+                // 2. Return data including the manual count
                 return Json(new
                 {
                     success = true,
@@ -91,9 +107,11 @@ namespace MonitoringSystem.Controllers
                     parent = student.Parent,
                     contact = student.ParentContact,
 
-                    // This list contains the Date, TripId, ScanTime, and Status
                     tripHistory = history,
-                    totalTrips = history.Count
+                    totalTrips = history.Count,
+
+                    // --- ADDED THIS PROPERTY ---
+                    manualCount = manualScans
                 });
             }
 
@@ -200,6 +218,17 @@ namespace MonitoringSystem.Controllers
                 return Json(new { success = true });
             }
             return Json(new { success = false });
+        }
+
+        [HttpPost]
+        public IActionResult MarkAsActive(string studentId)
+        {
+            var student = _studentList.FirstOrDefault(s => s.StudentId == studentId);
+            if (student != null)
+            {
+                student.Status = "Active";
+            }
+            return Ok(); 
         }
     }
 }

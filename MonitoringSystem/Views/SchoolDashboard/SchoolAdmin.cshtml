@@ -62,7 +62,7 @@
                 <div class="stat-card" onclick="openNeedsUpdateModal()" style="cursor: pointer;">
                     <div class="icon-box grey"><i class="fa-solid fa-calendar-check"></i></div>
                     <div class="info">
-                        <h3>Student Status Update</h3>
+                        <h3>Student Status Review</h3>
                         <p>@Model.Students.Count(s => s.NeedsUpdate)</p>
                     </div>
                     <img src="~/users-removebg-preview.png" class="bg-icon">
@@ -70,7 +70,7 @@
                 <div class="stat-card" onclick="openAbsenceModal()" style="cursor: pointer; border: 1px solid #e2e8f0;">
                     <div class="icon-box grey" style="background:#f1f5f9; color:#64748b;"><i class="fa-solid fa-user-slash"></i></div>
                     <div class="info">
-                        <h3>Student Status Review</h3>
+                        <h3>Student Status Update</h3>
                         <p>@Model.Students.Count(s => s.IsLongAbsence)</p>
                     </div>
                 </div>
@@ -164,6 +164,7 @@
                                     <option value="" disabled selected>Select Address</option>
                                     <option>NHA Kabac</option>
                                     <option>NHA Kampingganon</option>
+                                    <option>Others</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -193,7 +194,20 @@
                     </form>
                 </div>
             </div>
-
+            <!-- REGISTRATION SUCCESS MODAL -->
+            @if (TempData["RegistrationSuccess"] != null)
+            {
+                <div class="modal-overlay active" id="successModal">
+                    <div class="modal-content success-box">
+                        <div class="success-icon">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <h2>Registration Successful!</h2>
+                        <p>The student has been added to the registry and a unique QR Identity has been generated.</p>
+                        <button class="btn-success-ok" onclick="closeSuccessModal()">Ok</button>
+                    </div>
+                </div>
+            }
             <!-- STUDENT LIST TABLE -->
             <div class="glass-card mt-4">
                 <div class="section-heading-row">
@@ -211,8 +225,6 @@
                             <th>Full Name</th>
                             <th>Grade/Section</th>
                             <th>QR Code</th>
-                            <th>Student Info</th>
-                            <th>Update Student</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -225,23 +237,26 @@
                                 <td>
                                     <div>
                                         <!-- QR BUTTON -->
-                                        <button type="button" class="icon-qr-trigger" onclick="viewQRCode('@student.QRCodeBase64')" title="View QR">
+                                        <button type="button" class="icon-qr-trigger"
+                                                onclick="viewQRCode('@student.QRCodeBase64', '@student.FirstName @student.LastName')">
                                             <i class="fa-solid fa-qrcode"></i>
                                         </button>
                                     </div>
                                 </td>
                                 <td>
-                                    <button type="button" class="btn-view-info"
-                                            onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.LRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.Parent)', '@student.ParentContact', '@student.StudentId', '@student.DateRegistered')">
-                                        <i class="fa-solid fa-circle-info"></i> View Student Info
-                                    </button>
+                                    <div class="action-buttons-container">
+                                        <button type="button" class="btn-view-info"
+                                                onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.LRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.Parent)', '@student.ParentContact', '@student.StudentId', '@student.DateRegistered')">
+                                            <i class="fa-solid fa-circle-info"></i> View Student Info
+                                        </button>
+
+                                        <button type="button" class="btn-view-info btn-update-dark"
+                                                onclick="openUpdateModal('@student.StudentId', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ParentContact', '@student.Status')">
+                                            <i class="fa-solid fa-pen-to-square"></i> Update
+                                        </button>
+                                    </div>
                                 </td>
-                                <td>
-                                    <button type="button" class="btn-view-info" style="background:#1e293b;"
-                                            onclick="openUpdateModal('@student.StudentId', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ParentContact', '@student.Status')">
-                                        <i class="fa-solid fa-pen-to-square"></i> Update
-                                    </button>
-                                </td>
+                                
                             </tr>
                         }
                     </tbody>
@@ -252,11 +267,25 @@
             <div class="modal-overlay" id="qrModalOverlay" onclick="closeQRView()">
                 <div class="modal-content qr-view-box" onclick="event.stopPropagation()">
                     <button class="btn-close-modal" onclick="closeQRView()">&times;</button>
-                    <h3>Student QR Identity</h3>
-                    <div class="qr-container-full">
-                        <img id="fullSizeQR" src="" alt="QR Code">
+
+                    <!-- PRINTABLE AREA -->
+                    <div id="printable-qr-card" class="qr-card-container">
+                        <div class="qr-container-full">
+                            <img id="fullSizeQR" src="" alt="QR Code">
+                        </div>
+                        <h2 id="qr-modal-name" style="color: #102a43; font-size: 18px; margin-top: 10px;">Student Name</h2>
+                        <p>Scan this code to verify boarding</p>
                     </div>
-                    <p>Scan this code to verify boarding</p>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="qr-action-footer">
+                        <button class="btn-qr-action download" onclick="downloadQR()">
+                            <i class="fa-solid fa-download"></i> Save as Image
+                        </button>
+                        <button class="btn-qr-action print" onclick="printQRCard()">
+                            <i class="fa-solid fa-print"></i> Print QR code
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -388,14 +417,13 @@
 
             <div class="report-filters glass-card">
                 <div id="rp-visual-badge" class="report-brand-box">
-                    <img src="~/freebus.jpg" id="report-img" alt="Report Design">
-                    
+                    <div class="filter-controls"><h1>Transport Activity Overview</h1></div>
                 </div>
 
                 <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
                     <div class="report-view-toggle">
-                        <button class="toggle-btn active" onclick="rp_switchSubView('daily')">Daily</button>
-                        <button class="toggle-btn" onclick="rp_switchSubView('monthly')">Monthly</button>
+                        <button class="toggle-btn active" onclick="sch_switchReport('daily', this)">Daily</button>
+                        <button class="toggle-btn" onclick="sch_switchReport('monthly', this)">Monthly</button>
                     </div>
                     <div class="filter-controls" id="rp-daily-box">
                         <input type="date" class="modern-input">
@@ -411,11 +439,12 @@
             </div>
 
             <div class="glass-card report-results">
-                <div class="results-header"><h3>Trip Overview</h3><button class="btn-export">Export PDF</button></div>
+                <div class="results-header"><h3>Daily Transport Summary</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
                             <th>Trip ID</th>
+                            <th>Shift</th>
                             <th>Date</th>
                             <th>Assigned Bus Aide</th>
                             <th>Total Boarded</th>
@@ -427,9 +456,24 @@
                         {
                             <tr>
                                 <td><span class="id-tag">@trip.TripId</span></td>
+                                <td>
+                                    
+                                    @if (trip.Shift == "AM")
+                                    {
+                                        <span class="status">
+                                            AM 
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status">
+                                             PM 
+                                        </span>
+                                    }
+                                </td>
                                 <td>@trip.Date</td>
                                 <td><strong>@trip.DriverName</strong></td>
-                                <td>@trip.BoardedCount Students</td>
+                                <td>@trip.BoardedCount </td>
                                 <td><span class="status success">Completed</span></td>
                                 <td>
                                     <!-- ACTION BUTTON -->
@@ -544,17 +588,19 @@
                                         <div style="display:flex; gap:10px; justify-content:center;">
                                             <!-- RESTORE BUTTON -->
                                             <button type="button" class="btn-restore"
-                                                    onclick="openUpdateModal('@student.StudentId', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ParentContact', '@student.Status')">
+                                                    onclick="askConfirm('restore', '@student.StudentId', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
                                                 <i class="fa-solid fa-rotate-left"></i> Restore
                                             </button>
 
-                                            <!-- DELETE BUTTON -->
-                                            <form asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post"
-                                                  onsubmit="return confirm('WARNING: Are you sure you want to PERMANENTLY delete this student record? This cannot be undone.');">
+                                            <!-- DELETE BUTTON  -->
+                                            <button type="button" class="btn-delete"
+                                                    onclick="askConfirm('delete', '@student.StudentId', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
+                                                <i class="fa-solid fa-trash-can"></i> Delete
+                                            </button>
+
+                                            <!-- HIDDEN FORM FOR ACTUAL DELETION -->
+                                            <form id="delete-form-@student.StudentId" asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post" style="display:none;">
                                                 <input type="hidden" name="StudentId" value="@student.StudentId" />
-                                                <button type="submit" class="btn-delete">
-                                                    <i class="fa-solid fa-trash-can"></i> Delete
-                                                </button>
                                             </form>
                                         </div>
                                     </td>
@@ -572,6 +618,21 @@
                     }
                 </tbody>
             </table>
+                <!-- UNIFIED CONFIRMATION MODAL -->
+                <div class="modal-overlay" id="customConfirmModal">
+                    <div class="modal-content confirm-box">
+                        <div id="confirm-icon-box" class="confirm-icon">
+                            <i id="confirm-icon-i" class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h2 id="confirm-title">Are you sure?</h2>
+                        <p id="confirm-message">This action will perform a change to the student record.</p>
+
+                        <div class="confirm-actions">
+                            <button class="btn-secondary" onclick="closeConfirmModal()">No, Cancel</button>
+                            <button id="confirm-yes-btn" class="btn-primary-form">Yes, Proceed</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
         <!-- NOTIFICATION MODAL -->
@@ -587,7 +648,7 @@
                     <!-- NOTIFICATION 1: GRADE LEVEL UPDATES (Red Alert) -->
                     @if (reviewAlertCount > 0)
                     {
-                        <div class="notif-item alert" onclick="window.location.hash='#students'; toggleNotifModal();">
+                        <div class="notif-item alert" onclick="openNeedsUpdateModal(); toggleNotifModal();">
                             <div class="notif-icon" style="background:#fff1f2; color:#ef4444; width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i class="fa-solid fa-user-pen"></i>
                             </div>
@@ -602,7 +663,7 @@
                     <!-- NOTIFICATION 2: QR REPLACEMENT (Orange Warning) -->
                     @if (qrReplacementCount > 0)
                     {
-                        <div class="notif-item warning" onclick="window.location.hash='#students'; toggleNotifModal();" style="border-top: 1px solid #f1f5f9;">
+                        <div class="notif-item warning" onclick="openFrequentManualModal(); toggleNotifModal();" style="border-top: 1px solid #f1f5f9;">
                             <div class="notif-icon" style="background:#fffbeb; color:#f59e0b; width:35px; height:35px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
                                 <i class="fa-solid fa-qrcode"></i>
                             </div>
@@ -668,6 +729,7 @@
                                 <th>Student Name</th>
                                 <th>LRN</th>
                                 <th style="text-align:center;">Manual Scans</th>
+                                <th>Status</th>
                                 <th style="text-align:center;">Action</th>
                             </tr>
                         </thead>
@@ -679,6 +741,11 @@
                                     <td><span class="id-tag">@student.LRN</span></td>
                                     <td style="text-align:center;">
                                         <span style="color:#ef4444; font-weight:800;">@student.ManualCheckInCount</span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span class="status-pill" style="background:#e0f2fe; color:#0369a1; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
+                                            Pending
+                                        </span>
                                     </td>
                                     <td style="text-align:center;">
                                         <!-- REVIEW BUTTON -->
@@ -726,17 +793,12 @@
                                     <td><strong>@student.FirstName @student.LastName</strong></td>
                                     <td>@student.DateRegistered</td>
                                     <td style="text-align:center;">
-                                        @if (student.ReviewStatus == "Pending Update")
-                                        {
-                                            <span class="status-pill" style="background:#e0f2fe; color:#0369a1;">Pending Update</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="status-pill" style="background:#fee2e2; color:#ef4444;">Review Due</span>
-                                        }
+                                        <span class="status-pill" style="background:#e0f2fe; color:#0369a1; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 800;">
+                                            PENDING
+                                        </span>
                                     </td>
                                     <td style="text-align:center;">
-                                        <button class="btn-view-info" style="background:#ef4444;"
+                                        <button class="btn-view-info" style="background:#1e293b;"
                                                 onclick="reviewForUpdate('@student.LRN')">
                                             <i class="fa-solid fa-pen-to-square"></i> Review
                                         </button>
@@ -768,6 +830,7 @@
                             <tr>
                                 <th>Student Name</th>
                                 <th>Last Seen</th>
+                                <th style="text-align:center;">Status</th>
                                 <th style="text-align:center;">Action</th>
                             </tr>
                         </thead>
@@ -777,6 +840,12 @@
                                 <tr>
                                     <td><strong>@student.FirstName @student.LastName</strong></td>
                                     <td>@(string.IsNullOrEmpty(student.LastBoardingDate) ? "Never Boarded" : student.LastBoardingDate)</td>
+                                    <td style="text-align:center;">
+                                        
+                                        <span class="status-pill" style="background:#e0f2fe; color:#0369a1; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 800; text-transform: uppercase;">
+                                            Pending
+                                        </span>
+                                    </td>
                                     <td style="text-align:center;">
                                         <button class="btn-view-info" style="background:#1e293b;"
                                                 onclick="reviewAbsence('@student.LRN')">
@@ -792,7 +861,6 @@
         </div>
     </div>
 
-    <script src="LguDashboard.js" asp-append-version="true"></script>
     <script src="~/js/School.js" asp-append-version="true"></script>
 </body>
 </html>

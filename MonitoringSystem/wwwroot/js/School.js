@@ -41,13 +41,34 @@ function previewFile() {
 }
 
 // --- 3. QR CODE VIEW MODAL ---
-function viewQRCode(base64Data) {
+function viewQRCode(base64Data, studentName) {
     const qrImg = document.getElementById('fullSizeQR');
-    // Ensure the data prefix is added
     qrImg.src = "data:image/png;base64," + base64Data;
+
+    // Set the name in the modal so the admin knows whose QR it is
+    const nameEl = document.getElementById('qr-modal-name');
+    if (nameEl) nameEl.innerText = studentName;
 
     document.getElementById('qrModalOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+// 1. SAVE AS IMAGE FUNCTION
+function downloadQR() {
+    const qrImage = document.getElementById('fullSizeQR').src;
+    const name = document.getElementById('qr-modal-name').innerText;
+
+    const link = document.createElement('a');
+    link.href = qrImage;
+    link.download = `QR_${name}.png`; // Saves file as QR_StudentName.png
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// 2. PRINT FUNCTION
+function printQRCard() {
+    window.print();
 }
 
 function closeQRView() {
@@ -155,13 +176,14 @@ function closeUpdateModalOutside(e) {
     if (e.target.id === "updateStudentOverlay") closeUpdateModal();
 }
 // scan students
-function viewTripDetails(id, date, driver, start, end, count) {
+function viewTripDetails(id, date, driver, start, end, count, shift) {
     document.getElementById('det-trip-id').innerText = id;
     document.getElementById('det-date').innerText = date;
     document.getElementById('det-driver').innerText = driver;
     document.getElementById('det-start').innerText = start || "N/A";
     document.getElementById('det-end').innerText = end || "N/A";
     document.getElementById('det-count').innerText = count;
+    document.getElementById('det-trip-id').innerText = id + " (" + shift + ")";
 
     
     const tbody = document.querySelector('#tripManifestTable tbody');
@@ -195,6 +217,32 @@ function rp_handleMainToggle() {
         if (badge) badge.style.display = 'flex';
         btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
         btn.style.background = '';
+    }
+}
+
+function sch_switchReport(type, clickedBtn) {
+    const dailyBox = document.getElementById('rp-daily-box');
+    const monthlyBox = document.getElementById('rp-monthly-box');
+
+    // 1. Find the parent container of the button you clicked
+    const parentContainer = clickedBtn.parentElement;
+
+    // 2. Find all buttons ONLY inside that specific container
+    const btns = parentContainer.querySelectorAll('.toggle-btn');
+
+    // 3. Remove 'active' from all buttons in THIS group
+    btns.forEach(btn => btn.classList.remove('active'));
+
+    // 4. Add 'active' to the button you physically clicked
+    clickedBtn.classList.add('active');
+
+    // 5. Toggle the input boxes (This part you said was already working)
+    if (type === 'daily') {
+        if (dailyBox) dailyBox.style.display = 'block';
+        if (monthlyBox) monthlyBox.style.display = 'none';
+    } else {
+        if (dailyBox) dailyBox.style.display = 'none';
+        if (monthlyBox) monthlyBox.style.display = 'block';
     }
 }
 function filterArchiveTable() {
@@ -355,3 +403,83 @@ function reviewAbsence(lrn) {
             }, 600);
         });
 }
+function closeSuccessModal() {
+    const modal = document.getElementById('successModal');
+    if (modal) {
+        modal.classList.remove('active');
+        // Optional: clear the URL hash
+        window.location.hash = "students";
+    }
+}
+
+let pendingAction = null;
+
+function askConfirm(type, id, name) {
+    const modal = document.getElementById('customConfirmModal');
+    const title = document.getElementById('confirm-title');
+    const msg = document.getElementById('confirm-message');
+    const iconBox = document.getElementById('confirm-icon-box');
+    const icon = document.getElementById('confirm-icon-i');
+    const yesBtn = document.getElementById('confirm-yes-btn');
+
+    if (type === 'delete') {
+        title.innerText = "Delete Student?";
+        msg.innerHTML = `Are you sure you want to PERMANENTLY delete <strong>${name}</strong>? This cannot be undone.`;
+        iconBox.style.background = "#fee2e2";
+        iconBox.style.color = "#ef4444";
+        icon.className = "fa-solid fa-trash-can";
+        yesBtn.style.background = "#ef4444";
+
+        // Action: Submit the hidden form
+        pendingAction = () => document.getElementById('delete-form-' + id).submit();
+    }
+    else if (type === 'restore') {
+        title.innerText = "Restore Student?";
+        msg.innerHTML = `Do you want to move <strong>${name}</strong> back to the Active Registry?`;
+        iconBox.style.background = "#eef6fc";
+        iconBox.style.color = "#0077b6";
+        icon.className = "fa-solid fa-rotate-left";
+        yesBtn.style.background = "#0077b6";
+
+        // Action: Trigger your existing status update logic
+        // We'll call a simple fetch to update status to 'Active'
+        pendingAction = () => {
+            fetch(`/SchoolDashboard/MarkAsActive?studentId=${id}`, { method: 'POST' })
+                .then(() => window.location.reload());
+        };
+    }
+
+    modal.classList.add('active');
+    yesBtn.onclick = pendingAction;
+}
+
+function closeConfirmModal() {
+    document.getElementById('customConfirmModal').classList.remove('active');
+}
+
+// --- SCROLL SPY LOGIC ---
+window.addEventListener('scroll', () => {
+    let current = "";
+    // 1. Get all your sections
+    const sections = document.querySelectorAll('section.main-content');
+    const navLinks = document.querySelectorAll('.top-nav a');
+
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+
+        // Check if the scroll position is within the section
+        // (We subtract 200px to trigger the change slightly before reaching the top)
+        if (pageYOffset >= (sectionTop - 200)) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    // 2. Update the navbar links
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').includes(current)) {
+            link.classList.add('active');
+        }
+    });
+});

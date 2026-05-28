@@ -3,7 +3,7 @@ let currentBoardedCount = 0;
 let tripStartTime = "";
 let tripIdCounter = 1;
 let currentTripId = "";
-
+let currentShift = "";
 function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('active');
     document.getElementById('overlay').classList.toggle('active');
@@ -26,8 +26,14 @@ function switchSection(id) {
 
 // --- 1. START TRIP LOGIC ---
 function handleStart() {
+  
     currentTripId = "TRP-" + String(tripIdCounter).padStart(3, '0');
+
     tripStartTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    console.log("New Trip Started with ID: " + currentTripId);
+    const hour = new Date().getHours();
+    currentShift = (hour < 12) ? "AM" : "PM";
 
     const banner = document.getElementById('main-title');
     const idleState = document.getElementById('trip-idle-state');
@@ -37,9 +43,9 @@ function handleStart() {
     if (idleState) idleState.style.display = 'none';
     if (activeUI) activeUI.style.display = 'block';
 
-    // Clear list and reset count
+    // UI RESET
+    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">New trip started. Scan students.</p>';
     currentBoardedCount = 0;
-    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
     updateCounterUI(0);
 }
 
@@ -65,40 +71,65 @@ async function startScanner() {
 }
 
 function onScanSuccess(decodedText) {
-    stopScanner();
+
+    if (html5QrCode) {
+        stopScanner();
+    }
 
     let lrn = decodedText.includes('LRN:') ? decodedText.split('LRN:')[1].split('|')[0] : decodedText;
-    lrn = lrn.trim();
 
-    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
+    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn.trim()}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 1. Add student card to the list first
+                // 1. ADD TO LIST (Source of truth)
                 addToOnBoardList(data);
 
-                // 2. Sync with Backend and get the REAL count from the database
+                // 2. RECORD TO BACKEND
                 recordScanToBackend(lrn, currentTripId);
 
-                // 3. Update Success Screen Info
+                // 3. UPDATE UI INFO
                 document.getElementById('scanned-name').innerText = data.name;
                 document.getElementById('scanned-photo').src = data.photo || '/lib/default-avatar.png';
                 document.getElementById('scanned-level').innerText = data.level;
-                document.getElementById('scanned-id').innerText = "Student ID: " + (data.id || "N/A");
-                document.getElementById('scanned-address').innerText = "Home Address: " + (data.address || "No Address Provided");
-                // 4. Switch visibility
+                document.getElementById('scanned-id').innerText = "ID: " + (data.id || "N/A");
+                document.getElementById('scanned-address').innerText = data.address || "No Address Provided";
+
+                // 4. SWITCH UI
                 document.getElementById('active-scanner-ui').style.display = 'none';
                 document.getElementById('scan-success').style.display = 'block';
-            } else {
-                alert("Student not found!");
+
+                // 5. SYNC COUNTER
+                updateCounterUI();
+            }
+            else {
+               
+                showSystemAlert('error', 'Boarding Denied', data.message);
                 resetScanner();
             }
+        }).catch(err => {
+            showSystemAlert('error', 'Connection Error', 'Please check server connection.');
         });
 }
+// FIXED: Counter now counts the actual student cards on the screen
+function updateCounterUI() {
+    const list = document.getElementById('onboardList');
+    // We look for every student card currently in the list
+    const totalOnScreen = list.querySelectorAll('.onboard-student-card').length;
 
+    const activeEl = document.getElementById('active-live-count');
+    const successEl = document.getElementById('success-live-count');
+
+    if (activeEl) activeEl.innerText = totalOnScreen;
+    if (successEl) successEl.innerText = totalOnScreen;
+
+    // Sync the global variable so "End Trip" shows the same number
+    currentBoardedCount = totalOnScreen;
+}
 // --- COUNTER LOGIC: SYNC WITH BACKEND ---
 function recordScanToBackend(lrn, tripId) {
     const id = tripId || "MANUAL-LOG";
+
     fetch('/DriverDashboard/RecordScan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -107,21 +138,20 @@ function recordScanToBackend(lrn, tripId) {
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                // Use the count sent back by the Controller
+               
+                currentBoardedCount = result.currentCount;
+
+              
                 updateCounterUI(result.currentCount);
+
+                console.log("Count synced from server: " + currentBoardedCount);
             }
-        });
+        })
+        .catch(err => console.error("Manifest sync failed:", err));
 }
 
-// Helper to update all number displays at once
-function updateCounterUI(count) {
-    currentBoardedCount = count;
-    const activeEl = document.getElementById('active-live-count');
-    const successEl = document.getElementById('success-live-count');
 
-    if (activeEl) activeEl.innerText = count;
-    if (successEl) successEl.innerText = count;
-}
+
 
 function addToOnBoardList(studentData) {
     const list = document.getElementById('onboardList');
@@ -148,16 +178,21 @@ function addToOnBoardList(studentData) {
 
 // --- 3. END TRIP LOGIC ---
 function endTrip() {
-    if (confirm(`Finish current trip? Total students boarded: ${currentBoardedCount}`)) {
+    
+    const confirmMessage = `Are you sure?`;
+
+    showSystemAlert('confirm', 'Finish Trip?', confirmMessage, function () {
+
+        // --- THIS CODE ONLY RUNS IF THE USER CLICKS "YES, CONTINUE" ---
         stopScanner();
 
-        // 1. Prepare data
         const tripData = {
             tripId: currentTripId,
+            shift: currentShift, 
             date: new Date().toLocaleDateString(),
             startTime: tripStartTime,
             endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            boardedCount: currentBoardedCount, // The server will double-check this
+            boardedCount: currentBoardedCount,
             driverName: "Ricardo Dalisay"
         };
 
@@ -169,37 +204,41 @@ function endTrip() {
         })
             .then(response => response.json())
             .then(result => {
-                // The server returns a 'message' which might contain the real count
-                alert(result.message || "Trip Logged successfully.");
+                if (result.success) {
+                    // 3. Add to the history table in the dashboard
+                    addTripToHistoryTable(tripData.tripId, tripData.date, tripData.startTime, tripData.endTime, tripData.boardedCount);
 
-                // 3. UI RESET
-                currentBoardedCount = 0;
-                updateCounterUI(0);
-                tripIdCounter++;
+                    // 4. RESET ALL DATA FOR THE NEXT TRIP
+                    currentBoardedCount = 0;
+                    updateCounterUI(0);
+                    resetManualCheckinUI();
+                    tripIdCounter++; 
 
-                // Clear the list
-                document.getElementById('onboardList').innerHTML =
-                    '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
+                    // Clear student list from the phone screen
+                    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
 
-                // Restore Banner
-                const banner = document.getElementById('main-title');
-                if (banner) {
-                    banner.classList.remove('hide-banner');
-                    banner.style.removeProperty('display');
+                    // Show the Main Banner again
+                    const banner = document.getElementById('main-title');
+                    if (banner) {
+                        banner.classList.remove('hide-banner');
+                        banner.style.removeProperty('display');
+                    }
+
+                    // Go back to the initial Start Trip screen
+                    document.getElementById('active-scanner-ui').style.display = 'none';
+                    document.getElementById('scan-success').style.display = 'none';
+                    document.getElementById('trip-idle-state').style.display = 'block';
+
+                    // 5. SHOW THE SUCCESS MODAL
+                    showSystemAlert('success', 'Trip Logged', result.message || 'Trip successfully saved to history.');
                 }
-
-                // Return to Start State
-                document.getElementById('active-scanner-ui').style.display = 'none';
-                document.getElementById('scan-success').style.display = 'none';
-                document.getElementById('trip-idle-state').style.display = 'block';
             })
             .catch(err => {
-                console.error("Error ending trip:", err);
-                alert("Trip failed to save. Please check your connection.");
+                console.error("Error:", err);
+                showSystemAlert('error', 'Save Failed', 'Could not connect to the server. Please try again.');
             });
-    }
+    });
 }
-
 function addTripToHistoryTable(id, date, start, end, count) {
     const tbody = document.getElementById('historyBody');
     if (document.getElementById('no-data-row')) document.getElementById('no-data-row').remove();
@@ -299,3 +338,68 @@ function handleManualBoarding(btn, lrn, name, level, photo) {
             }
         });
 }
+function resetManualCheckinUI() {
+    // 1. Find all boarding buttons
+    const buttons = document.querySelectorAll('.btn-check');
+    buttons.forEach(btn => {
+        btn.innerText = "Board Student";           
+        btn.style.background = "";         
+        btn.disabled = false;              
+        btn.style.opacity = "0.3";        
+        btn.style.pointerEvents = "none";  
+    });
+
+    // 2. Find all reason dropdowns
+    const selects = document.querySelectorAll('.manual-reason-select');
+    selects.forEach(select => {
+        select.value = "";                 
+        select.disabled = false;            
+    });
+}
+
+function showSystemAlert(type, title, message, onConfirm = null) {
+    const modal = document.getElementById('systemAlertModal');
+    const iconContainer = document.getElementById('alert-icon-container');
+    const icon = document.getElementById('alert-icon');
+    const okBtn = document.getElementById('alert-btn-ok');
+    const cancelBtn = document.getElementById('alert-btn-cancel');
+
+    // 1. Setup Colors and Icons
+    iconContainer.className = ""; // clear
+    if (type === 'success') {
+        iconContainer.classList.add('alert-success');
+        icon.className = "fa-solid fa-circle-check";
+    } else if (type === 'error') {
+        iconContainer.classList.add('alert-error');
+        icon.className = "fa-solid fa-circle-xmark";
+    } else if (type === 'confirm') {
+        iconContainer.classList.add('alert-warning');
+        icon.className = "fa-solid fa-circle-question";
+    }
+
+    // 2. Set Text
+    document.getElementById('alert-title').innerText = title;
+    document.getElementById('alert-message').innerText = message;
+
+    // 3. Setup Buttons
+    if (onConfirm) {
+        cancelBtn.style.display = "block";
+        okBtn.innerText = "Yes, Continue";
+        okBtn.onclick = function () {
+            onConfirm();
+            closeSystemAlert();
+        };
+    } else {
+        cancelBtn.style.display = "none";
+        okBtn.innerText = "Okay";
+        okBtn.onclick = closeSystemAlert;
+    }
+
+    // 4. Open Modal
+    modal.classList.add('active');
+}
+
+function closeSystemAlert() {
+    document.getElementById('systemAlertModal').classList.remove('active');
+}
+

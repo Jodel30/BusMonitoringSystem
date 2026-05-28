@@ -69,46 +69,76 @@ function filterLguTable() {
 
 // --- STUDENT PROFILE MODAL ---
 function viewStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
-    // RESET MODAL FILTER UI
-    const weeklyBox = document.getElementById('stu-weekly-box');
-    const monthlyBox = document.getElementById('stu-monthly-box');
-    if (weeklyBox) weeklyBox.style.display = 'none';
-    if (monthlyBox) monthlyBox.style.display = 'none';
-
-    // Reset toggle buttons to "All"
-    const filterBtns = document.querySelectorAll('.stu-filter-btn');
-    filterBtns.forEach(b => b.classList.remove('active'));
-    if (filterBtns[0]) filterBtns[0].classList.add('active');
-
+    // 1. Reset UI and show Loading state
     const historyBody = document.getElementById('boarding-history-body');
-    historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Fetching logs...</td></tr>';
+    const totalTripsEl = document.getElementById('info-total-trips');
+    const manualCountEl = document.getElementById('info-manual-scans'); // NEW
 
-    // Set basic info
+    if (historyBody) historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Fetching logs...</td></tr>';
+    if (totalTripsEl) totalTripsEl.innerText = "0";
+    if (manualCountEl) manualCountEl.innerText = "0"; // Reset manual count
+
+    // 2. SET BASIC INFO IMMEDIATELY
     document.getElementById('info-name').innerText = name;
-    document.getElementById('info-photo').src = photo || '/lib/default-avatar.png';
+    document.getElementById('info-lrn').innerText = lrn;
+    document.getElementById('info-grade').innerText = grade;
+    document.getElementById('info-section').innerText = section;
+    document.getElementById('info-address').innerText = address || "N/A";
+    document.getElementById('info-parent').innerText = parent || "N/A";
+    document.getElementById('info-contact').innerText = contact || "N/A";
+    document.getElementById('info-id').innerText = sid || "N/A";
+
+    // 3. SET PHOTO
+    const photoEl = document.getElementById('info-photo');
+    if (photoEl) {
+        photoEl.src = (photo && photo !== '') ? photo : '/lib/default-avatar.png';
+    }
+
+    // 4. Show the modal
     document.getElementById('studentInfoOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 
+    // 5. FETCH DATA FROM BACKEND
     fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
-        .then(res => res.json())
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
-                document.getElementById('info-lrn').innerText = data.lrn;
-                document.getElementById('info-id').innerText = data.id || "N/A";
-                document.getElementById('info-grade').innerText = data.level;
-                document.getElementById('info-section').innerText = data.section;
-                document.getElementById('info-address').innerText = data.address;
-                document.getElementById('info-parent').innerText = data.parent;
-                document.getElementById('info-contact').innerText = data.contact;
-                document.getElementById('info-total-trips').innerText = data.totalTrips;
+                // --- UPDATE DYNAMIC COUNTERS ---
+                if (totalTripsEl) totalTripsEl.innerText = data.totalTrips;
+                if (manualCountEl) manualCountEl.innerText = data.manualCount; // UPDATED
 
-                // Save data for local filtering
+                // --- POPULATE HISTORY TABLE ---
+                if (historyBody) {
+                    historyBody.innerHTML = "";
+                    if (data.tripHistory && data.tripHistory.length > 0) {
+                        data.tripHistory.forEach(log => {
+                            // Check if log is manual to color code the status
+                            const isManual = log.status.includes("Manual");
+                            const statusColor = isManual ? "background:#fffbeb; color:#d97706;" : "background:#dcfce7; color:#15803d;";
+
+                            historyBody.innerHTML += `
+                                <tr>
+                                    <td>${log.date}</td>
+                                    <td><span class="id-tag">${log.tripId}</span></td>
+                                    <td style="font-weight:700; color:#0077b6;">${log.scanTime}</td>
+                                    <td>
+                                        <span class="status" style="font-size:10px; padding:4px 10px; border-radius:50px; font-weight:800; ${statusColor}">
+                                            ${log.status}
+                                        </span>
+                                    </td>
+                                </tr>`;
+                        });
+                    } else {
+                        historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8;">No records found.</td></tr>';
+                    }
+                }
+
+                // Save for local filtering
                 currentStudentLogs = data.tripHistory;
-                renderStudentHistoryTable(currentStudentLogs);
             }
-        });
+        })
+        .catch(err => console.error("Error fetching data:", err));
 }
-
 // --- NEW: MODAL FILTER LOGIC ---
 
 // 1. Toggle visibility of inputs (Date/Month)
@@ -200,26 +230,40 @@ function rp_handleMainToggle() {
     }
 }
 
-function rp_switchSubView(type) {
-    const daily = document.getElementById('rp-daily-box');
-    const monthly = document.getElementById('rp-monthly-box');
+function lgu_switchReport(type, clickedBtn) {
+    const dailyBox = document.getElementById('rp-daily-box');
+    const monthlyBox = document.getElementById('rp-monthly-box');
+
+    // 1. Find the parent container of the button you clicked
+    const parentContainer = clickedBtn.parentElement;
+
+    // 2. Find all buttons ONLY inside that specific container
+    const btns = parentContainer.querySelectorAll('.toggle-btn');
+
+    // 3. Remove 'active' from all buttons in THIS group
+    btns.forEach(btn => btn.classList.remove('active'));
+
+    // 4. Add 'active' to the button you physically clicked
+    clickedBtn.classList.add('active');
+
+    // 5. Toggle the input boxes (This part you said was already working)
     if (type === 'daily') {
-        daily.style.display = 'block';
-        monthly.style.display = 'none';
+        if (dailyBox) dailyBox.style.display = 'block';
+        if (monthlyBox) monthlyBox.style.display = 'none';
     } else {
-        daily.style.display = 'none';
-        monthly.style.display = 'block';
+        if (dailyBox) dailyBox.style.display = 'none';
+        if (monthlyBox) monthlyBox.style.display = 'block';
     }
 }
-
 // --- TRIP DETAILS MODAL & MANIFEST ---
-function viewTripDetails(id, date, driver, start, end, count) {
+function viewTripDetails(id, date, driver, start, end, count , shift) {
     document.getElementById('det-trip-id').innerText = id;
     document.getElementById('det-date').innerText = date;
     document.getElementById('det-driver').innerText = driver;
     document.getElementById('det-start').innerText = start || "N/A";
     document.getElementById('det-end').innerText = end || "N/A";
     document.getElementById('det-count').innerText = count;
+    document.getElementById('det-trip-id').innerText = id + " (" + shift + ")";
 
     const tbody = document.querySelector('#tripManifestTable tbody');
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Loading manifest...</td></tr>';
@@ -296,3 +340,80 @@ function reviewLowUsage(lrn) {
             }
         });
 }
+function viewAccountDetails(name, user, role, address, schoolId, license, bus, contact, email, password) {
+    // 1. Fill Common Fields
+    document.getElementById('acc-display-name').innerText = name;
+    document.getElementById('acc-username').innerText = "@" + user;
+    document.getElementById('acc-password').innerText = password;
+    document.getElementById('acc-contact').innerText = contact || "N/A";
+    document.getElementById('acc-email').innerText = email || "N/A";
+    document.getElementById('acc-address').innerText = address || "N/A";
+
+    // 2. Hide all role-specific containers first
+    const containers = [
+        'acc-email-container', 'acc-address-container',
+        'acc-school-id-container', 'acc-license-container', 'acc-bus-container'
+    ];
+    containers.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+
+    // 3. Logic to show fields based on Role
+    const roleBadge = document.getElementById('acc-display-role');
+
+    if (role === 'lgu') {
+        roleBadge.innerText = "LGU Supervisor";
+        document.getElementById('acc-address-container').style.display = 'block';
+    }
+    else if (role === 'school') {
+        roleBadge.innerText = "School Aide";
+        document.getElementById('acc-address-container').style.display = 'block';
+        document.getElementById('acc-school-id-container').style.display = 'block';
+        document.getElementById('acc-school-id').innerText = schoolId;
+        document.getElementById('acc-email-container').style.display = 'block';
+    }
+    else if (role === 'driver') {
+        roleBadge.innerText = "Bus Aide / Driver";
+        document.getElementById('acc-license-container').style.display = 'block';
+        document.getElementById('acc-license').innerText = license;
+        document.getElementById('acc-bus-container').style.display = 'block';
+        document.getElementById('acc-bus').innerText = bus;
+    }
+
+    // 4. Open Modal
+    document.getElementById('accountInfoOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAccountInfo() {
+    document.getElementById('accountInfoOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+
+// --- SCROLL SPY LOGIC ---
+window.addEventListener('scroll', () => {
+    let current = "";
+    // 1. Get all your sections
+    const sections = document.querySelectorAll('section.main-content');
+    const navLinks = document.querySelectorAll('.top-nav a');
+
+    sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+
+        // Check if the scroll position is within the section
+        // (We subtract 200px to trigger the change slightly before reaching the top)
+        if (pageYOffset >= (sectionTop - 200)) {
+            current = section.getAttribute('id');
+        }
+    });
+
+    // 2. Update the navbar links
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href').includes(current)) {
+            link.classList.add('active');
+        }
+    });
+});

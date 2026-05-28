@@ -30,8 +30,9 @@
                 @{
                     // Update your counts at the top of the file
                     var lowUsageCount = Model.Students.Count(s => s.IsLowUsage);
+                    var absenceAlertCount = Model.Students.Count(s => s.IsLongAbsence);
                     // Add this to your totalAlerts variable for the bell badge
-                    var totalAlerts = lowUsageCount;
+                    var totalAlerts = lowUsageCount + absenceAlertCount;
                 }
 
                 @if (totalAlerts > 0)

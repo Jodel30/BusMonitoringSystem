@@ -2,8 +2,9 @@
 @{
     // Update your counts at the top of the file
     var lowUsageCount = Model.Students.Count(s => s.IsLowUsage);
+    var absenceAlertCount = Model.Students.Count(s => s.IsLongAbsence);
     // Add this to your totalAlerts variable for the bell badge
-    var totalAlerts = lowUsageCount;
+    var totalAlerts = lowUsageCount + absenceAlertCount;
 }
 
 <!DOCTYPE html>
@@ -43,15 +44,10 @@
                     <div class="info"><h3>Students</h3><p>0</p></div>
                     <img src="~/students-removebg-preview.png" class="bg-icon">
                 </div>
-                <div class="stat-card">
-                    <div class="icon-box cyan"><i class="fa-solid fa-bus"></i></div>
-                    <div class="info"><h3>Low Transport Usage</h3><p>0</p></div>
-                    <img src="~/bus-removebg-preview.png" class="bg-icon">
-                </div>
                 <div class="stat-card" onclick="openLowUsageModal()" style="cursor: pointer; border-left: 5px solid #0891b2;">
                     <div class="icon-box cyan"><i class="fa-solid fa-chart-line"></i></div>
                     <div class="info">
-                        <h3>Low Usage Alerts</h3>
+                        <h3>Low Transport Usage</h3>
                         <p>@lowUsageCount</p>
                     </div>
                     <img src="~/bus-removebg-preview.png" class="bg-icon">
@@ -77,19 +73,20 @@
 
                 <!-- LEFT SIDE: BADGE (Disappears on click) -->
                 <div id="stu-badge-wrapper" class="report-brand-box">
-                    <img src="~/studenttst.jpg" id="report-img" alt="Report Design">
+                    <div class="filter-controls"><h1>Student Transport Overview</h1></div>
                 </div>
 
                 <!-- CENTER: FILTERS (Hidden by default) -->
                 <div id="stu-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
                     <div class="filter-controls">
-                        <label><i class="fa-solid fa-location-dot"></i> Address:</label>
+                        <label style="font-size: 20px;"><i class="fa-solid fa-location-dot"></i> Address:</label>
                         <select name="Address" required class="modern-input">
                             <option value="" disabled selected>Select Address</option>
                             <option>NHA Kabac</option>
                             <option>NHA Kampingganon</option>
+                            <option>Others</option>
                         </select>
-                        <label>Grade:</label>
+                        <label style="font-size: 20px;">Grade:</label>
                         <select name="Grade" required class="modern-input">
                             <option value="" disabled selected>Select Grade Level</option>
                             <option>Grade 7</option>
@@ -126,7 +123,7 @@
                             <th>LRN</th>
                             <th>Grade & Section</th>
                             <th>Address</th>
-                            <th style="text-align:center;">Student Trip</th>
+                            <th style="text-align:center;">Boarding Logs</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -213,10 +210,18 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div style="display:flex; gap:10px;">
+                                 
+                                    <div class="trip-summary-pill">
+                                        <span>Trips Taken:</span>
+                                        <strong id="info-total-trips">0</strong>
+                                    </div>
 
-                                <div class="trip-summary-pill">
-                                    <span>Trips Taken:</span>
-                                    <strong id="info-total-trips">0</strong>
+                                    
+                                    <div class="trip-summary-pill">
+                                        <span>Manual Entry:</span>
+                                        <strong id="info-manual-scans" style="color: #d97706;">0</strong>
+                                    </div>
                                 </div>
                             </div>
 
@@ -227,7 +232,7 @@
                                             <th>Date</th>
                                             <th>Trip ID</th>
                                             <th>Time Scanned</th>
-                                            <th>Status</th>
+                                            <th>Entry Method</th>
                                         </tr>
                                     </thead>
                                     <tbody id="boarding-history-body">
@@ -250,14 +255,14 @@
 
             <div class="report-filters glass-card">
                 <div id="rp-visual-badge" class="report-brand-box">
-                    <img src="~/freebus.jpg" id="report-img" alt="Report Design">
+                <div class="filter-controls"><h1>Transport Activity Overview</h1></div>
                 </div>
 
                 <div id="rp-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
-                    <div class="report-view-toggle">
-                        <button class="toggle-btn active" onclick="rp_switchSubView('daily')">Daily</button>
-                        <button class="toggle-btn" onclick="rp_switchSubView('monthly')">Monthly</button>
-                    </div>
+                <div class="report-view-toggle">
+                    <button class="toggle-btn active" onclick="lgu_switchReport('daily', this)">Daily</button>
+                    <button class="toggle-btn" onclick="lgu_switchReport('monthly', this)">Monthly</button>
+                </div>
                     <div class="filter-controls" id="rp-daily-box">
                         <input type="date" class="modern-input">
                     </div>
@@ -272,11 +277,12 @@
             </div>
 
             <div class="glass-card report-results">
-                <div class="results-header"><h3>Trip Overview</h3><button class="btn-export">Export PDF</button></div>
+                <div class="results-header"><h3>Daily Transport Summary</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
                             <th>Trip ID</th>
+                            <th>Shift</th>
                             <th>Date</th>
                             <th>Assigned Bus Aide</th>
                             <th>Total Boarded</th>
@@ -288,9 +294,24 @@
                         {
                             <tr>
                                 <td><span class="id-tag">@trip.TripId</span></td>
+                            <td>
+                                
+                                @if (trip.Shift == "AM")
+                                {
+                                    <span class="status">
+                                        AM
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status">
+                                        PM
+                                    </span>
+                                }
+                            </td>
                                 <td>@trip.Date</td>
                                 <td><strong>@trip.DriverName</strong></td>
-                                <td>@trip.BoardedCount Students</td>
+                                <td>@trip.BoardedCount</td>
                                 <td><span class="status success">Completed</span></td>
                                 <td>
                                     <!-- ACTION BUTTON -->
@@ -380,11 +401,10 @@
                 <div class="analytics-summary">
                     <div class="insight-card">
                         <div class="insight-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                        <div class="insight-data">
-                            <span class="label">Total Users</span>
-                            <p>0</p>
-
-                        </div>
+                    <div class="insight-data">
+                        <span class="label">Total Users</span>
+                        <p>@Model.Accounts.Count</p>
+                    </div>
                         <img src="~/users-removebg-preview.png">
                     </div>
                 </div>
@@ -416,29 +436,29 @@
                         </div>
                     </div>
 
-                    <form class="modern-form">
+                <form asp-action="RegisterAccount" asp-controller="LguDashboard" method="post" class="modern-form">
                         <div class="form-grid">
                             <!-- COMMON FIELDS -->
                             <div class="form-group">
                                 <label>First Name *</label>
-                                <input type="text" placeholder="Enter First Name" required>
+                                <input type="text" placeholder="Enter First Name" name="FirstName" required>
                             </div>
                             <div class="form-group">
                                 <label>Last Name *</label>
-                                <input type="text" placeholder="Enter Last Name" required>
+                            <input type="text" placeholder="Enter Last Name" name="LastName" required>
                             </div>
                             <div class="form-group">
                                 <label>Middle Name *</label>
-                                <input type="text" placeholder="Enter Middle Name" required>
+                                <input type="text" placeholder="Enter Middle Name" name="MiddleName" required>
                             </div>
                             <div class="form-group">
                                 <label>Username *</label>
-                                <input type="text" placeholder="e.g. jodel_admin" required>
+                                <input type="text" placeholder="e.g. jodel_admin" name="Username" required>
                             </div>
 
                             <div class="form-group full-width">
                                 <label>Access Role *</label>
-                                <select id="roleSelector" onchange="updateRoleFields()" required>
+                                <select id="roleSelector" name="Role" onchange="updateRoleFields()" required>
                                     <option value="" disabled selected>Choose Account Type</option>
                                     <option value="lgu">LGU School Bus Supervisor</option>
                                     <option value="school">School Aide</option>
@@ -450,11 +470,11 @@
                             <div id="fields-lgu" class="role-specific-fields full-width" style="display:none;">
                                 <div class="form-group">
                                     <label>Address</label>
-                                    <input type="text" placeholder="Enter Address">
+                                    <input type="text" placeholder="Enter Address" name="Address">
                                 </div>
                                 <div class="form-group">
                                     <label>Contact No.</label>
-                                    <input type="text" placeholder="Enter Contact No.">
+                                    <input type="text" placeholder="Enter Contact No." name="ContactNo">
                                 </div>
                             </div>
 
@@ -463,19 +483,19 @@
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label>Address</label>
-                                        <input type="text" placeholder="Enter Address">
+                                        <input type="text" placeholder="Enter Address" name="Address">
                                     </div>
                                     <div class="form-group">
                                         <label>Contact No.</label>
-                                        <input type="text" placeholder="Enter Contact No.">
+                                        <input type="text" placeholder="Enter Contact No." name="ContactNo">
                                     </div>
                                     <div class="form-group">
                                         <label>Email Address</label>
-                                        <input type="text" placeholder="e.g. example@gmail.com">
+                                        <input type="text" placeholder="e.g. example@gmail.com" name="Email">
                                     </div>
                                     <div class="form-group">
                                         <label>School ID</label>
-                                        <input type="text" placeholder="6-digit DepEd ID">
+                                        <input type="text" placeholder="6-digit DepEd ID" name="SchoolID">
                                     </div>
                                 </div>
                             </div>
@@ -485,11 +505,11 @@
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label>License Number</label>
-                                        <input type="text" placeholder="XXX-XX-XXXXXX">
+                                        <input type="text" placeholder="XXX-XX-XXXXXX" name="LicenseNumber">
                                     </div>
                                     <div class="form-group">
                                         <label>Assigned Bus Number</label>
-                                        <input type="text" placeholder="e.g. Bus-01">
+                                        <input type="text" placeholder="e.g. Bus-01" name="AssignedBusNumber">
                                     </div>
                                 </div>
                             </div>
@@ -497,7 +517,7 @@
                             <!-- COMMON FIELDS -->
                             <div class="form-group full-width">
                                 <label>Account Password *</label>
-                                <input type="password" placeholder="••••••••" required>
+                                <input type="password" placeholder="••••••••" name="Password" required>
                             </div>
                         </div>
 
@@ -519,38 +539,105 @@
                         <input type="text" placeholder="Search users...">
                     </div>
                 </div>
-                <div class="user-scroll-area">
+            <div class="user-scroll-area">
+                @if (Model.Accounts != null && Model.Accounts.Any())
+                {
+                    @foreach (var acc in Model.Accounts)
+                    {
+                        <div class="user-account-item" style="cursor:pointer;"
+                             onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.LicenseNumber','@acc.AssignedBusNumber', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
+                            <div class="u-avatar">
+                                <img class="profile-btn" src="~/logout-removebg-preview.png">
+                            </div>
+                            <div class="u-details">
+                                <strong>@acc.FullName</strong>
+                                <p>@acc.Username</p>
+                            </div>
 
-                    <div class="user-account-item">
-                        <div class="u-avatar"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                        <div class="u-details">
-                            <strong>LGU</strong>
+                            <!-- DYNAMIC ROLE TAGS -->
+                            @if (acc.Role == "lgu")
+                            {
+                                <span class="role-tag lgu">LGU Admin</span>
+                            }
+                            else if (acc.Role == "school")
+                            {
 
+                                <span class="role-tag school">School Aide</span>
+                            }
+                            else
+                            {
+
+                                <span class="role-tag driver">Bus Aide</span>
+                            }
+
+                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         </div>
-                        <span class="role-tag lgu">LGU</span>
-                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <p style="text-align:center; color:#94a3b8; padding:30px;">No custom accounts created yet.</p>
+                }
+            </div>
+            <!-- SYSTEM ACCOUNT INFO MODAL -->
+            <div class="modal-overlay" id="accountInfoOverlay" onclick="closeAccountInfo()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 750px !important;">
 
-                    <div class="user-account-item">
-                        <div class="u-avatar school"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                        <div class="u-details">
-                            <strong>Patao National High School</strong>
+                    <button class="btn-close-modal" onclick="closeAccountInfo()">&times;</button>
 
+                    <div class="profile-container">
+                        <!-- LEFT SIDE: ROLE & AVATAR -->
+                        <div class="profile-sidebar" style="background: linear-gradient(180deg, #102a43 0%, #0077b6 100%);">
+                            <div class="profile-photo-frame" style="background: rgba(255,255,255,0.1); border:none; display:flex; align-items:center; justify-content:center;">
+                                <i class="fa-solid fa-user-gear" style="font-size: 50px; color: white;"></i>
+                            </div>
+                            <h3 id="acc-display-name">User Name</h3>
+                            <span id="acc-display-role" class="badge-role" style="background:white; color:#0077b6; border:none; margin-top:10px;">Role</span>
                         </div>
-                        <span class="role-tag school">School Admin</span>
-                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                    </div>
 
-                    <div class="user-account-item">
-                        <div class="u-avatar driver"><img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout"></div>
-                        <div class="u-details">
-                            <strong>Ricardo Dalisay</strong>
+                        <!-- RIGHT SIDE: FULL DETAILS -->
+                        <div class="profile-details">
+                            <h4><i class="fa-solid fa-id-card"></i> Account Credentials</h4>
+                            <div class="info-grid">
+                                <div class="info-item"><strong>Username</strong> <span id="acc-username"></span></div>
+                                <div class="info-item"><strong>Password</strong> <span id="acc-password"></span></div>
+                                <div class="info-item"><strong>Contact Number</strong> <span id="acc-contact"></span></div>
+                                <div id="acc-email-container" class="info-item"><strong>Email Address</strong> <span id="acc-email"></span></div>
+                            </div>
 
+                            <hr>
+
+                            <!-- ROLE SPECIFIC DATA -->
+                            <h4 id="role-section-title"><i class="fa-solid fa-briefcase"></i> Role Specific Information</h4>
+                            <div class="info-grid">
+                                <!-- This div will show Address for LGU/School -->
+                                <div id="acc-address-container" class="info-item full">
+                                    <strong>Registered Address</strong>
+                                    <span id="acc-address"></span>
+                                </div>
+
+                                <!-- School ID -->
+                                <div id="acc-school-id-container" class="info-item">
+                                    <strong>School ID</strong>
+                                    <span id="acc-school-id"></span>
+                                </div>
+
+                                <!-- License -->
+                                <div id="acc-license-container" class="info-item">
+                                    <strong>Driver License</strong>
+                                    <span id="acc-license"></span>
+                                </div>
+
+                                <!-- Bus Number -->
+                                <div id="acc-bus-container" class="info-item">
+                                    <strong>Assigned Bus</strong>
+                                    <span id="acc-bus"></span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="role-tag driver">Driver</span>
-                        <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                     </div>
                 </div>
+            </div>
             </div>
 
 
@@ -604,6 +691,19 @@
                             <strong>Low Transport Usage</strong>
                             <p>@lowUsageCount students have 3 or fewer trips this week.</p>
                             <small>Efficiency Alert</small>
+                        </div>
+                    </div>
+                }
+                @if (absenceAlertCount > 0)
+                {
+                    <div class="notif-item info" onclick=" window.location.hash='#students' ; toggleNotifModal();" style="border-top: 1px solid #f1f5f9;">
+                        <div class="notif-icon" style="background:#f1f5f9; color:#64748b;">
+                            <i class="fa-solid fa-user-clock"></i>
+                        </div>
+                        <div class="notif-text">
+                            <strong>Absence Review Required</strong>
+                            <p>@absenceAlertCount students have not boarded in over 30 days.</p>
+                            <small style="color:#64748b; font-weight:700;">Operational Review</small>
                         </div>
                     </div>
                 }
@@ -678,5 +778,6 @@
     </div>
 
     <script src="LguDashboard.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 </body>
 </html>
