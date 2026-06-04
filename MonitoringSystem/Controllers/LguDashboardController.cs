@@ -7,6 +7,7 @@ namespace MonitoringSystem.Controllers
     public class LguDashboardController : Controller
     {
         public static List<SystemAccount> _accountList = new List<SystemAccount>();
+        public static List<ActivityLog> _activityLogs = new List<ActivityLog>();
         public IActionResult Index()
         {
             var viewModel = new LguDashboardViewModel
@@ -14,7 +15,8 @@ namespace MonitoringSystem.Controllers
                 // Accessing the shared list correctly here:
                 Students = SchoolDashboard._studentList,
                 TripLogs = DriverDashboard._tripHistory,
-                 Accounts = _accountList
+                 Accounts = _accountList,
+                ActivityLogs = _activityLogs.OrderByDescending(l => l.Timestamp).ToList()
             };
 
             return View(viewModel);
@@ -47,5 +49,6 @@ namespace MonitoringSystem.Controllers
 
             return RedirectToAction("Index");
         }
+
     }
 }

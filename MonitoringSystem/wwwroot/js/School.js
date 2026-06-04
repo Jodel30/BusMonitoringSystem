@@ -483,3 +483,17 @@ window.addEventListener('scroll', () => {
         }
     });
 });
+function checkAddress(select) {
+    const otherWrapper = document.getElementById('otherAddressWrapper');
+    const otherInput = document.getElementById('otherAddressInput');
+
+    if (select.value === "Others") {
+        otherWrapper.style.display = 'block';
+        otherInput.required = true;
+        otherInput.focus();
+    } else {
+        otherWrapper.style.display = 'none';
+        otherInput.required = false;
+        otherInput.value = ""; // Clear input if they change their mind
+    }
+}

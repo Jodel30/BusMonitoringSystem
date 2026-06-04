@@ -30,9 +30,9 @@ namespace MonitoringSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult RegisterStudent(Student model, IFormFile studentPhoto)
+        public IActionResult RegisterStudent(Student model, IFormFile studentPhoto, string OtherAddressDetail)
         {
-           
+            
             if (studentPhoto != null)
             {
                 string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -43,8 +43,16 @@ namespace MonitoringSystem.Controllers
                 model.PhotoPath = "/uploads/" + fileName;
             }
 
-           
+            
+            if (model.Address == "Others" && !string.IsNullOrEmpty(OtherAddressDetail))
+            {
+                model.Address = $"Others ({OtherAddressDetail})";
+            }
+
+            
             string combinedName = $"{model.FirstName} {model.MiddleName} {model.LastName}";
+
+           
             string qrText = $"STMS-DATA|LRN:{model.LRN}|Name:{combinedName}|Level:{model.GradeLevel}";
             using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
             using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q))
@@ -54,10 +62,12 @@ namespace MonitoringSystem.Controllers
                 model.QRCodeBase64 = Convert.ToBase64String(qrCodeImage);
             }
 
+            
             model.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
 
             _studentList.Add(model);
             TempData["RegistrationSuccess"] = true;
+
             return Redirect(Url.Action("SchoolAdmin") + "#students");
         }
         [HttpGet]

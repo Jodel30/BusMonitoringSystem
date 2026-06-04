@@ -451,11 +451,6 @@
                                 <label>Middle Name *</label>
                                 <input type="text" placeholder="Enter Middle Name" name="MiddleName" required>
                             </div>
-                            <div class="form-group">
-                                <label>Username *</label>
-                                <input type="text" placeholder="e.g. jodel_admin" name="Username" required>
-                            </div>
-
                             <div class="form-group full-width">
                                 <label>Access Role *</label>
                                 <select id="roleSelector" name="Role" onchange="updateRoleFields()" required>
@@ -465,60 +460,39 @@
                                     <option value="driver">Bus Aide</option>
                                 </select>
                             </div>
+                        <!-- DYNAMIC SECTION: SCHOOL -->
+                        <div id="fields-school" class="role-specific-fields full-width" style="display:none;">
+                            <div class="form-grid">
 
-                            <!-- DYNAMIC SECTION: LGU -->
-                            <div id="fields-lgu" class="role-specific-fields full-width" style="display:none;">
                                 <div class="form-group">
-                                    <label>Address</label>
-                                    <input type="text" placeholder="Enter Address" name="Address">
+                                    <label>Email Address</label>
+                                    <input type="text" placeholder="e.g. example@gmail.com" name="Email" class="role-input">
                                 </div>
                                 <div class="form-group">
-                                    <label>Contact No.</label>
-                                    <input type="text" placeholder="Enter Contact No." name="ContactNo">
+                                    <label>School ID</label>
+
+                                    <input type="text" placeholder="6-digit DepEd ID" name="SchoolId" class="role-input">
                                 </div>
                             </div>
-
-                            <!-- DYNAMIC SECTION: SCHOOL -->
-                            <div id="fields-school" class="role-specific-fields full-width" style="display:none;">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>Address</label>
-                                        <input type="text" placeholder="Enter Address" name="Address">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Contact No.</label>
-                                        <input type="text" placeholder="Enter Contact No." name="ContactNo">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Email Address</label>
-                                        <input type="text" placeholder="e.g. example@gmail.com" name="Email">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>School ID</label>
-                                        <input type="text" placeholder="6-digit DepEd ID" name="SchoolID">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- DYNAMIC SECTION: DRIVER -->
-                            <div id="fields-driver" class="role-specific-fields full-width" style="display:none;">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label>License Number</label>
-                                        <input type="text" placeholder="XXX-XX-XXXXXX" name="LicenseNumber">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Assigned Bus Number</label>
-                                        <input type="text" placeholder="e.g. Bus-01" name="AssignedBusNumber">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- COMMON FIELDS -->
+                        </div>
+                        <div class="form-group">
+                            <label>Username *</label>
+                            <input type="text" placeholder="e.g. jodel_admin" name="Username" required>
+                        </div>
                             <div class="form-group full-width">
                                 <label>Account Password *</label>
                                 <input type="password" placeholder="••••••••" name="Password" required>
                             </div>
+
+                        <div class="form-group">
+                                    <label>Address</label>
+                                    <input type="text" placeholder="Enter Address" name="Address" class="role-input">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contact No.</label>
+                                    <input type="text" placeholder="Enter Contact No." name="ContactNo" class="role-input">
+                                </div>
+                       
                         </div>
 
                         <div class="form-footer">
@@ -545,7 +519,7 @@
                     @foreach (var acc in Model.Accounts)
                     {
                         <div class="user-account-item" style="cursor:pointer;"
-                             onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.LicenseNumber','@acc.AssignedBusNumber', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
+                             onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
                             <div class="u-avatar">
                                 <img class="profile-btn" src="~/logout-removebg-preview.png">
                             </div>
@@ -621,18 +595,7 @@
                                     <strong>School ID</strong>
                                     <span id="acc-school-id"></span>
                                 </div>
-
-                                <!-- License -->
-                                <div id="acc-license-container" class="info-item">
-                                    <strong>Driver License</strong>
-                                    <span id="acc-license"></span>
-                                </div>
-
-                                <!-- Bus Number -->
-                                <div id="acc-bus-container" class="info-item">
-                                    <strong>Assigned Bus</strong>
-                                    <span id="acc-bus"></span>
-                                </div>
+                              
                             </div>
                         </div>
                     </div>
@@ -657,22 +620,43 @@
 
                         </tr>
                     </thead>
-                    <tbody>
+                <tbody>
+                    @if (Model.ActivityLogs != null && Model.ActivityLogs.Any())
+                    {
+                        @foreach (var log in Model.ActivityLogs)
+                        {
+                            <tr>
+                                <td><strong>@log.User</strong></td>
+                                <td>
+                                    @if (log.Role.ToLower() == "lgu")
+                                    {
+                                        <span class="role-tag lgu">LGU Supervisor</span>
+                                    }
+                                    else if (log.Role.ToLower() == "school")
+                                    {
+                                        <span class="role-tag school">School Aide</span>
+                                    }
+                                    else if (log.Role.ToLower() == "driver")
+                                    {
+                                        <span class="role-tag driver">Bus Aide</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="role-tag">@log.Role</span>
+                                    }
+                                </td>
+                                <td><span class="status success">@log.Action</span></td>
+                                <td>@log.Timestamp</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
                         <tr>
-                            <td><strong>Admin Chief</strong></td>
-                            <td><span class="role-tag lgu">LGU</span></td>
-                            <td><span class="status success">Login Successful</span></td>
-                            <td>Today, 08:30 AM</td>
-
+                            <td colspan="4" style="text-align:center; color:#94a3b8; padding:20px;">No login activity recorded.</td>
                         </tr>
-                        <tr>
-                            <td><strong>Ricardo Dalisay</strong></td>
-                            <td><span class="role-tag driver">Driver</span></td>
-                            <td><span class="status success">Login Successful</span></td>
-                            <td>Today, 07:15 AM</td>
-
-                        </tr>
-                    </tbody>
+                    }
+                </tbody>
                 </table>
             </div>
 

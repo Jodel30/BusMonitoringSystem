@@ -25,30 +25,56 @@ function switchSection(id) {
 }
 
 // --- 1. START TRIP LOGIC ---
-function handleStart() {
-  
-    currentTripId = "TRP-" + String(tripIdCounter).padStart(3, '0');
 
-    tripStartTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function openStartTripModal() {
+    const modal = document.getElementById('startTripModal');
+    if (modal) {
+        modal.classList.add('active');
+    }
+}
+
+
+function confirmAndStart() {
+    closeStartModal(); // Hide modal
+    handleStart();     // Run your original logic
+}
+
+function closeStartModal() {
+    document.getElementById('startTripModal').classList.remove('active');
+}
+
+
+function handleStart() {
+    // Data Generation
+    currentTripId = "TRP-" + String(tripIdCounter).padStart(3, '0');
+    const now = new Date();
+    tripStartTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     console.log("New Trip Started with ID: " + currentTripId);
-    const hour = new Date().getHours();
+
+    // Shift Detection
+    const hour = now.getHours();
     currentShift = (hour < 12) ? "AM" : "PM";
 
+    // UI Elements
     const banner = document.getElementById('main-title');
     const idleState = document.getElementById('trip-idle-state');
     const activeUI = document.getElementById('active-scanner-ui');
 
+    // UI Switching
     if (banner) banner.classList.add('hide-banner');
     if (idleState) idleState.style.display = 'none';
     if (activeUI) activeUI.style.display = 'block';
 
-    // UI RESET
-    document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">New trip started. Scan students.</p>';
+    // UI RESET & Notification
+    document.getElementById('onboardList').innerHTML =
+        `<p style="text-align:center; color:#8898aa; margin-top:50px;">
+            ${currentTripId} (${currentShift}) Started.<br>Scan students now.
+         </p>`;
+
     currentBoardedCount = 0;
     updateCounterUI(0);
 }
-
 // --- 2. SCANNER LOGIC ---
 async function startScanner() {
     const banner = document.getElementById('main-title');
@@ -247,7 +273,30 @@ function addTripToHistoryTable(id, date, start, end, count) {
 }
 
 async function stopScanner() {
-    if (html5QrCode) { await html5QrCode.stop(); html5QrCode = null; }
+    console.log("Stopping camera and returning to Active UI...");
+
+    // 1. Kill the actual camera hardware stream
+    if (html5QrCode) {
+        try {
+            await html5QrCode.stop();
+            html5QrCode = null; // Clear the instance
+        } catch (err) {
+            console.warn("Scanner was already stopped or not running.");
+        }
+    }
+
+    // 2. UI RESET: Hide the Camera Feed and Stop Button
+    document.getElementById('reader').style.display = 'none';
+    document.getElementById('stop-btn').style.display = 'none';
+
+    // 3. UI RESET: Show the "Tap to Scan" button and the dashed frame
+    // This brings you back to the state seen in your screenshot
+    document.getElementById('static-frame').style.display = 'flex';
+    document.getElementById('start-btn').style.display = 'block';
+
+    // Ensure the "End Current Trip" button is still visible
+    const endTripBtn = document.querySelector('.btn-end-trip');
+    if (endTripBtn) endTripBtn.style.display = 'block';
 }
 
 function resetScanner() {
@@ -402,4 +451,5 @@ function showSystemAlert(type, title, message, onConfirm = null) {
 function closeSystemAlert() {
     document.getElementById('systemAlertModal').classList.remove('active');
 }
+
 

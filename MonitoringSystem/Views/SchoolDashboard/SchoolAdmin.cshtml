@@ -160,12 +160,16 @@
                             </div>
                             <div class="form-group full-width">
                                 <label>Address *</label>
-                                <select name="Address" required>
+                                
+                                <select id="addressSelect" name="Address" onchange="checkAddress(this)" required>
                                     <option value="" disabled selected>Select Address</option>
-                                    <option>NHA Kabac</option>
-                                    <option>NHA Kampingganon</option>
-                                    <option>Others</option>
+                                    <option value="NHA Kabac">NHA Kabac</option>
+                                    <option value="NHA Kampingganon">NHA Kampingganon</option>
+                                    <option value="Others">Others</option>
                                 </select>
+                                <div id="otherAddressWrapper" style="display:none; margin-top: 10px; animation: fadeIn 0.3s ease;">
+                                    <input type="text" id="otherAddressInput" name="OtherAddressDetail" placeholder="Please specify your address">
+                                </div>
                             </div>
                             <div class="form-group">
                                 <label>Parents/Guardian Name *</label>
@@ -523,7 +527,7 @@
                             </h4>
                             <div class="glass-card" style="padding: 0; overflow: hidden; border-radius: 15px;">
                                 <table class="modern-table mini" id="tripManifestTable">
-                                    <thead><tr style="background:#f1f5f9;"><th>Name</th><th>Grade/Section</th><th>Address</th><th>Time</th><th>Status&Reasons</th></tr></thead>
+                                    <thead><tr style="background:#f1f5f9;"><th>Name</th><th>Grade/Section</th><th>Address</th><th>Time</th><th>Entry Method</th></tr></thead>
                                     <tbody><!-- Injected by JavaScript --></tbody>
                                 </table>
                             </div>

@@ -47,12 +47,12 @@
                     </div>
                 </div>
 
-                <!-- STATE 1: TRIP SELECTION (START SCREEN) -->
+                
+                <!-- STATE 1: TRIP SELECTION -->
                 <div id="trip-idle-state" class="trip-action-container">
-                    <button id="btn-start" class="btn-trip start" onclick="handleStart()">
+                    <button id="btn-start" class="btn-trip start" onclick="openStartTripModal()">
                         <i class="fa-solid fa-play"></i> Start Trip
                     </button>
-                    
                 </div>
 
                 <!-- STATE 2: SCANNER UI -->
@@ -128,8 +128,8 @@
                             <!-- NEW: REASON DROPDOWN -->
                             <select class="manual-reason-select" onchange="enableBoardButton(this)" style="margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px;">
                                 <option value="" disabled selected>-- Select Reason --</option>
-                                <option value="Broken QR">Broken/Unreadable QR</option>
-                                <option value="Forgot ID">Forgot ID at Home</option>
+                                <option value="Broken QR">QR Code Unavailable</option>
+                                <option value="Forgot ID">Damaged QR Code</option>
                                 <option value="Camera Issue">Camera Issue</option>
                             </select>
                         </div>
@@ -222,8 +222,24 @@
                 </div>
             </div>
         </div>
+        <!-- START TRIP CONFIRMATION MODAL -->
+        <div class="modal-overlay" id="startTripModal">
+            <div class="modal-content system-alert-box">
+                <div id="alert-icon-container" class="alert-warning" style="background:#eef6fc; color:#0077b6;">
+                    <i class="fa-solid fa-bus-simple"></i>
+                </div>
+                <h3>Begin Trip?</h3>
+                <p>Are you ready to start the shift and begin scanning students?</p>
+
+                <div class="alert-footer" style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- This button will trigger the actual handleStart -->
+                    <button class="btn-alert-primary" onclick="confirmAndStart()">Yes, Start Now</button>
+                    <button class="btn-alert-secondary" onclick="closeStartModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
-   
+    
 
     <script src="~/js/Driver.js" asp-append-version="true"></script>
 </body>

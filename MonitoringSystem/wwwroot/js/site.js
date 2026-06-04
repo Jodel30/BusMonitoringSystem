@@ -28,12 +28,30 @@ function closeAccountModalOutside(e) {
 
 function updateRoleFields() {
     const role = document.getElementById('roleSelector').value;
-    const sections = document.querySelectorAll('.role-specific-fields');
-    sections.forEach(s => s.style.display = 'none');
 
-    if (role === 'lgu') document.getElementById('fields-lgu').style.display = 'block';
-    else if (role === 'school') document.getElementById('fields-school').style.display = 'block';
-    else if (role === 'driver') document.getElementById('fields-driver').style.display = 'block';
+    // 1. Get all containers
+    const sections = {
+        'lgu': document.getElementById('fields-lgu'),
+        'school': document.getElementById('fields-school'),
+        'driver': document.getElementById('fields-driver')
+    };
+
+    // 2. Hide everything and DISABLE all internal inputs
+    for (let key in sections) {
+        if (sections[key]) {
+            sections[key].style.display = 'none';
+            // Disable all inputs inside this section so they don't send empty data
+            const inputs = sections[key].querySelectorAll('input');
+            inputs.forEach(input => input.disabled = true);
+        }
+    }
+
+    // 3. Show the selected section and ENABLE its inputs
+    if (sections[role]) {
+        sections[role].style.display = 'block';
+        const activeInputs = sections[role].querySelectorAll('input');
+        activeInputs.forEach(input => input.disabled = false);
+    }
 }
 
 /* ==========================================
@@ -340,48 +358,55 @@ function reviewLowUsage(lrn) {
             }
         });
 }
-function viewAccountDetails(name, user, role, address, schoolId, license, bus, contact, email, password) {
-    // 1. Fill Common Fields
-    document.getElementById('acc-display-name').innerText = name;
-    document.getElementById('acc-username').innerText = "@" + user;
-    document.getElementById('acc-password').innerText = password;
+/* --- UPDATED VIEW ACCOUNT DETAILS (8 Parameters) --- */
+function viewAccountDetails(name, user, role, address, schoolId, contact, email, password) {
+    // 1. Debugging: Press F12 in browser to see if data arrives
+    console.log("Opening details for:", name);
+
+    // 2. Map the 8 parameters to the HTML IDs
+    // We use (val || "N/A") to prevent the 'undefined' error
+    document.getElementById('acc-display-name').innerText = name || "User";
+    document.getElementById('acc-username').innerText = "@" + (user || "unknown");
+    document.getElementById('acc-password').innerText = password || "********";
     document.getElementById('acc-contact').innerText = contact || "N/A";
     document.getElementById('acc-email').innerText = email || "N/A";
     document.getElementById('acc-address').innerText = address || "N/A";
 
-    // 2. Hide all role-specific containers first
-    const containers = [
-        'acc-email-container', 'acc-address-container',
-        'acc-school-id-container', 'acc-license-container', 'acc-bus-container'
-    ];
-    containers.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = 'none';
-    });
-
-    // 3. Logic to show fields based on Role
+    // 3. Target the conditional containers
+    const schoolIdContainer = document.getElementById('acc-school-id-container');
+    const emailContainer = document.getElementById('acc-email-container');
+    const addressContainer = document.getElementById('acc-address-container');
     const roleBadge = document.getElementById('acc-display-role');
 
+    // 4. Reset visibility before applying logic
+    if (schoolIdContainer) schoolIdContainer.style.display = 'none';
+    if (emailContainer) emailContainer.style.display = 'none';
+    if (addressContainer) addressContainer.style.display = 'block';
+
+    // 5. Logic based on Role
     if (role === 'lgu') {
-        roleBadge.innerText = "LGU Supervisor";
-        document.getElementById('acc-address-container').style.display = 'block';
+        roleBadge.innerText = "LGU SUPERVISOR";
+        roleBadge.style.background = "#fee2e2";
+        roleBadge.style.color = "#991b1b";
     }
     else if (role === 'school') {
-        roleBadge.innerText = "School Aide";
-        document.getElementById('acc-address-container').style.display = 'block';
-        document.getElementById('acc-school-id-container').style.display = 'block';
-        document.getElementById('acc-school-id').innerText = schoolId;
-        document.getElementById('acc-email-container').style.display = 'block';
+        roleBadge.innerText = "SCHOOL AIDE";
+        roleBadge.style.background = "#e0f2fe";
+        roleBadge.style.color = "#075985";
+
+        if (schoolIdContainer) {
+            schoolIdContainer.style.display = 'block';
+            document.getElementById('acc-school-id').innerText = schoolId || "N/A";
+        }
+        if (emailContainer) emailContainer.style.display = 'block';
     }
     else if (role === 'driver') {
-        roleBadge.innerText = "Bus Aide / Driver";
-        document.getElementById('acc-license-container').style.display = 'block';
-        document.getElementById('acc-license').innerText = license;
-        document.getElementById('acc-bus-container').style.display = 'block';
-        document.getElementById('acc-bus').innerText = bus;
+        roleBadge.innerText = "BUS AIDE";
+        roleBadge.style.background = "#f1f5f9";
+        roleBadge.style.color = "#475569";
     }
 
-    // 4. Open Modal
+    // 6. Open Modal
     document.getElementById('accountInfoOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 }

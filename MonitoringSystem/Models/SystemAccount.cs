@@ -10,11 +10,9 @@
         public string Password { get; set; }
         // Specific fields
         public string Address { get; set; }
-        public string LicenseNumber { get; set; }
         public string ContactNo { get; set; }
         public string Email { get; set; }
         public string SchoolId { get; set; }
-        public string AssignedBusNumber { get; set; }
 
         public string FullName => $"{FirstName} {LastName}";
     }
