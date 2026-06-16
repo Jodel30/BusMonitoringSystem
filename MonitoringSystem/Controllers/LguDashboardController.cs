@@ -49,6 +49,21 @@ namespace MonitoringSystem.Controllers
 
             return RedirectToAction("Index");
         }
+        [HttpPost]
+        public IActionResult UpdateAccountCredentials(string OriginalUsername, string NewUsername, string NewPassword)
+        {
+            // Search for the account in the static list by the old username
+            var account = _accountList.FirstOrDefault(u => u.Username == OriginalUsername);
 
+            if (account != null)
+            {
+                // Update the credentials
+                account.Username = NewUsername;
+                account.Password = NewPassword;
+            }
+
+            // Refresh and jump back to user management section
+            return Redirect(Url.Action("Index") + "#user");
+        }
     }
 }

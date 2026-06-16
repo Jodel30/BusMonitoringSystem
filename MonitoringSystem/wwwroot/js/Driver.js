@@ -45,28 +45,32 @@ function closeStartModal() {
 
 
 function handleStart() {
-    // Data Generation
+    // 1. Data Generation
     currentTripId = "TRP-" + String(tripIdCounter).padStart(3, '0');
     const now = new Date();
     tripStartTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     console.log("New Trip Started with ID: " + currentTripId);
 
-    // Shift Detection
+    // 2. Shift Detection
     const hour = now.getHours();
     currentShift = (hour < 12) ? "AM" : "PM";
 
-    // UI Elements
+    // 3. UI Elements
     const banner = document.getElementById('main-title');
     const idleState = document.getElementById('trip-idle-state');
     const activeUI = document.getElementById('active-scanner-ui');
 
-    // UI Switching
+    // --- NEW: Update the Trip ID on the screen ---
+    const idDisplay = document.getElementById('active-trip-id-display');
+    if (idDisplay) idDisplay.innerText = currentTripId + " (" + currentShift + ")";
+
+    // 4. UI Switching
     if (banner) banner.classList.add('hide-banner');
     if (idleState) idleState.style.display = 'none';
     if (activeUI) activeUI.style.display = 'block';
 
-    // UI RESET & Notification
+    // 5. UI RESET & Notification
     document.getElementById('onboardList').innerHTML =
         `<p style="text-align:center; color:#8898aa; margin-top:50px;">
             ${currentTripId} (${currentShift}) Started.<br>Scan students now.
@@ -97,18 +101,26 @@ async function startScanner() {
 }
 
 function onScanSuccess(decodedText) {
-
     if (html5QrCode) {
         stopScanner();
     }
 
     let lrn = decodedText.includes('LRN:') ? decodedText.split('LRN:')[1].split('|')[0] : decodedText;
+    lrn = lrn.trim(); // Ensure no spaces
 
-    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn.trim()}`)
+    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 1. ADD TO LIST (Source of truth)
+                // --- NEW: HIDE FROM MANUAL LIST ---
+                // We find the box in the 'Manual Check-in' tab that matches this LRN
+                const manualItem = document.querySelector(`.student-item[data-lrn="${lrn}"]`);
+                if (manualItem) {
+                    manualItem.style.display = 'none'; // Remove it from the list
+                }
+                // -----------------------------------
+
+                // 1. ADD TO ON-BOARD LIST
                 addToOnBoardList(data);
 
                 // 2. RECORD TO BACKEND
@@ -129,7 +141,6 @@ function onScanSuccess(decodedText) {
                 updateCounterUI();
             }
             else {
-               
                 showSystemAlert('error', 'Boarding Denied', data.message);
                 resetScanner();
             }
@@ -137,7 +148,7 @@ function onScanSuccess(decodedText) {
             showSystemAlert('error', 'Connection Error', 'Please check server connection.');
         });
 }
-// FIXED: Counter now counts the actual student cards on the screen
+
 function updateCounterUI() {
     const list = document.getElementById('onboardList');
     // We look for every student card currently in the list
@@ -219,7 +230,7 @@ function endTrip() {
             startTime: tripStartTime,
             endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             boardedCount: currentBoardedCount,
-            driverName: "Ricardo Dalisay"
+            driverName: "" 
         };
 
         // 2. SEND TO CONTROLLER
@@ -451,5 +462,66 @@ function showSystemAlert(type, title, message, onConfirm = null) {
 function closeSystemAlert() {
     document.getElementById('systemAlertModal').classList.remove('active');
 }
+
+// --- NEW: FUNCTION TO HIDE STUDENT FROM MANUAL LIST ---
+function hideStudentFromManualList(lrn) {
+    // Find the student item that has the matching LRN
+    const studentItem = document.querySelector(`.student-item[data-lrn="${lrn}"]`);
+
+    if (studentItem) {
+        // Add a smooth fade-out animation
+        studentItem.style.transition = "0.4s";
+        studentItem.style.opacity = "0";
+        studentItem.style.transform = "translateX(20px)";
+
+        // Remove it from the layout after the animation finishes
+        setTimeout(() => {
+            studentItem.style.display = "none";
+
+            // Check if the list is now empty
+            const visibleItems = document.querySelectorAll('.student-item[style*="display: block"], .student-item:not([style*="display: none"])');
+            if (visibleItems.length === 0) {
+                document.getElementById('studentList').innerHTML =
+                    '<p style="text-align:center; color:#8898aa; margin-top:50px;">All students are currently on-board.</p>';
+            }
+        }, 400);
+    }
+}
+
+/* --- DRIVER DASHBOARD UNIQUE PROFILE LOGIC --- */
+function drv_toggleProfile() {
+    const drvBox = document.getElementById('drv_profileBox');
+
+    if (drvBox.style.display === 'block') {
+        drvBox.style.display = 'none';
+    } else {
+        // Fetch current user data from the backend
+        fetch('/Account/GetMyProfile')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Fill the mobile dropdown with real backend data
+                    document.getElementById('drv-name').innerText = data.name;
+                    document.getElementById('drv-role').innerText = data.role;
+                    document.getElementById('drv-user').innerText = "@" + data.username;
+                    document.getElementById('drv-contact').innerText = data.contact || "N/A";
+
+                    drvBox.style.display = 'block';
+                }
+            });
+    }
+}
+
+// Close dropdown if driver clicks anywhere else on the screen
+window.addEventListener('click', function (e) {
+    const drvBox = document.getElementById('drv_profileBox');
+    const trigger = document.querySelector('.drv-user-trigger');
+
+    if (drvBox && trigger) {
+        if (!trigger.contains(e.target) && !drvBox.contains(e.target)) {
+            drvBox.style.display = 'none';
+        }
+    }
+}); 
 
 

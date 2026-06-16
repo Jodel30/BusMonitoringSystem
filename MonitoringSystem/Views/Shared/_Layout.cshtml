@@ -42,11 +42,47 @@
                     </span>
                 }
             </div>
-            <div class="profile-area">
-                
-                <a href="/Account/Login" title="Logout">
-                    <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout">
-                </a>
+            <div class="profile-area" style="position:relative;">
+                <!-- THE ICON TRIGGER -->
+                <div onclick="toggleUserModal()" style="cursor:pointer;" class="user-icon-wrapper">
+                    <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Profile">
+                </div>
+
+                <!-- THE DROPDOWN MODAL (Pop-up like notifications) -->
+                <div class="user-dropdown-modal" id="userModal">
+                    <div class="user-dropdown-header">
+                        <div class="u-drop-avatar">
+                            <i class="fa-solid fa-user-gear"></i>
+                        </div>
+                        <div class="u-drop-info">
+                            <strong id="my-prof-name">Loading...</strong>
+                            <span id="my-prof-role">ROLE</span>
+                        </div>
+                    </div>
+
+                    <div class="user-dropdown-body">
+                        <div class="u-drop-item">
+                            <i class="fa-solid fa-at"></i>
+                            <div>
+                                <small>Username</small>
+                                <p id="my-prof-user">username</p>
+                            </div>
+                        </div>
+                        <div class="u-drop-item">
+                            <i class="fa-solid fa-envelope"></i>
+                            <div>
+                                <small>Contact Number</small>
+                                <p id="my-prof-contact">09XXXXXX</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-dropdown-footer">
+                        <a href="/Account/Login" class="btn-logout-pro">
+                            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>

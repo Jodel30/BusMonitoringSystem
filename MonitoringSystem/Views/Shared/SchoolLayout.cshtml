@@ -50,10 +50,46 @@
                     </span>
                 }
             </div>
-            <div class="profile-area">
-                <a href="/Account/Login" title="Logout">
-                    <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Logout">
-                </a>
+            <div class="profile-area" style="position:relative;">
+                <!-- THE ICON TRIGGER (Unique Function) -->
+                <div onclick="lgu_toggleProfile()" style="cursor:pointer;" class="lgu-user-trigger">
+                    <img class="profile-btn" src="~/logout-removebg-preview.png" alt="Profile">
+                </div>
+
+                <!-- THE DROPDOWN MODAL (Unique ID) -->
+                <div class="user-dropdown-modal" id="lgu_profileBox">
+                    <div class="user-dropdown-header">
+                        <div class="u-drop-avatar"><i class="fa-solid fa-user-gear"></i></div>
+                        <div class="u-drop-info">
+                            <!-- Unique IDs for the text fields -->
+                            <strong id="lgu-prof-name">Loading...</strong>
+                            <span id="lgu-prof-role">ROLE</span>
+                        </div>
+                    </div>
+
+                    <div class="user-dropdown-body">
+                        <div class="u-drop-item">
+                            <i class="fa-solid fa-at"></i>
+                            <div>
+                                <small>Username</small>
+                                <p id="lgu-prof-user">username</p>
+                            </div>
+                        </div>
+                        <div class="u-drop-item">
+                            <i class="fa-solid fa-envelope"></i>
+                            <div>
+                                <small>Email Address</small>
+                                <p id="lgu-prof-email">email@stms.gov.ph</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="user-dropdown-footer">
+                        <a href="/Account/Login" class="btn-logout-pro">
+                            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>

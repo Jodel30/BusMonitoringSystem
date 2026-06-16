@@ -497,3 +497,43 @@ function checkAddress(select) {
         otherInput.value = ""; // Clear input if they change their mind
     }
 }
+
+/* --- LGU DASHBOARD UNIQUE PROFILE LOGIC --- */
+function lgu_toggleProfile() {
+    const lguBox = document.getElementById('lgu_profileBox');
+    const notif = document.getElementById('notifModal');
+
+    // Close notifications if they are open
+    if (notif) notif.style.display = 'none';
+
+    if (lguBox.style.display === 'block') {
+        lguBox.style.display = 'none';
+    } else {
+        // Fetch data from the Controller
+        fetch('/Account/GetMyProfile')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the unique LGU fields
+                    document.getElementById('lgu-prof-name').innerText = data.name;
+                    document.getElementById('lgu-prof-role').innerText = data.role;
+                    document.getElementById('lgu-prof-user').innerText = "@" + data.username;
+                    document.getElementById('lgu-prof-email').innerText = data.email;
+
+                    lguBox.style.display = 'block';
+                }
+            });
+    }
+}
+
+// Global click listener to close the LGU modal if clicking outside
+window.addEventListener('click', function (e) {
+    const lguBox = document.getElementById('lgu_profileBox');
+    const trigger = document.querySelector('.lgu-user-trigger');
+
+    if (lguBox && trigger) {
+        if (!trigger.contains(e.target) && !lguBox.contains(e.target)) {
+            lguBox.style.display = 'none';
+        }
+    }
+});

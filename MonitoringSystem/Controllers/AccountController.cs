@@ -7,6 +7,9 @@ namespace MonitoringSystem.Controllers
 {
     public class AccountController : Controller
     {
+      
+        public static SystemAccount CurrentUser { get; set; }
+
         [HttpGet]
         public IActionResult Login()
         {
@@ -16,59 +19,71 @@ namespace MonitoringSystem.Controllers
         [HttpPost]
         public IActionResult Login(string username, string password, bool rememberMe)
         {
-            string loggedInName = "";
-            string loggedInRole = "";
+            SystemAccount user = null;
 
             // 1. CHECK HARDCODED ACCOUNTS
+           
             if (username == "LGU" && password == "1234")
             {
-                loggedInName = "Admin Chief";
-                loggedInRole = "lgu";
+                user = new SystemAccount { FirstName = "Admin", LastName = "Chief", Role = "lgu", Username = "LGU" };
             }
             else if (username == "Driver" && password == "1234")
             {
-                loggedInName = "Ricardo Dalisay";
-                loggedInRole = "driver";
+                user = new SystemAccount { FirstName = "Ricardo", LastName = "Dalisay", Role = "driver", Username = "Driver" };
             }
             else if (username == "PNHS" && password == "1234")
             {
-                loggedInName = "Patao High Admin";
-                loggedInRole = "school";
+                user = new SystemAccount { FirstName = "Patao High", LastName = "Admin", Role = "school", Username = "PNHS" };
             }
             else
             {
-                // 2. CHECK DYNAMIC ACCOUNTS
-                var userAccount = LguDashboardController._accountList
+                // 2. CHECK DYNAMIC ACCOUNTS (The ones you created)
+                user = LguDashboardController._accountList
                     .FirstOrDefault(u => u.Username == username && u.Password == password);
-
-                if (userAccount != null)
-                {
-                    loggedInName = userAccount.FullName;
-                    loggedInRole = userAccount.Role;
-                }
             }
 
-            // 3. IF LOGIN IS SUCCESSFUL, RECORD THE ACTIVITY
-            if (!string.IsNullOrEmpty(loggedInRole))
+            // 3. IF LOGIN IS SUCCESSFUL
+            if (user != null)
             {
-                // ADD TO SHARED LOG LIST
+               
+                CurrentUser = user;
+
+                // RECORD THE ACTIVITY LOG
                 LguDashboardController._activityLogs.Add(new ActivityLog
                 {
-                    User = loggedInName,
-                    Role = loggedInRole.ToUpper(),
+                    User = user.FullName,
+                    Role = user.Role.ToUpper(),
                     Action = "Login Successful",
                     Timestamp = DateTime.Now.ToString("MMM dd, hh:mm tt")
                 });
 
                 // REDIRECT BASED ON ROLE
-                if (loggedInRole == "lgu") return RedirectToAction("Index", "LguDashboard");
-                if (loggedInRole == "school") return RedirectToAction("SchoolAdmin", "SchoolDashboard");
-                if (loggedInRole == "driver") return RedirectToAction("Driver", "DriverDashboard");
+                if (user.Role == "lgu") return RedirectToAction("Index", "LguDashboard");
+                if (user.Role == "school") return RedirectToAction("SchoolAdmin", "SchoolDashboard");
+                if (user.Role == "driver") return RedirectToAction("Driver", "DriverDashboard");
             }
 
             // 4. If nothing matches
             ViewBag.Error = "Invalid Username or Password";
             return View();
+        }
+
+        
+        [HttpGet]
+        public IActionResult GetMyProfile()
+        {
+            if (CurrentUser == null) return Json(new { success = false });
+
+            return Json(new
+            {
+                success = true,
+                name = CurrentUser.FullName,
+                username = CurrentUser.Username,
+                role = CurrentUser.Role.ToUpper(),
+                address = CurrentUser.Address ?? "LGU Office",
+                contact = CurrentUser.ContactNo ?? "N/A",
+                email = CurrentUser.Email ?? "system@stms.gov.ph"
+            });
         }
     }
 }

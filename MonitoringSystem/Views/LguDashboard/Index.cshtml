@@ -111,7 +111,7 @@
                     <h2>List Of Students</h2>
                 </div>
 
-                <div class="search-wrapper">
+                <div class="search-mini" onclick="this.querySelector('input').focus();" style="cursor: text;">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="lguStudentSearch" placeholder="Search LRN or Name..." onkeyup="filterLguTable()">
                 </div>
@@ -277,12 +277,12 @@
             </div>
 
             <div class="glass-card report-results">
-                <div class="results-header"><h3>Daily Transport Summary</h3><button class="btn-export">Export PDF</button></div>
+                <div class="results-header"><h3>Daily Transport Activity</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
                             <th>Trip ID</th>
-                            <th>Shift</th>
+                            <th>Schedule</th>
                             <th>Date</th>
                             <th>Assigned Bus Aide</th>
                             <th>Total Boarded</th>
@@ -373,7 +373,7 @@
                                             <th>Grade & Section</th>
                                             <th>Home Address</th>
                                             <th>Scanned At</th>
-                                            <th style="text-align:center;">Status</th>
+                                            <th style="text-align:center;">Entry Method</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -508,7 +508,7 @@
             <div class="glass-card account-list">
                 <div class="card-header-row">
                     <h3>Account List</h3>
-                    <div class="search-mini">
+                <div class="search-mini" onclick="this.querySelector('input').focus();" style="cursor: text;">
                         <i class="fa-solid fa-search"></i>
                         <input type="text" placeholder="Search users...">
                     </div>
@@ -518,33 +518,48 @@
                 {
                     @foreach (var acc in Model.Accounts)
                     {
-                        <div class="user-account-item" style="cursor:pointer;"
-                             onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
-                            <div class="u-avatar">
-                                <img class="profile-btn" src="~/logout-removebg-preview.png">
+                        <div class="user-account-item" style="display:flex; justify-content:space-between; align-items:center;">
+                            <!-- LEFT SIDE: User Info -->
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div class="u-avatar">
+                                    <img class="profile-btn" src="~/logout-removebg-preview.png">
+                                </div>
+                                <div class="u-details">
+                                    <strong>@acc.FullName</strong>
+                                    <p>@@@acc.Username</p>
+                                </div>
                             </div>
-                            <div class="u-details">
-                                <strong>@acc.FullName</strong>
-                                <p>@acc.Username</p>
+
+                            <!-- RIGHT SIDE: Tags & Actions -->
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <!-- DYNAMIC ROLE TAGS -->
+                                @if (acc.Role == "lgu")
+                                {
+                                    <span class="role-tag lgu">LGU Admin</span>
+                                }
+                                else if (acc.Role == "school")
+                                {
+
+                                    <span class="role-tag school">School Aide</span>
+                                }
+                                else
+                                {
+
+                                    <span class="role-tag driver">Bus Aide</span>
+                                }
+
+                                <!-- VIEW DETAILS BUTTON -->
+                                <button type="button" class="btn-view-info"
+                                        onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
+                                    <i class="fa-solid fa-circle-info"></i> Info
+                                </button>
+
+                                <!-- UPDATE CREDENTIALS BUTTON -->
+                                <button type="button" class="btn-view-info" style="background:#1e293b;"
+                                        onclick="openAccountUpdateModal('@acc.Username')">
+                                    <i class="fa-solid fa-key"></i> Update
+                                </button>
                             </div>
-
-                            <!-- DYNAMIC ROLE TAGS -->
-                            @if (acc.Role == "lgu")
-                            {
-                                <span class="role-tag lgu">LGU Admin</span>
-                            }
-                            else if (acc.Role == "school")
-                            {
-
-                                <span class="role-tag school">School Aide</span>
-                            }
-                            else
-                            {
-
-                                <span class="role-tag driver">Bus Aide</span>
-                            }
-
-                            <button class="btn-icon-sm"><i class="fa-solid fa-ellipsis-vertical"></i></button>
                         </div>
                     }
                 }
@@ -552,6 +567,35 @@
                 {
                     <p style="text-align:center; color:#94a3b8; padding:30px;">No custom accounts created yet.</p>
                 }
+            </div>
+
+            <!-- SMALL MODAL FOR UPDATING USERNAME/PASSWORD -->
+            <div class="modal-overlay" id="accountUpdateOverlay" onclick="closeAccountUpdateModal()">
+                <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 400px !important;">
+                    <button class="btn-close-modal" onclick="closeAccountUpdateModal()">&times;</button>
+
+                    <div class="card-header-gradient" style="background: linear-gradient(135deg, #1e293b 0%, #0077b6 100%); padding:25px; text-align:center;">
+                        <i class="fa-solid fa-shield-halved" style="font-size:30px; color:white; margin-bottom:10px;"></i>
+                        <h2 style="color:white; margin:0; font-size:18px;">Update Credentials</h2>
+                    </div>
+
+                    <form asp-action="UpdateAccountCredentials" asp-controller="LguDashboard" method="post" class="modern-form" style="padding:25px;">
+                        <!-- Hidden field to find the correct user in the C# List -->
+                        <input type="hidden" name="OriginalUsername" id="upd-original-username">
+
+                        <div class="form-group" style="margin-bottom:15px;">
+                            <label>New Username</label>
+                            <input type="text" name="NewUsername" id="upd-new-username" required>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:20px;">
+                            <label>New Password</label>
+                            <input type="password" name="NewPassword" placeholder="Enter new password" required>
+                        </div>
+
+                        <button type="submit" class="btn-primary-form" style="background:#1e293b; width:100%;">Save Changes</button>
+                    </form>
+                </div>
             </div>
             <!-- SYSTEM ACCOUNT INFO MODAL -->
             <div class="modal-overlay" id="accountInfoOverlay" onclick="closeAccountInfo()">

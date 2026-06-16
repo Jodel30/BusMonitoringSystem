@@ -275,13 +275,12 @@ function lgu_switchReport(type, clickedBtn) {
 }
 // --- TRIP DETAILS MODAL & MANIFEST ---
 function viewTripDetails(id, date, driver, start, end, count , shift) {
-    document.getElementById('det-trip-id').innerText = id;
     document.getElementById('det-date').innerText = date;
     document.getElementById('det-driver').innerText = driver;
     document.getElementById('det-start').innerText = start || "N/A";
     document.getElementById('det-end').innerText = end || "N/A";
     document.getElementById('det-count').innerText = count;
-    document.getElementById('det-trip-id').innerText = id + " (" + shift + ")";
+    document.getElementById('det-trip-id').innerText = id;
 
     const tbody = document.querySelector('#tripManifestTable tbody');
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Loading manifest...</td></tr>';
@@ -441,4 +440,40 @@ window.addEventListener('scroll', () => {
             link.classList.add('active');
         }
     });
+});
+
+function toggleUserModal() {
+    const modal = document.getElementById('userModal');
+    const notifModal = document.getElementById('notifModal');
+
+    // 1. If notification modal is open, close it first
+    if (notifModal) notifModal.style.display = 'none';
+
+    if (modal.style.display === 'block') {
+        modal.style.display = 'none';
+    } else {
+        // 2. Fetch fresh data from AccountController
+        fetch('/Account/GetMyProfile')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('my-prof-name').innerText = data.name;
+                    document.getElementById('my-prof-role').innerText = data.role;
+                    document.getElementById('my-prof-user').innerText = "@" + data.username;
+                    
+                    document.getElementById('my-prof-contact').innerText = data.contact;
+                    // 3. Show the modal
+                    modal.style.display = 'block';
+                }
+            });
+    }
+}
+
+// Close when clicking outside
+window.addEventListener('click', function (e) {
+    const modal = document.getElementById('userModal');
+    const trigger = document.querySelector('.user-icon-wrapper');
+    if (!trigger.contains(e.target) && !modal.contains(e.target)) {
+        modal.style.display = 'none';
+    }
 });

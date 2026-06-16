@@ -10,6 +10,7 @@ namespace MonitoringSystem.Controllers
         public static List<Student> _studentList = new List<Student>();
 
 
+
         public static List<StudentScan> _scanHistory = new List<StudentScan>();
            
 

@@ -22,7 +22,10 @@
                 <li onclick="switchSection('active-trip')"><i class="fas fa-user"></i> Trip History</li>
                 <li onclick="switchSection('register')"><i class="fas fa-search"></i> Manual Check-in</li>
                 <li onclick="switchSection('onboard')"><i class="fas fa-users"></i> On-Board Students</li>
-                <li style="color: #ff4d4d; margin-top: 50px;"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                <li style="color: #ff4d4d; margin-top: 50px;">
+                    <a href="/Account/Login" title="Logout" style="color: #ff4d4d; margin-top: 50px; text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                  </a></li>
             </ul>
         </div>
         <div class="overlay-bg" id="overlay" onclick="toggleMenu()"></div>
@@ -30,9 +33,48 @@
         <div class="app-header">
             <i class="fas fa-bars fa-lg" onclick="toggleMenu()" style="cursor:pointer"></i>
             <h2 id="header-title">STMS</h2>
-            <i class="fas fa-user"></i>
-        </div>
+            <!-- THE TRIGGER: Profile Icon -->
+            <div class="drv-user-trigger" onclick="drv_toggleProfile()">
+                <i class="fas fa-user-circle fa-lg"></i>
+            </div>
 
+            <!-- THE DROPDOWN MODAL -->
+            <div class="drv-profile-dropdown" id="drv_profileBox">
+                <div class="drv-drop-header">
+                    <div class="drv-avatar">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="drv-info">
+                        <strong id="drv-name">Loading...</strong>
+                        <span id="drv-role">Driver</span>
+                    </div>
+                </div>
+
+                <div class="drv-drop-body">
+                    <div class="drv-item">
+                        <i class="fa-solid fa-id-badge"></i>
+                        <div>
+                            <small>Username</small>
+                            <p id="drv-user">driver</p>
+                        </div>
+                    </div>
+                    <div class="drv-item">
+                        <i class="fa-solid fa-phone"></i>
+                        <div>
+                            <small>Contact</small>
+                            <p id="drv-contact">N/A</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drv-drop-footer">
+                    <a href="/Account/Login" class="btn-logout-pro">
+                        <i class="fa-solid fa-right-from-bracket"></i> Log Out
+                    </a>
+                </div>
+            </div>
+        </div>
+        
         <!-- SECTION 1: SCAN -->
         <div id="scan" class="content-section active">
             <div class="scan-container">
@@ -67,6 +109,11 @@
                             <h2 id="active-live-count">0</h2>
                         </div>
                     </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <span class="active-trip-badge">
+                            ACTIVE: <strong id="active-trip-id-display">TRP-001</strong>
+                        </span>
+                    </div>
 
                     <div id="scanner-ui">
                         <p style="color: #102a43; font-weight: 600; text-align: center; margin-top: 20px;">
@@ -82,7 +129,7 @@
                         </button>
                     </div>
 
-                    <button class="btn-end-trip" onclick="endTrip()" style="margin-top: 30px;">
+                    <button class="btn-end-trip" onclick="endTrip()" style="margin-top: 10px;">
                         <i class="fa-solid fa-route"></i> End Current Trip
                     </button>
                 </div>
@@ -98,13 +145,13 @@
                         <img id="scanned-photo" src="" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
 
-                    <h2 id="scanned-name" style="color: #102a43; margin-bottom: 2px; font-size: 20px;">Student Name</h2>
-                    <p id="scanned-id" style="color: #8898aa; margin-bottom: 15px;">ID: 00000</p>
-                    <p id="scanned-address" style="color: #8898aa; margin-bottom: 15px;">Home Address</p>
-                    <p id="scanned-level" style="color: #8898aa; margin-bottom: 15px;">Grade Level</p>
+                    <h2 id="scanned-name" style="color: #102a43; margin-bottom: 0px; font-size: 20px;">Student Name</h2>
+                    <p id="scanned-id" style="color: #8898aa; margin-bottom: 0px;">ID: 00000</p>
+                    <p id="scanned-address" style="color: #8898aa; margin-bottom: 0px;">Home Address</p>
+                    <p id="scanned-level" style="color: #8898aa; margin-bottom: 5px;">Grade Level</p>
 
                     <div style="background: #dcfce7; color: #15803d; padding: 10px; border-radius: 10px; font-weight: 800; margin-bottom: 20px; font-size: 14px;">
-                        <i class="fas fa-check-circle"></i> BOARDING VERIFIED
+                        <i class="fas fa-check-circle"></i> BOARDING RECORDED
                     </div>
 
                     <button class="btn-main" onclick="resetScanner()">Scan Next Student</button>

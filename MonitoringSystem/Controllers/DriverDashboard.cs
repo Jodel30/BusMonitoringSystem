@@ -27,31 +27,43 @@ namespace MonitoringSystem.Controllers
             return View(viewModel);
         }
 
-        // 1. SAVE THE TRIP SUMMARY (Triggered when "End Trip" is clicked)
 
-[HttpPost]
-    public IActionResult SaveTrip([FromBody] TripLog data)
-    {
-        if (data != null)
+
+        [HttpPost]
+        public IActionResult SaveTrip([FromBody] TripLog data)
         {
-           
-            int realCount = SchoolDashboard._scanHistory.Count(s => s.TripId == data.TripId.Trim());
-
-            // Update the model with the real number before saving
-            data.BoardedCount = realCount;
-
-            // Add to the history list
-            _tripHistory.Add(data);
-
-            return Json(new
+            if (data != null)
             {
-                success = true,
-                message = $"Trip {data.TripId} saved. Total students recorded: {realCount}"
-            });
-        }
+               
+                if (AccountController.CurrentUser != null)
+                {
+                    data.DriverName = AccountController.CurrentUser.FullName;
+                }
+                else
+                {
+                    // Fallback for demo if no one is logged in
+                    data.DriverName = "System Admin";
+                }
 
-        return Json(new { success = false, message = "Invalid trip data" });
-    }
+                // 1. Calculate the real count from the scan history records
+                int realCount = SchoolDashboard._scanHistory.Count(s => s.TripId == data.TripId.Trim());
+
+                // 2. Update the model with the real count
+                data.BoardedCount = realCount;
+
+                // 3. Add to the permanent history list
+                _tripHistory.Add(data);
+
+                return Json(new
+                {
+                    success = true,
+                    // Include the name in the alert so the driver sees it worked
+                    message = $"Trip {data.TripId} successfully saved by {data.DriverName}. Total students: {realCount}"
+                });
+            }
+
+            return Json(new { success = false, message = "Invalid trip data" });
+        }
 
         [HttpPost]
         public IActionResult RecordScan(string lrn, string tripId, bool isManual = false, string reason = "")

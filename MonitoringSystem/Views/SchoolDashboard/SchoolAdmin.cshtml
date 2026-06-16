@@ -216,12 +216,12 @@
             <div class="glass-card mt-4">
                 <div class="section-heading-row">
                     <h2>List Of Students</h2>
-                    <div class="search-wrapper">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" placeholder="Search LRN or Name...">
-                    </div>
+                    
                 </div>
-
+                <div class="search-mini" onclick="this.querySelector('input').focus();" style="cursor: text;">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search LRN or Name...">
+                </div>
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -443,12 +443,12 @@
             </div>
 
             <div class="glass-card report-results">
-                <div class="results-header"><h3>Daily Transport Summary</h3><button class="btn-export">Export PDF</button></div>
+                <div class="results-header"><h3>Daily Transport Activity</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">
                     <thead>
                         <tr>
                             <th>Trip ID</th>
-                            <th>Shift</th>
+                            <th>Schedule</th>
                             <th>Date</th>
                             <th>Assigned Bus Aide</th>
                             <th>Total Boarded</th>
@@ -564,7 +564,7 @@
                 <span class="badge-role" style="background:#f1f5f9; color:#64748b; border: 1px solid #e2e8f0;">Inactive Records</span>
             </div>
 
-            <div class="search-wrapper" style="margin: 20px 0;">
+                <div class="search-mini" onclick="this.querySelector('input').focus();" style="cursor: text;">
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="archiveSearch" placeholder="Search archived students..." onkeyup="filterArchiveTable()">
             </div>
@@ -731,7 +731,7 @@
                         <thead>
                             <tr>
                                 <th>Student Name</th>
-                                <th>LRN</th>
+                                <th>School Id</th>
                                 <th style="text-align:center;">Manual Scans</th>
                                 <th>Status</th>
                                 <th style="text-align:center;">Action</th>
@@ -755,7 +755,7 @@
                                         <!-- REVIEW BUTTON -->
                                         <button class="btn-view-info"
                                                 onclick="reviewStudentQR('@student.LRN')">
-                                            <i class="fa-solid fa-magnifying-glass"></i> Review & QR
+                                            <i class="fa-solid fa-magnifying-glass"></i> Review
                                         </button>
                                     </td>
                                 </tr>
@@ -833,7 +833,7 @@
                         <thead>
                             <tr>
                                 <th>Student Name</th>
-                                <th>Last Seen</th>
+                                <th>Trips(30 days)</th>
                                 <th style="text-align:center;">Status</th>
                                 <th style="text-align:center;">Action</th>
                             </tr>
