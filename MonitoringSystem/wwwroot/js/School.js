@@ -202,47 +202,125 @@ function closeTripView() {
     document.body.style.overflow = 'auto';
 }
 
-function rp_handleMainToggle() {
-    const area = document.getElementById('rp-filter-area');
-    const badge = document.getElementById('rp-visual-badge');
-    const btn = document.getElementById('rp-toggle-btn');
+/* ==========================================
+   SCHOOL TRANSPORT ACTIVITY LOGIC
+   ========================================== */
+
+function sch_handleReportToggle() {
+    const area = document.getElementById('sch-rp-filter-area');
+    const badge = document.getElementById('sch-rp-visual-badge');
+    const btn = document.getElementById('sch-rp-toggle-btn');
 
     if (area.style.display === 'none' || area.style.display === '') {
         area.style.display = 'flex';
         if (badge) badge.style.display = 'none';
         btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
         btn.style.background = '#102a43';
-    } else {
-        area.style.display = 'none';
-        if (badge) badge.style.display = 'flex';
-        btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
-        btn.style.background = '';
+    }
+    else {
+        // Run the filter logic
+        if (sch_runTripFilter()) {
+            area.style.display = 'none';
+            if (badge) badge.style.display = 'flex';
+            btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
+            btn.style.background = '';
+        }
     }
 }
 
+function sch_runTripFilter() {
+    // Corrected IDs to match the HTML sch- prefix
+    const dailyBox = document.getElementById('sch-rp-daily-box');
+    const dateInput = document.getElementById('sch-rp-date-input');
+    const monthInput = document.getElementById('sch-rp-month-input');
+
+    const isDaily = dailyBox.style.display !== 'none';
+    const dateVal = dateInput.value;
+    const monthVal = monthInput.value;
+
+    // 1. Validation
+    if (isDaily && !dateVal) {
+        sch_showSystemAlert("Selection Required", "Please select a date.");
+        return false;
+    }
+    if (!isDaily && !monthVal) {
+        sch_showSystemAlert("Selection Required", "Please select a month.");
+        return false;
+    }
+
+    let filterText = "";
+    if (isDaily) {
+        const d = new Date(dateVal);
+        filterText = (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear();
+    } else {
+        const d = new Date(monthVal + "-01");
+        filterText = (d.getMonth() + 1) + "/" + d.getFullYear();
+    }
+
+    // 2. Loop through table (Matches your table ID if it exists, or use class)
+    const rows = document.querySelectorAll('.report-results tbody tr');
+    let found = 0;
+
+    rows.forEach(row => {
+        const dateCell = row.cells[1].innerText; // Assuming Date is the 2nd column
+        if (dateCell.includes(filterText)) {
+            row.style.display = "";
+            found++;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    if (found === 0) {
+        sch_showSystemAlert("No Data Found", `No recorded trips for ${filterText}.`);
+        rows.forEach(r => r.style.display = "");
+        return false;
+    }
+
+    return true;
+}
+
+/* --- THE ALERT MODAL HELPER --- */
+function sch_showSystemAlert(title, message) {
+    const modal = document.getElementById('schAlertOverlay');
+    const titleEl = document.getElementById('sch-alert-title');
+    const messageEl = document.getElementById('sch-alert-message');
+
+    if (modal && titleEl && messageEl) {
+        titleEl.innerText = title;
+        messageEl.innerText = message;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function sch_closeAlert() {
+    const modal = document.getElementById('schAlertOverlay');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+/* --- THE SUB-TOGGLE (Daily/Monthly) --- */
 function sch_switchReport(type, clickedBtn) {
-    const dailyBox = document.getElementById('rp-daily-box');
-    const monthlyBox = document.getElementById('rp-monthly-box');
+    const daily = document.getElementById('sch-rp-daily-box');
+    const monthly = document.getElementById('sch-rp-monthly-box');
 
-    // 1. Find the parent container of the button you clicked
-    const parentContainer = clickedBtn.parentElement;
-
-    // 2. Find all buttons ONLY inside that specific container
-    const btns = parentContainer.querySelectorAll('.toggle-btn');
-
-    // 3. Remove 'active' from all buttons in THIS group
+    // Toggle active button highlight
+    const parent = clickedBtn.parentElement;
+    const btns = parent.querySelectorAll('.toggle-btn');
     btns.forEach(btn => btn.classList.remove('active'));
-
-    // 4. Add 'active' to the button you physically clicked
     clickedBtn.classList.add('active');
 
-    // 5. Toggle the input boxes (This part you said was already working)
+    // FIXED: Corrected variable names in the if/else
     if (type === 'daily') {
-        if (dailyBox) dailyBox.style.display = 'block';
-        if (monthlyBox) monthlyBox.style.display = 'none';
+        if (daily) daily.style.display = 'block';
+        if (monthly) monthly.style.display = 'none';
     } else {
-        if (dailyBox) dailyBox.style.display = 'none';
-        if (monthlyBox) monthlyBox.style.display = 'block';
+        if (daily) daily.style.display = 'none';
+        if (monthly) monthly.style.display = 'block';
     }
 }
 function filterArchiveTable() {

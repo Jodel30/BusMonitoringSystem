@@ -54,10 +54,11 @@ function updateRoleFields() {
     }
 }
 
-/* ==========================================
-   3. STUDENT REGISTRY MODULE (WITH MODAL FILTERS)
-   ========================================== */
 let currentStudentLogs = []; // Stores logs of the currently opened student for filtering
+
+/* ==========================================
+   STUDENT REGISTRY MODULE (WITH ALERTS)
+   ========================================== */
 
 function toggleStudentReports() {
     const container = document.getElementById('stu-filter-area');
@@ -65,18 +66,90 @@ function toggleStudentReports() {
     const badge = document.getElementById('stu-badge-wrapper');
 
     if (container.style.display === 'none' || container.style.display === '') {
+        // 1. OPEN MODE: Show filters
         container.style.display = 'flex';
         if (badge) badge.style.display = 'none';
+
         btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
-        btn.style.background = '#102a43';
-    } else {
-        container.style.display = 'none';
-        if (badge) badge.style.display = 'flex';
-        btn.innerHTML = 'View Trip Summary <i class="fa-solid fa-arrow-right"></i>';
-        btn.style.background = '';
+        btn.style.background = '#102a43'; // Navy Blue
+    }
+    else {
+        // 2. GENERATE MODE: 
+        // Run the filter logic. It returns the number of students found.
+        const foundCount = applyStudentTableFilters();
+
+        if (foundCount > 0) {
+            // SUCCESS: Students found, close the bar
+            container.style.display = 'none';
+            if (badge) badge.style.display = 'flex';
+            btn.innerHTML = 'View Trip Summary <i class="fa-solid fa-arrow-right"></i>';
+            btn.style.background = ''; // Reverts to CSS gradient
+            console.log(`Success: Found ${foundCount} students.`);
+        }
+        else {
+            // ERROR: No students found, show modal and KEEP bar open
+            stu_showSystemAlert("No Records Found", "No students match the selected Address and Grade. Try a different combination.");
+
+            // Optional: Reset table to show everyone again so it's not blank
+            const rows = document.querySelectorAll("#lguStudentTable tbody tr");
+            rows.forEach(row => row.style.display = "");
+        }
     }
 }
 
+// THE FILTER LOGIC (Returns the count of matches)
+function applyStudentTableFilters() {
+    const addrEl = document.getElementById('stu-addr-filter');
+    const gradeEl = document.getElementById('stu-grade-filter');
+
+    // Check if elements exist to prevent errors
+    if (!addrEl || !gradeEl) return 0;
+
+    const selectedAddr = addrEl.value.toUpperCase();
+    const selectedGrade = gradeEl.value.toUpperCase();
+    const rows = document.querySelectorAll("#lguStudentTable tbody tr");
+    let matchCount = 0;
+
+    rows.forEach(row => {
+        // Assuming Grade/Section is Index 2 and Address is Index 3
+        const rowGradeText = row.cells[2].innerText.toUpperCase();
+        const rowAddrText = row.cells[3].innerText.toUpperCase();
+
+        const matchesGrade = (selectedGrade === "ALL" || rowGradeText.includes(selectedGrade));
+        const matchesAddr = (selectedAddr === "ALL" || rowAddrText.includes(selectedAddr));
+
+        if (matchesGrade && matchesAddr) {
+            row.style.display = "";
+            matchCount++;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    return matchCount;
+}
+
+/* --- STUDENT ALERT MODAL HELPERS --- */
+function stu_showSystemAlert(title, message) {
+    const modal = document.getElementById('stuAlertOverlay');
+    if (document.getElementById('stu-alert-title')) document.getElementById('stu-alert-title').innerText = title;
+    if (document.getElementById('stu-alert-message')) document.getElementById('stu-alert-message').innerText = message;
+
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Stop background scroll
+    }
+}
+
+function stu_closeAlert() {
+    const modal = document.getElementById('stuAlertOverlay');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Restore scroll
+    }
+}
+
+// EXISTING SEARCH BAR LOGIC
 function filterLguTable() {
     const input = document.getElementById("lguStudentSearch").value.toUpperCase();
     const rows = document.querySelectorAll("#lguStudentTable tbody tr");
@@ -84,7 +157,6 @@ function filterLguTable() {
         row.style.display = row.innerText.toUpperCase().includes(input) ? "" : "none";
     });
 }
-
 // --- STUDENT PROFILE MODAL ---
 function viewStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
     // 1. Reset UI and show Loading state
@@ -230,41 +302,119 @@ function closeInfoView() {
 /* ==========================================
    4. TRANSPORT ACTIVITY (REPORTS) MODULE
    ========================================== */
-function rp_handleMainToggle() {
-    const filterArea = document.getElementById('rp-filter-area');
-    const actionBtn = document.getElementById('rp-toggle-btn');
-    const badge = document.getElementById('rp-visual-badge');
+function showAdminAlert(title, message, isError = true) {
+    const modal = document.getElementById('adminAlertOverlay');
+    const iconBox = document.getElementById('admin-alert-icon-box');
+    const icon = document.getElementById('admin-alert-icon');
 
-    if (filterArea.style.display === 'none' || filterArea.style.display === '') {
-        filterArea.style.display = 'flex';
-        if (badge) badge.style.display = 'none';
-        actionBtn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
-        actionBtn.style.background = '#102a43';
+    document.getElementById('admin-alert-title').innerText = title;
+    document.getElementById('admin-alert-message').innerText = message;
+
+    // Change color based on success or error
+    if (isError) {
+        iconBox.style.background = "#fee2e2";
+        iconBox.style.color = "#ef4444";
+        icon.className = "fa-solid fa-circle-xmark";
     } else {
-        filterArea.style.display = 'none';
-        if (badge) badge.style.display = 'flex';
-        actionBtn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
-        actionBtn.style.background = '';
+        iconBox.style.background = "#dcfce7";
+        iconBox.style.color = "#15803d";
+        icon.className = "fa-solid fa-circle-check";
+    }
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAdminAlert() {
+    document.getElementById('adminAlertOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+}
+function rp_handleMainToggle() {
+    const area = document.getElementById('rp-filter-area');
+    const badge = document.getElementById('rp-visual-badge');
+    const btn = document.getElementById('rp-toggle-btn');
+
+    // 1. IF HIDDEN -> SHOW FILTERS
+    if (area.style.display === 'none' || area.style.display === '') {
+        area.style.display = 'flex';
+        if (badge) badge.style.display = 'none';
+        btn.innerHTML = 'Generate Report <i class="fa-solid fa-check"></i>';
+        btn.style.background = '#102a43'; // Dark Navy
+    }
+    // 2. IF VISIBLE -> RUN FILTER AND GO BACK
+    else {
+        if (runTripFilter()) {
+            area.style.display = 'none';
+            if (badge) badge.style.display = 'flex';
+            btn.innerHTML = 'View Transport Activity <i class="fa-solid fa-arrow-right"></i>';
+            btn.style.background = '';
+        }
     }
 }
 
+function runTripFilter() {
+    // A. Check which mode is active (Daily or Monthly)
+    const isDaily = document.getElementById('rp-daily-box').style.display !== 'none';
+    const dateVal = document.getElementById('rp-date-input').value; // YYYY-MM-DD
+    const monthVal = document.getElementById('rp-month-input').value; // YYYY-MM
+
+    if (isDaily && !dateVal) {
+        showAdminAlert("Missing Date", "Please select a specific day to generate the report.");
+        return false;
+    }
+    if (!isDaily && !monthVal) {
+        showAdminAlert("Missing Month", "Please select a month to view the summary.");
+        return false;
+    }
+
+    let filterText = "";
+
+    // B. Convert input format to match table date format (e.g. 6/16/2026)
+    if (isDaily) {
+        const d = new Date(dateVal);
+        filterText = (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear();
+    } else {
+        const d = new Date(monthVal + "-01");
+        // For monthly, we just want to match "Month/Year" (e.g. "6/2026")
+        filterText = (d.getMonth() + 1) + "/" + d.getFullYear();
+    }
+
+    console.log("Filtering Trips for: " + filterText);
+
+    // C. Loop through the rows in the Transport Activity table
+    // We target the rows inside the .report-results container
+    const rows = document.querySelectorAll('.report-results tbody tr');
+    let foundCount = 0;
+
+    rows.forEach(row => {
+        const dateCell = row.cells[2].innerText; // Index 2 is the 'DATE' column
+        if (dateCell.includes(filterText)) {
+            row.style.display = ""; // Show
+            foundCount++;
+        } else {
+            row.style.display = "none"; // Hide
+        }
+    });
+
+    if (foundCount === 0) {
+        showAdminAlert("No Data Found", `There are no transport logs recorded for ${filterText}.`);
+        rows.forEach(r => r.style.display = ""); // Show all again
+        return false;
+    }
+
+    return true;
+}
+
+/* --- SUB-TOGGLE: Daily vs Monthly --- */
 function lgu_switchReport(type, clickedBtn) {
     const dailyBox = document.getElementById('rp-daily-box');
     const monthlyBox = document.getElementById('rp-monthly-box');
-
-    // 1. Find the parent container of the button you clicked
     const parentContainer = clickedBtn.parentElement;
-
-    // 2. Find all buttons ONLY inside that specific container
     const btns = parentContainer.querySelectorAll('.toggle-btn');
 
-    // 3. Remove 'active' from all buttons in THIS group
     btns.forEach(btn => btn.classList.remove('active'));
-
-    // 4. Add 'active' to the button you physically clicked
     clickedBtn.classList.add('active');
 
-    // 5. Toggle the input boxes (This part you said was already working)
     if (type === 'daily') {
         if (dailyBox) dailyBox.style.display = 'block';
         if (monthlyBox) monthlyBox.style.display = 'none';

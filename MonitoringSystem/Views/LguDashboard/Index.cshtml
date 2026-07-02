@@ -54,7 +54,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="icon-box grey"><i class="fa-solid fa-user-shield"></i></div>
-                    <div class="info"><h3>Users</h3><p>0</p></div>
+                    <div class="info"><h3>Users</h3><p>@Model.Accounts.Count</p></div>
                     <img src="~/users-removebg-preview.png" class="bg-icon">
                 </div>
             </div>
@@ -71,30 +71,29 @@
             <!-- FILTER BAR (Unique IDs for Students) -->
             <div class="report-filters glass-card">
 
-                <!-- LEFT SIDE: BADGE (Disappears on click) -->
+                <!-- LEFT SIDE: BADGE -->
                 <div id="stu-badge-wrapper" class="report-brand-box">
                     <div class="filter-controls"><h1>Student Transport Overview</h1></div>
                 </div>
 
-                <!-- CENTER: FILTERS (Hidden by default) -->
+                <!-- CENTER: FILTERS -->
                 <div id="stu-filter-area" style="display: none; gap: 20px; align-items: center; flex: 1; justify-content: center;">
                     <div class="filter-controls">
-                        <label style="font-size: 20px;"><i class="fa-solid fa-location-dot"></i> Address:</label>
-                        <select name="Address" required class="modern-input">
-                            <option value="" disabled selected>Select Address</option>
-                            <option>NHA Kabac</option>
-                            <option>NHA Kampingganon</option>
-                            <option>Others</option>
+                        <label style="font-size: 14px; font-weight:700;"><i class="fa-solid fa-location-dot"></i> Address:</label>
+                        <select id="stu-filter-address" class="modern-input">
+                            
+                            <option value="NHA Kabac">NHA Kabac</option>
+                            <option value="NHA Kampingganon">NHA Kampingganon</option>
+                            <option value="all">Others</option>
                         </select>
-                        <label style="font-size: 20px;">Grade:</label>
-                        <select name="Grade" required class="modern-input">
-                            <option value="" disabled selected>Select Grade Level</option>
+
+                        <label style="font-size: 14px; font-weight:700; margin-left:15px;">Grade:</label>
+                        <select id="stu-filter-grade" class="modern-input">
+                            <option value="all">All Grades</option>
                             <option>Grade 7</option>
                             <option>Grade 8</option>
                             <option>Grade 9</option>
                             <option>Grade 10</option>
-                            <option>Grade 11</option>
-                            <option>Grade 12</option>
                         </select>
                     </div>
                 </div>
@@ -104,7 +103,17 @@
                     View Trip Summary <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
-
+            <!-- STUDENT SYSTEM ALERT MODAL -->
+            <div class="modal-overlay" id="stuAlertOverlay" onclick="stu_closeAlert()">
+                <div class="modal-content system-alert-box" onclick="event.stopPropagation()">
+                    <div style="width:60px; height:60px; background:#fee2e2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:24px;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                    <h3 id="stu-alert-title" style="color:#102a43; margin-bottom:5px;">System Message</h3>
+                    <p id="stu-alert-message" style="color:#64748b; font-size:14px; margin-bottom:20px;">Message here.</p>
+                    <button class="btn-primary-form" onclick="stu_closeAlert()" style="width:100%;">Understood</button>
+                </div>
+            </div>
             <!-- DATA TABLE -->
             <div class="glass-card">
                 <div class="section-heading">
@@ -264,10 +273,10 @@
                     <button class="toggle-btn" onclick="lgu_switchReport('monthly', this)">Monthly</button>
                 </div>
                     <div class="filter-controls" id="rp-daily-box">
-                        <input type="date" class="modern-input">
+                    <input type="date" id="rp-date-input" class="modern-input">
                     </div>
                     <div class="filter-controls" id="rp-monthly-box" style="display:none;">
-                        <input type="month" class="modern-input">
+                    <input type="month" id="rp-month-input" class="modern-input">
                     </div>
                 </div>
 
@@ -275,7 +284,20 @@
                     View Transport Activity <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
+        <!-- ADMIN SYSTEM ALERT MODAL -->
+        <div class="modal-overlay" id="adminAlertOverlay" onclick="closeAdminAlert()">
+            <div class="modal-content system-alert-box" onclick="event.stopPropagation()">
+                <div id="admin-alert-icon-box" class="alert-icon-circle">
+                    <i id="admin-alert-icon" class="fa-solid fa-circle-exclamation"></i>
+                </div>
+                <h3 id="admin-alert-title">System Message</h3>
+                <p id="admin-alert-message">Please check your inputs.</p>
 
+                <button class="btn-primary-form" onclick="closeAdminAlert()" style="width: 100%; margin-top: 10px;">
+                    Understood
+                </button>
+            </div>
+        </div>
             <div class="glass-card report-results">
                 <div class="results-header"><h3>Daily Transport Activity</h3><button class="btn-export">Export PDF</button></div>
                 <table class="modern-table">

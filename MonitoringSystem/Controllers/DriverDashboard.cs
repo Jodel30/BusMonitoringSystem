@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MonitoringSystem.Helpers;
 using MonitoringSystem.Models;
 using System.Linq;
+
 
 namespace MonitoringSystem.Controllers
 {
@@ -65,46 +67,72 @@ namespace MonitoringSystem.Controllers
             return Json(new { success = false, message = "Invalid trip data" });
         }
 
-        [HttpPost]
-        public IActionResult RecordScan(string lrn, string tripId, bool isManual = false, string reason = "")
+
+[HttpPost]
+    public IActionResult RecordScan(string lrn, string tripId, bool isManual = false, string reason = "")
+    {
+        if (string.IsNullOrEmpty(lrn) || string.IsNullOrEmpty(tripId))
         {
-            if (string.IsNullOrEmpty(lrn) || string.IsNullOrEmpty(tripId))
-            {
-                return Json(new { success = false, message = "Missing Data" });
-            }
-
-            // 1. REACH INTO THE SCHOOL DASHBOARD LIST
-            var student = SchoolDashboard._studentList.FirstOrDefault(s => s.LRN.Trim() == lrn.Trim());
-
-            if (student != null)
-            {
-                // A. Update Last Seen (For the Absence Alert)
-                student.LastBoardingDate = DateTime.Now.ToString("MMM dd, yyyy");
-                student.AbsenceAlertResolved = false; // Reset alert since they are back
-
-                // B. Handle Manual Counter (For the ID Replacement Alert)
-                if (isManual)
-                {
-                    student.ManualCheckInCount++;
-                }
-            }
-
-            // 2. CREATE THE LOG ENTRY (Same as before)
-            var newScan = new StudentScan
-            {
-                LRN = lrn.Trim(),
-                TripId = tripId.Trim(),
-                Date = DateTime.Now.ToString("MMM dd, yyyy"),
-                ScanTime = DateTime.Now.ToString("hh:mm tt"),
-                Status = isManual ? $"Manual ({reason})" : "QR Scanned"
-            };
-
-            SchoolDashboard._scanHistory.Add(newScan);
-
-            // 3. RETURN DATA
-            int totalCount = SchoolDashboard._scanHistory.Count(s => s.TripId == tripId.Trim());
-            return Json(new { success = true, currentCount = totalCount });
+            return Json(new { success = false, message = "Missing Data" });
         }
 
+        // 1. --- THE SECURITY DECRYPTION ---
+        // Fallback starts as the raw input
+        string cleanLrn = lrn.Trim();
+
+        if (!isManual) // Only try to decrypt if it came from the QR Scanner
+        {
+            try
+            {
+                // Fix URL encoding: Restore '+' signs that often turn into spaces
+                string inputToDecrypt = lrn.Trim().Replace(" ", "+");
+                string decryptedData = SecurityHelper.Decrypt(inputToDecrypt);
+
+                // Extract just the number from "STMS-DATA|LRN:12345|..."
+                if (decryptedData.Contains("LRN:"))
+                {
+                    cleanLrn = decryptedData.Split("LRN:")[1].Split("|")[0].Trim();
+                }
+            }
+            catch
+            {
+                // If it can't be decrypted and isn't manual, it's a fake/invalid code
+                return Json(new { success = false, message = "Security Error: Invalid QR Code" });
+            }
+        }
+
+        // 2. REACH INTO THE SCHOOL DASHBOARD LIST USING THE CLEAN LRN
+        var student = SchoolDashboard._studentList.FirstOrDefault(s => s.LRN.Trim() == cleanLrn);
+
+        if (student != null)
+        {
+            // A. Update Last Seen (For the Absence Alert)
+            student.LastBoardingDate = DateTime.Now.ToString("MMM dd, yyyy");
+            student.AbsenceAlertResolved = false;
+
+            // B. Handle Manual Counter (For the ID Replacement Alert)
+            if (isManual)
+            {
+                student.ManualCheckInCount++;
+            }
+        }
+
+        // 3. CREATE THE LOG ENTRY (Saving the Clean LRN, not the encrypted one)
+        var newScan = new StudentScan
+        {
+            LRN = cleanLrn,
+            TripId = tripId.Trim(),
+            Date = DateTime.Now.ToString("MMM dd, yyyy"),
+            ScanTime = DateTime.Now.ToString("hh:mm tt"),
+            Status = isManual ? $"Manual ({reason})" : "QR Scanned"
+        };
+
+        SchoolDashboard._scanHistory.Add(newScan);
+
+        // 4. RETURN DATA
+        int totalCount = SchoolDashboard._scanHistory.Count(s => s.TripId == tripId.Trim());
+        return Json(new { success = true, currentCount = totalCount });
     }
+
+}
 }

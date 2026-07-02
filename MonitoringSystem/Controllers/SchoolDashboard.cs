@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MonitoringSystem.Models;
 using QRCoder;
+using MonitoringSystem.Helpers;
 
 namespace MonitoringSystem.Controllers
 {
@@ -33,7 +34,7 @@ namespace MonitoringSystem.Controllers
         [HttpPost]
         public IActionResult RegisterStudent(Student model, IFormFile studentPhoto, string OtherAddressDetail)
         {
-            
+            // 1. Handle Photo Upload
             if (studentPhoto != null)
             {
                 string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -44,26 +45,29 @@ namespace MonitoringSystem.Controllers
                 model.PhotoPath = "/uploads/" + fileName;
             }
 
-            
+            // 2. Handle "Others" Address Logic
             if (model.Address == "Others" && !string.IsNullOrEmpty(OtherAddressDetail))
             {
                 model.Address = $"Others ({OtherAddressDetail})";
             }
 
-            
+            // 3. Name Concatenation
             string combinedName = $"{model.FirstName} {model.MiddleName} {model.LastName}";
 
-           
-            string qrText = $"STMS-DATA|LRN:{model.LRN}|Name:{combinedName}|Level:{model.GradeLevel}";
+            // 4. --- THE SECURITY FIX: ENCRYPT DATA ---
+            string plainTextData = $"STMS-DATA|LRN:{model.LRN}|Name:{combinedName}|Level:{model.GradeLevel}";
+            string encryptedData = SecurityHelper.Encrypt(plainTextData);
+
+            // 5. Generate QR Code using the ENCRYPTED string
             using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(qrText, QRCodeGenerator.ECCLevel.Q))
+            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(encryptedData, QRCodeGenerator.ECCLevel.Q))
             using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
             {
                 byte[] qrCodeImage = qrCode.GetGraphic(20);
                 model.QRCodeBase64 = Convert.ToBase64String(qrCodeImage);
             }
 
-            
+            // 6. Set Metadata
             model.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
 
             _studentList.Add(model);
@@ -74,17 +78,38 @@ namespace MonitoringSystem.Controllers
         [HttpGet]
         public IActionResult GetStudentData(string lrn)
         {
-            string cleanLrn = lrn?.Trim();
-            if (!string.IsNullOrEmpty(cleanLrn) && cleanLrn.Contains("LRN:"))
+            if (string.IsNullOrEmpty(lrn)) return Json(new { success = false, message = "Scan data is empty." });
+
+            // 1. THE FIX: Restore '+' signs in the encrypted string
+            // Browsers often convert '+' to ' ' in URLs. This line fixes that for the Decryptor.
+            string inputToProcess = lrn.Trim().Replace(" ", "+");
+            string realLrn = lrn.Trim(); // Default fallback to raw input
+
+            // 2. --- THE SECURITY DECRYPTION ---
+            try
             {
-                cleanLrn = cleanLrn.Split("LRN:")[1].Split("|")[0].Trim();
+                // Try to decrypt the scanned text
+                string decryptedData = SecurityHelper.Decrypt(inputToProcess);
+
+                // If successful, extract the actual LRN number from the "STMS-DATA|LRN:..." format
+                if (decryptedData.Contains("LRN:"))
+                {
+                    realLrn = decryptedData.Split("LRN:")[1].Split("|")[0].Trim();
+                }
+            }
+            catch
+            {
+                // If decryption fails, it's either:
+                // A. A Manual Boarding click (which sends raw text) -> Use the raw input.
+                // B. A Fake QR -> The 'student == null' check below will handle it.
             }
 
-            var student = _studentList.FirstOrDefault(s => s.LRN == cleanLrn);
+            // 3. Find the student using the verified (decrypted) LRN
+            var student = _studentList.FirstOrDefault(s => s.LRN == realLrn);
 
             if (student != null)
             {
-                // --- SECURITY CHECK ---
+                // --- SECURITY STATUS CHECK ---
                 if (student.Status == "Inactive")
                 {
                     return Json(new
@@ -94,18 +119,17 @@ namespace MonitoringSystem.Controllers
                     });
                 }
 
-                // 1. Fetch only this student's scans
+                // 4. Fetch trip history logs for this specific student
                 var history = _scanHistory
-                    .Where(h => h.LRN == cleanLrn)
+                    .Where(h => h.LRN == realLrn)
                     .OrderByDescending(h => h.Date)
                     .ThenByDescending(h => h.ScanTime)
                     .ToList();
 
-                // --- NEW: CALCULATE MANUAL COUNT ---
-                // We count every record in their history where the status starts with "Manual"
+                // 5. Calculate total Manual Scans
                 int manualScans = history.Count(h => h.Status != null && h.Status.Contains("Manual"));
 
-                // 2. Return data including the manual count
+                // 6. Return full data package to the Dashboard
                 return Json(new
                 {
                     success = true,
@@ -117,26 +141,24 @@ namespace MonitoringSystem.Controllers
                     id = student.StudentId,
                     parent = student.Parent,
                     contact = student.ParentContact,
-
                     tripHistory = history,
                     totalTrips = history.Count,
-
-                    // --- ADDED THIS PROPERTY ---
                     manualCount = manualScans
                 });
             }
 
-            return Json(new { success = false, message = "Student record not found." });
+            // Final Fallback: Student doesn't exist or encryption was invalid
+            return Json(new { success = false, message = "Student record not found in system." });
         }
         [HttpGet]
         public IActionResult GetTripManifest(string tripId)
         {
             // 1. Get all scans for this specific trip
-            var scans = _scanHistory.Where(s => s.TripId == tripId).ToList();
+            var scans = _scanHistory.Where(s => s.TripId.Trim() == tripId.Trim()).ToList();
 
             // 2. Link those scans to the Student details to get names and photos
             var manifest = scans.Select(scan => {
-                var student = _studentList.FirstOrDefault(s => s.LRN == scan.LRN);
+                var student = _studentList.FirstOrDefault(s => s.LRN.Trim() == scan.LRN.Trim());
                 return new
                 {
                     name = student != null ? $"{student.FirstName} {student.LastName}" : "Unknown",

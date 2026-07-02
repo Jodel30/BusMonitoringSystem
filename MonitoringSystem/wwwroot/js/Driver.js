@@ -108,7 +108,7 @@ function onScanSuccess(decodedText) {
     let lrn = decodedText.includes('LRN:') ? decodedText.split('LRN:')[1].split('|')[0] : decodedText;
     lrn = lrn.trim(); // Ensure no spaces
 
-    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
+    fetch(`/SchoolDashboard/GetStudentData?lrn=${encodeURIComponent(decodedText.trim())}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {

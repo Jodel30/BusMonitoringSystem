@@ -1734,3 +1734,53 @@ hr {
     .btn-logout-pro:hover {
         background: #fee2e2;
     }
+/* ADMIN SYSTEM ALERT STYLING */
+.system-alert-box {
+    max-width: 340px !important;
+    padding: 35px !important;
+    text-align: center;
+    border-radius: 25px !important;
+}
+
+.alert-icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 26px;
+}
+
+.system-alert-box h3 {
+    margin: 0 0 8px;
+    color: #102a43;
+    font-weight: 800;
+}
+
+.system-alert-box p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+#stu-filter-area {
+    animation: stuFadeIn 0.4s ease forwards;
+}
+
+@keyframes stuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.report-filters {
+    transition: all 0.3s ease-in-out;
+}
