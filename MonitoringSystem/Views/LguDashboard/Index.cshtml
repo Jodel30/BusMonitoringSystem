@@ -41,7 +41,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="icon-box blue"><i class="fa-solid fa-users"></i></div>
-                    <div class="info"><h3>Students</h3><p>0</p></div>
+                    <div class="info"><h3>Students</h3><p>@Model.Students.Count</p></div>
                     <img src="~/students-removebg-preview.png" class="bg-icon">
                 </div>
                 <div class="stat-card" onclick="openLowUsageModal()" style="cursor: pointer; border-left: 5px solid #0891b2;">
@@ -298,8 +298,17 @@
                 </button>
             </div>
         </div>
-            <div class="glass-card report-results">
-                <div class="results-header"><h3>Daily Transport Activity</h3><button class="btn-export">Export PDF</button></div>
+        <div class="glass-card report-results">
+            <div class="results-header">
+                <h3>Daily Transport Activity</h3>
+                <!-- TRIGGER BUTTON (Ensure it's OUTSIDE the ID below) -->
+                <button type="button" class="btn-export" onclick="exportTransportReport()">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                </button>
+            </div>
+
+            <!-- START OF PRINTABLE AREA (Add this ID) -->
+            <div id="activity-report-pdf" style="background: white !important; padding: 20px; border-radius: 15px;">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -316,37 +325,18 @@
                         {
                             <tr>
                                 <td><span class="id-tag">@trip.TripId</span></td>
-                            <td>
-                                
-                                @if (trip.Shift == "AM")
-                                {
-                                    <span class="status">
-                                        AM
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="status">
-                                        PM
-                                    </span>
-                                }
-                            </td>
+                                <td>@trip.Shift</td>
                                 <td>@trip.Date</td>
                                 <td><strong>@trip.DriverName</strong></td>
                                 <td>@trip.BoardedCount</td>
                                 <td><span class="status success">Completed</span></td>
-                                <td>
-                                    <!-- ACTION BUTTON -->
-                                    <button type="button" class="btn-view-info"
-                                            onclick="viewTripDetails('@trip.TripId', '@trip.Date', '@trip.DriverName', '@trip.StartTime', '@trip.EndTime', '@trip.BoardedCount')">
-                                        <i class="fa-solid fa-circle-info"></i> View Details
-                                    </button>
-                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
+            <!-- END OF PRINTABLE AREA -->
+        </div>
             <!-- TRIP DETAILS MODAL -->
             <div class="modal-overlay" id="tripDetailOverlay" onclick="closeTripView()">
                 <div class="modal-content profile-modal-box" onclick="event.stopPropagation()" style="max-width: 900px !important;">
@@ -826,7 +816,10 @@
         </section>
 
     </div>
-
+    <!-- jsPDF (The core PDF engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable (The table-building plugin) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="LguDashboard.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 </body>

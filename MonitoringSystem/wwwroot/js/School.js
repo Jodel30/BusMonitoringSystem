@@ -615,3 +615,46 @@ window.addEventListener('click', function (e) {
         }
     }
 });
+
+function exportTransportReport() {
+    // 1. Initialize jsPDF (Landscape orientation)
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('l', 'mm', 'a4');
+
+    // 2. Add a professional Header
+    doc.setFontSize(18);
+    doc.setTextColor(0, 119, 182); // Your brand blue
+    doc.text("Student Transport Monitoring System", 14, 15);
+
+    doc.setFontSize(12);
+    doc.setTextColor(100);
+    doc.text(`Official Transport Activity Log - ${new Date().toLocaleDateString()}`, 14, 22);
+
+    // 3. Get the table data
+    // We target your modern-table class
+    const table = document.querySelector('.report-results table');
+
+    if (!table || table.rows.length <= 1) {
+        alert("No data found to export.");
+        return;
+    }
+
+    // 4. Use AutoTable to build the PDF
+    doc.autoTable({
+        html: table,
+        startY: 30, // Start after the header text
+        theme: 'striped', // Clean, professional look
+        headStyles: { fillColor: [16, 42, 67] }, // Dark Navy header
+        styles: { fontSize: 10, cellPadding: 4 },
+        // EXCLUDE THE ACTION COLUMN (The 'View Details' button)
+        didParseCell: function (data) {
+            // If the column header is "Action" or "Status", we can hide it or format it
+            if (data.column.index === 5) { // Assuming index 5 is the 'Action' column
+                data.cell.text = ""; // Don't print the button text
+            }
+        }
+    });
+
+    // 5. Download the file
+    doc.save(`STMS_Report_${new Date().getTime()}.pdf`);
+}

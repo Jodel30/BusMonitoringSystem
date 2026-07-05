@@ -1151,7 +1151,7 @@ hr {
     .card-header-icon h3 {
         margin: 0;
         color: #102a43;
-        font-size: 18px;
+        font-size: 25px;
     }
 
 .modern-form .input-group {
@@ -1783,4 +1783,43 @@ hr {
 
 .report-filters {
     transition: all 0.3s ease-in-out;
+}
+/* --- PRINT RULES (Add this to your stylesheet) --- */
+@media print {
+    /* 1. Hide the entire website background, navbar, and filter bars */
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    header.top-nav,
+    .report-banner,
+    .report-filters,
+    .hero-banner,
+    .btn-export,
+    .btn-view-info {
+        display: none !important; /* Hide these from the PDF */
+    }
+
+    /* 2. Force the table card to take up 100% of the paper */
+    .report-results {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+    }
+
+    .modern-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+        .modern-table th,
+        .modern-table td {
+            border: 1px solid #ddd !important;
+            padding: 10px !important;
+        }
 }

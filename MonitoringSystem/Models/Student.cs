@@ -25,6 +25,7 @@ namespace MonitoringSystem.Models
         public int ManualCheckInCount { get; set; } = 0;
         public bool ManualAlertResolved { get; set; } = false;
         public string ReviewStatus { get; set; } = "Healthy";
+        public string QRToken { get; set; }
 
         public bool NeedsUpdate
         {

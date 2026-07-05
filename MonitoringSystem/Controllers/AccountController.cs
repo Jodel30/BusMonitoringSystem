@@ -20,35 +20,40 @@ namespace MonitoringSystem.Controllers
         public IActionResult Login(string username, string password, bool rememberMe)
         {
             SystemAccount user = null;
+            bool usernameFound = false;
 
-            // 1. CHECK HARDCODED ACCOUNTS
-           
-            if (username == "LGU" && password == "1234")
+            // 1. SEARCH FOR THE USERNAME FIRST (Hardcoded)
+            if (username == "LGU" || username == "Driver" || username == "PNHS")
             {
-                user = new SystemAccount { FirstName = "Admin", LastName = "Chief", Role = "lgu", Username = "LGU" };
-            }
-            else if (username == "Driver" && password == "1234")
-            {
-                user = new SystemAccount { FirstName = "Ricardo", LastName = "Dalisay", Role = "driver", Username = "Driver" };
-            }
-            else if (username == "PNHS" && password == "1234")
-            {
-                user = new SystemAccount { FirstName = "Patao High", LastName = "Admin", Role = "school", Username = "PNHS" };
+                usernameFound = true;
+                // Check the specific hardcoded password
+                if (password == "1234")
+                {
+                    if (username == "LGU") user = new SystemAccount { FirstName = "Admin", LastName = "Chief", Role = "lgu", Username = "LGU" };
+                    else if (username == "Driver") user = new SystemAccount { FirstName = "Ricardo", LastName = "Dalisay", Role = "driver", Username = "Driver" };
+                    else user = new SystemAccount { FirstName = "Patao High", LastName = "Admin", Role = "school", Username = "PNHS" };
+                }
             }
             else
             {
-                // 2. CHECK DYNAMIC ACCOUNTS (The ones you created)
-                user = LguDashboardController._accountList
-                    .FirstOrDefault(u => u.Username == username && u.Password == password);
+                // 2. SEARCH FOR THE USERNAME (Dynamic List)
+                var account = LguDashboardController._accountList.FirstOrDefault(u => u.Username == username);
+                if (account != null)
+                {
+                    usernameFound = true;
+                    // Check if the password matches the account found
+                    if (account.Password == password)
+                    {
+                        user = account;
+                    }
+                }
             }
 
             // 3. IF LOGIN IS SUCCESSFUL
             if (user != null)
             {
-               
                 CurrentUser = user;
 
-                // RECORD THE ACTIVITY LOG
                 LguDashboardController._activityLogs.Add(new ActivityLog
                 {
                     User = user.FullName,
@@ -57,18 +62,26 @@ namespace MonitoringSystem.Controllers
                     Timestamp = DateTime.Now.ToString("MMM dd, hh:mm tt")
                 });
 
-                // REDIRECT BASED ON ROLE
                 if (user.Role == "lgu") return RedirectToAction("Index", "LguDashboard");
                 if (user.Role == "school") return RedirectToAction("SchoolAdmin", "SchoolDashboard");
                 if (user.Role == "driver") return RedirectToAction("Driver", "DriverDashboard");
             }
 
-            // 4. If nothing matches
-            ViewBag.Error = "Invalid Username or Password";
+            // 4. PROFESSIONAL ERROR HANDLING
+            if (!usernameFound)
+            {
+                ViewBag.Error = "The username entered does not match our records.";
+            }
+            else
+            {
+                // If we found the username but 'user' is still null, it means the password failed
+                ViewBag.Error = "The password you entered is incorrect. Please try again.";
+            }
+
             return View();
         }
 
-        
+
         [HttpGet]
         public IActionResult GetMyProfile()
         {

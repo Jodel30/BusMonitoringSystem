@@ -101,7 +101,7 @@
             <div class="report-filters glass-card">
                 <div class="filter-controls"><h1>Register New Student</h1></div>
                 <button class="btn-generate" onclick="openModal()">
-                    <i class="fa-solid fa-user-plus"></i> Add new Student
+                    <i class="fa-solid fa-user-plus"></i> Add New Student
                 </button>
             </div>
 
@@ -458,7 +458,12 @@
                 </div>
             </div>
             <div class="glass-card report-results">
-                <div class="results-header"><h3>Daily Transport Activity</h3><button class="btn-export">Export PDF</button></div>
+                <div class="results-header"><h3>Daily Transport Activity</h3>
+                    <button type="button" class="btn-export" onclick="exportTransportReport()">
+                        <i class="fa-solid fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+                <div id="activity-report-pdf" style="background: white !important; padding: 20px; border-radius: 15px;">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -505,6 +510,7 @@
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
             <!-- TRIP DETAILS MODAL -->
             <div class="modal-overlay" id="tripDetailOverlay" onclick="closeTripView()">
@@ -880,7 +886,10 @@
             </div>
         </div>
     </div>
-
+    <!-- jsPDF (The core PDF engine) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable (The table-building plugin) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <script src="~/js/School.js" asp-append-version="true"></script>
 </body>
 </html>

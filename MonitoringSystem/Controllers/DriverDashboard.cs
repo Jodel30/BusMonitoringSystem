@@ -8,8 +8,38 @@ namespace MonitoringSystem.Controllers
 {
     public class DriverDashboard : Controller
     {
-        
-        public static List<TripLog> _tripHistory = new List<TripLog>();
+
+        public static List<TripLog> _tripHistory = new List<TripLog>()
+{
+    // MOCK DATA FOR TESTING
+    new TripLog {
+        TripId = "TRP-001",
+        Shift = "AM",
+        Date = "5/09/2024",
+        DriverName = "Ricardo Dalisay",
+        BoardedCount = 15,
+        StartTime = "07:00 AM",
+        EndTime = "07:45 AM"
+    },
+    new TripLog {
+        TripId = "TRP-002",
+        Shift = "PM",
+        Date = "5/09/2024",
+        DriverName = "Juan Dela Cruz",
+        BoardedCount = 12,
+        StartTime = "04:30 PM",
+        EndTime = "05:15 PM"
+    },
+    new TripLog {
+        TripId = "TRP-003",
+        Shift = "AM",
+        Date = "5/10/2024",
+        DriverName = "Ricardo Dalisay",
+        BoardedCount = 20,
+        StartTime = "07:10 AM",
+        EndTime = "07:55 AM"
+    }
+};
 
         public IActionResult Driver()
         {
