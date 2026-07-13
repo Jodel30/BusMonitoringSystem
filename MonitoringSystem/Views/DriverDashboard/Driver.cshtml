@@ -167,10 +167,10 @@
             <div id="studentList">
                 @foreach (var student in Model.RegisteredStudents)
                 {
-                    <div class="student-item" data-name="@student.FirstName @student.LastName" data-lrn="@student.LRN">
+                    <div class="student-item" data-name="@student.FirstName @student.LastName" data-lrn="@student.StudentLRN">
                         <div class="student-info">
                             <h4>@student.FirstName @student.LastName</h4>
-                            <p>LRN: @student.LRN | @student.GradeLevel</p>
+                            <p>LRN: @student.StudentLRN | @student.GradeLevel</p>
 
                             <!-- NEW: REASON DROPDOWN -->
                             <select class="manual-reason-select" onchange="enableBoardButton(this)" style="margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ddd; font-size: 12px;">
@@ -183,9 +183,9 @@
 
                         <!-- FIXED: Button starts with 'opacity: 0.5' and 'pointer-events: none' -->
                         <button class="btn-check"
-                                id="btn-@student.LRN"
+                                id="btn-@student.StudentLRN"
                                 style="opacity: 0.5; pointer-events: none;"
-                                onclick="handleManualBoarding(this, '@student.LRN', '@student.FirstName @student.LastName', '@student.GradeLevel', '@student.PhotoPath')">
+                                onclick="handleManualBoarding(this, '@student.StudentLRN', '@student.FirstName @student.LastName', '@student.GradeLevel', '@student.PhotoPath')">
                             Board Student
                         </button>
                     </div>
@@ -231,13 +231,13 @@
                                 @foreach (var log in Model.TripHistory)
                                 {
                                     <tr>
-                                        <td><span class="trip-id-tag">@log.TripId</span></td>
+                                        <td><span class="trip-id-tag">@log.TripID</span></td>
                                         <td>@log.Date</td>
                                         <td style="font-size:10px; color:#64748b;">
                                             In: @log.StartTime<br>Out: @log.EndTime
                                         </td>
                                         <td style="text-align:center;">
-                                            <span class="count-pill">@log.BoardedCount</span>
+                                            <span class="count-pill">@log.TotalBoarded</span>
                                         </td>
                                     </tr>
                                 }

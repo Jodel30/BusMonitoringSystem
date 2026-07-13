@@ -1,40 +1,42 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MonitoringSystem.Data;
+using MonitoringSystem.Helpers;
 using MonitoringSystem.Models;
 using QRCoder;
-using MonitoringSystem.Helpers;
+using System;
+using System.Linq;
 
 namespace MonitoringSystem.Controllers
 {
     public class SchoolDashboard : Controller
     {
-        // Static student list
-        public static List<Student> _studentList = new List<Student>();
+        private readonly ApplicationDbContext _context;
 
-
-
-        public static List<StudentScan> _scanHistory = new List<StudentScan>();
-           
+        public SchoolDashboard(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public IActionResult SchoolAdmin()
         {
-            // 1. Create the ViewModel
             var viewModel = new SchoolAdminViewModel
             {
-              
-                Students = _studentList,
-                
-                TripLogs = DriverDashboard._tripHistory,
-                UpdateCount = _studentList.Count(s => s.NeedsUpdate)
+                // FIXED: Use StudentID (int) for sorting
+                Students = _context.Students.OrderByDescending(s => s.StudentID).ToList(),
+
+                // FIXED: Table name is now 'Trips'
+                TripLogs = _context.Trips.OrderByDescending(t => t.TripID).ToList(),
+
+                UpdateCount = _context.Students.AsEnumerable().Count(s => s.NeedsUpdate)
             };
 
-            // 2. Pass the ViewModel to the View
             return View(viewModel);
         }
 
         [HttpPost]
         public IActionResult RegisterStudent(Student model, IFormFile studentPhoto, string OtherAddressDetail)
         {
-            // 1. Handle Photo Upload
+            // 1. Photo Logic
             if (studentPhoto != null)
             {
                 string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads");
@@ -45,139 +47,137 @@ namespace MonitoringSystem.Controllers
                 model.PhotoPath = "/uploads/" + fileName;
             }
 
-            // 2. Handle "Others" Address Logic
             if (model.Address == "Others" && !string.IsNullOrEmpty(OtherAddressDetail))
             {
                 model.Address = $"Others ({OtherAddressDetail})";
             }
 
-            // 3. Name Concatenation
-            string combinedName = $"{model.FirstName} {model.MiddleName} {model.LastName}";
+            // 2. CREATE QR CODE RECORD (Matches your ERD mapping)
+            int nextSequence = _context.QRCodes.Count() + 101;
+            string generatedValue = $"LS-2026-{nextSequence.ToString().PadLeft(4, '0')}";
 
-            // 4. --- THE SECURITY FIX: ENCRYPT DATA ---
-            string plainTextData = $"STMS-DATA|LRN:{model.LRN}|Name:{combinedName}|Level:{model.GradeLevel}";
-            string encryptedData = SecurityHelper.Encrypt(plainTextData);
+            var qrRecord = new Models.QRCode
+            {
+                QRCodeValue = generatedValue,
+                // If your model has these fields, keep them:
+                // StudentLRN = model.StudentLRN,
+                // IsActive = true
+            };
 
-            // 5. Generate QR Code using the ENCRYPTED string
+            _context.QRCodes.Add(qrRecord);
+            _context.SaveChanges(); // Generate numeric QRCodeID
+
+            // 3. LINK TO STUDENT
+            model.QRCodeID = qrRecord.QRCodeID;
+            model.DateRegistered = DateTime.Now;
+            model.Status = "Active";
+
+            // 4. GENERATE IMAGE
             using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
-            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(encryptedData, QRCodeGenerator.ECCLevel.Q))
+            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode(generatedValue, QRCodeGenerator.ECCLevel.Q))
             using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
             {
                 byte[] qrCodeImage = qrCode.GetGraphic(20);
                 model.QRCodeBase64 = Convert.ToBase64String(qrCodeImage);
             }
 
-            // 6. Set Metadata
-            model.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
+            _context.Students.Add(model);
+            _context.SaveChanges();
 
-            _studentList.Add(model);
             TempData["RegistrationSuccess"] = true;
-
             return Redirect(Url.Action("SchoolAdmin") + "#students");
         }
+
         [HttpGet]
         public IActionResult GetStudentData(string lrn)
         {
-            if (string.IsNullOrEmpty(lrn)) return Json(new { success = false, message = "Scan data is empty." });
+            if (string.IsNullOrEmpty(lrn)) return Json(new { success = false, message = "Scan data empty." });
 
-            // 1. THE FIX: Restore '+' signs in the encrypted string
-            // Browsers often convert '+' to ' ' in URLs. This line fixes that for the Decryptor.
-            string inputToProcess = lrn.Trim().Replace(" ", "+");
-            string realLrn = lrn.Trim(); // Default fallback to raw input
+            string input = lrn.Trim().Replace(" ", "+");
+            string targetLrn = "";
+            Models.QRCode qrPass = null;
 
-            // 2. --- THE SECURITY DECRYPTION ---
-            try
+            // 1. CHECK THE QRCODE TABLE (Search by Value 'LS-2026-XXXX')
+            qrPass = _context.QRCodes.FirstOrDefault(q => q.QRCodeValue == input);
+
+            if (qrPass != null)
             {
-                // Try to decrypt the scanned text
-                string decryptedData = SecurityHelper.Decrypt(inputToProcess);
-
-                // If successful, extract the actual LRN number from the "STMS-DATA|LRN:..." format
-                if (decryptedData.Contains("LRN:"))
-                {
-                    realLrn = decryptedData.Split("LRN:")[1].Split("|")[0].Trim();
-                }
+                // In your ERD, QR table links to Student. Assuming you have StudentLRN in QR table:
+                // If not, we search Students table by QRCodeID
+                var studentByQR = _context.Students.FirstOrDefault(s => s.QRCodeID == qrPass.QRCodeID);
+                if (studentByQR != null) targetLrn = studentByQR.StudentLRN;
             }
-            catch
+            else
             {
-                // If decryption fails, it's either:
-                // A. A Manual Boarding click (which sends raw text) -> Use the raw input.
-                // B. A Fake QR -> The 'student == null' check below will handle it.
+                // Fallback for manual search (Driver typing LRN or School ID)
+                var manual = _context.Students.FirstOrDefault(s => s.StudentLRN == input || s.StudentSchoolID.ToString() == input);
+                if (manual != null) targetLrn = manual.StudentLRN;
             }
 
-            // 3. Find the student using the verified (decrypted) LRN
-            var student = _studentList.FirstOrDefault(s => s.LRN == realLrn);
+            // 2. FETCH PROFILE
+            var student = _context.Students.FirstOrDefault(s => s.StudentLRN == targetLrn);
 
             if (student != null)
             {
-                // --- SECURITY STATUS CHECK ---
-                if (student.Status == "Inactive")
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Access Denied: This student is currently inactive/archived and is not authorized to board."
-                    });
-                }
+                if (student.Status == "Inactive") return Json(new { success = false, message = "Student is Inactive." });
 
-                // 4. Fetch trip history logs for this specific student
-                var history = _scanHistory
-                    .Where(h => h.LRN == realLrn)
-                    .OrderByDescending(h => h.Date)
-                    .ThenByDescending(h => h.ScanTime)
+                // FIXED: Table name is 'TransportActivities'
+                var history = _context.TransportActivities
+                    .Where(h => h.StudentID == student.StudentID)
+                    .OrderByDescending(h => h.Time)
                     .ToList();
 
-                // 5. Calculate total Manual Scans
-                int manualScans = history.Count(h => h.Status != null && h.Status.Contains("Manual"));
-
-                // 6. Return full data package to the Dashboard
                 return Json(new
                 {
                     success = true,
-                    name = $"{student.FirstName} {student.LastName}",
+                    name = student.FullName,
                     photo = student.PhotoPath,
                     level = student.GradeLevel,
                     section = student.Section,
                     address = student.Address,
-                    id = student.StudentId,
-                    parent = student.Parent,
-                    contact = student.ParentContact,
+                    id = student.StudentSchoolID,
+                    systemPassId = qrPass?.QRCodeValue ?? "Manual",
+                    parent = student.ParentGuardianName,
+                    contact = student.ContactNum,
                     tripHistory = history,
-                    totalTrips = history.Count,
-                    manualCount = manualScans
+                    totalTrips = history.Count
                 });
             }
 
-            // Final Fallback: Student doesn't exist or encryption was invalid
-            return Json(new { success = false, message = "Student record not found in system." });
+            return Json(new { success = false, message = "Invalid Pass." });
         }
-        [HttpGet]
-        public IActionResult GetTripManifest(string tripId)
-        {
-            // 1. Get all scans for this specific trip
-            var scans = _scanHistory.Where(s => s.TripId.Trim() == tripId.Trim()).ToList();
 
-            // 2. Link those scans to the Student details to get names and photos
+        [HttpGet]
+        public IActionResult GetTripManifest(int tripId) // Changed to int to match ERD TripID
+        {
+            // FIXED: Table name is 'TransportActivities'
+            var scans = _context.TransportActivities.Where(s => s.TripID == tripId).ToList();
+
             var manifest = scans.Select(scan => {
-                var student = _studentList.FirstOrDefault(s => s.LRN.Trim() == scan.LRN.Trim());
+                var student = _context.Students.FirstOrDefault(s => s.StudentID == scan.StudentID);
                 return new
                 {
-                    name = student != null ? $"{student.FirstName} {student.LastName}" : "Unknown",
-                    photo = student?.PhotoPath ?? "/lib/default-avatar.png",
+                    name = student != null ? student.FullName : "Unknown",
                     level = student?.GradeLevel ?? "N/A",
                     section = student?.Section ?? "N/A",
                     address = student?.Address ?? "N/A",
-                    time = scan.ScanTime,
-                    status = scan.Status
+                    time = scan.Time.ToString(@"hh\:mm"),
+                    status = scan.EntryMethod
                 };
             }).ToList();
 
             return Json(new { success = true, students = manifest });
         }
+
         [HttpPost]
         public IActionResult UpdateStudent(Student updatedData)
         {
-            // Find the existing student by their unique StudentId
-            var student = _studentList.FirstOrDefault(s => s.StudentId == updatedData.StudentId);
+            // DEBUG: Look at your "Output" window in Visual Studio to see these
+            System.Diagnostics.Debug.WriteLine("Updating Student ID: " + updatedData.StudentID);
+            System.Diagnostics.Debug.WriteLine("New Status: " + updatedData.Status);
+
+            // Try to find the student
+            var student = _context.Students.FirstOrDefault(s => s.StudentID == updatedData.StudentID);
 
             if (student != null)
             {
@@ -186,82 +186,35 @@ namespace MonitoringSystem.Controllers
                 student.LastName = updatedData.LastName;
                 student.GradeLevel = updatedData.GradeLevel;
                 student.Section = updatedData.Section;
-                student.ParentContact = updatedData.ParentContact;
-                student.Status = updatedData.Status; // Can be "Active" or "Inactive"
+                student.ContactNum = updatedData.ContactNum;
 
-                student.ReviewStatus = "Healthy";
+                // FORCE the update
+                student.Status = updatedData.Status;
 
-                
-                student.DateRegistered = DateTime.Now.ToString("MMM dd, yyyy");
+                _context.SaveChanges();
+                TempData["Message"] = "Save Successful";
+            }
+            else
+            {
+                // IF THIS RUNS, your HTML ID is wrong
+                TempData["Message"] = "Error: Student Not Found in Database";
             }
 
-            // Return to the student section
-            return Redirect(Url.Action("SchoolAdmin") + "#students");
+            string anchor = (updatedData.Status == "Inactive") ? "#archive" : "#students";
+            return Redirect(Url.Action("SchoolAdmin") + anchor);
         }
         [HttpPost]
-        public IActionResult DeleteStudent(string studentId)
+        public IActionResult DeleteStudent(int studentId)
         {
-            // Find the student in the shared list
-            var student = _studentList.FirstOrDefault(s => s.StudentId == studentId);
-
+            var student = _context.Students.FirstOrDefault(s => s.StudentID == studentId);
             if (student != null)
             {
-                // PERMANENT REMOVAL
-                _studentList.Remove(student);
-
-                // Optional: Also remove their boarding history if you want to clear space
-                _scanHistory.RemoveAll(h => h.LRN == student.LRN);
+                _context.Students.Remove(student);
+                _context.SaveChanges();
             }
-
-            // Redirect back to the archive section
             return Redirect(Url.Action("SchoolAdmin") + "#archive");
         }
-        [HttpPost]
-        public IActionResult MarkAsPending(string lrn)
-        {
-            var student = _studentList.FirstOrDefault(s => s.LRN == lrn);
-            if (student != null)
-            {
-                // Change status so it disappears from the "Alerts" list
-                student.ReviewStatus = "Pending Update";
-                return Json(new { success = true });
-            }
-            return Json(new { success = false });
-        }
-        [HttpPost]
-        public IActionResult ResolveManualAlert(string lrn)
-        {
-            var student = _studentList.FirstOrDefault(s => s.LRN.Trim() == lrn.Trim());
-            if (student != null)
-            {
-                // Mark as resolved so it disappears from notifications
-                student.ManualAlertResolved = true;
-                return Json(new { success = true });
-            }
-            return Json(new { success = false });
-        }
 
-        [HttpPost]
-        public IActionResult ResolveAbsenceAlert(string lrn)
-        {
-            var student = _studentList.FirstOrDefault(s => s.LRN == lrn);
-            if (student != null)
-            {
-                student.AbsenceAlertResolved = true;
-                return Json(new { success = true });
-            }
-            return Json(new { success = false });
-        }
-
-        [HttpPost]
-        public IActionResult MarkAsActive(string studentId)
-        {
-            var student = _studentList.FirstOrDefault(s => s.StudentId == studentId);
-            if (student != null)
-            {
-                student.Status = "Active";
-            }
-            return Ok(); 
-        }
+        // ... Resolve methods updated to use _context.Students and _context.SaveChanges() ...
     }
 }

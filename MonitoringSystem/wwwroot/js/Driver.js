@@ -4,6 +4,7 @@ let tripStartTime = "";
 let tripIdCounter = 1;
 let currentTripId = "";
 let currentShift = "";
+let dbTripId = 0;
 function toggleMenu() {
     document.getElementById('sidebar').classList.toggle('active');
     document.getElementById('overlay').classList.toggle('active');
@@ -34,50 +35,75 @@ function openStartTripModal() {
 }
 
 
-function confirmAndStart() {
-    closeStartModal(); // Hide modal
-    handleStart();     // Run your original logic
+// 1. Function called by the Green button in your HTML
+function confirmStartTrip() {
+    console.log("Opening start confirmation...");
+    // This shows your custom modal "Begin Trip?"
+    const modal = document.getElementById('startTripModal');
+    if (modal) {
+        modal.classList.add('active');
+    } else {
+        // Fallback: if modal ID is wrong, just start the trip
+        handleStart();
+    }
+}
+
+// 2. Function called by the "Yes, Start Now" button inside the modal
+async function confirmAndStart() {
+    closeStartModal(); // Hide the pop-up
+    await handleStart(); // Run the database initialization
 }
 
 function closeStartModal() {
-    document.getElementById('startTripModal').classList.remove('active');
+    const modal = document.getElementById('startTripModal');
+    if (modal) modal.classList.remove('active');
 }
 
+// 3. The actual logic that talks to the Database
+async function handleStart() {
+    console.log("Initializing trip in database...");
 
-function handleStart() {
-    // 1. Data Generation
-    currentTripId = "TRP-" + String(tripIdCounter).padStart(3, '0');
-    const now = new Date();
-    tripStartTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    console.log("New Trip Started with ID: " + currentTripId);
-
-    // 2. Shift Detection
-    const hour = now.getHours();
+    const hour = new Date().getHours();
     currentShift = (hour < 12) ? "AM" : "PM";
 
-    // 3. UI Elements
-    const banner = document.getElementById('main-title');
-    const idleState = document.getElementById('trip-idle-state');
-    const activeUI = document.getElementById('active-scanner-ui');
+    // FETCH: Tell the C# Controller to create a new row in the Trips table
+    fetch('/DriverDashboard/InitializeTrip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ TripSchedule: currentShift })
+    })
+        .then(res => res.json())
+        .then(result => {
+            if (result.success) {
+                // --- THE MASTER FIX ---
+                dbTripId = result.dbTripID; // We now have the REAL numeric ID (e.g. 5)
+                currentTripId = "TRP-" + String(dbTripId).padStart(3, '0');
 
-    // --- NEW: Update the Trip ID on the screen ---
-    const idDisplay = document.getElementById('active-trip-id-display');
-    if (idDisplay) idDisplay.innerText = currentTripId + " (" + currentShift + ")";
+                // Update UI IDs
+                const idDisplay = document.getElementById('active-trip-id-display');
+                if (idDisplay) idDisplay.innerText = currentTripId + " (" + currentShift + ")";
 
-    // 4. UI Switching
-    if (banner) banner.classList.add('hide-banner');
-    if (idleState) idleState.style.display = 'none';
-    if (activeUI) activeUI.style.display = 'block';
+                const banner = document.getElementById('main-title');
+                if (banner) banner.classList.add('hide-banner');
 
-    // 5. UI RESET & Notification
-    document.getElementById('onboardList').innerHTML =
-        `<p style="text-align:center; color:#8898aa; margin-top:50px;">
-            ${currentTripId} (${currentShift}) Started.<br>Scan students now.
-         </p>`;
+                document.getElementById('trip-idle-state').style.display = 'none';
+                document.getElementById('active-scanner-ui').style.display = 'block';
 
-    currentBoardedCount = 0;
-    updateCounterUI(0);
+                document.getElementById('onboardList').innerHTML = `<p style="text-align:center; color:#8898aa; margin-top:50px;">Trip ${currentTripId} Started.</p>`;
+
+                // Reset local variables
+                currentBoardedCount = 0;
+                updateCounterUI(0);
+
+                console.log("Trip successfully linked to SQL ID: " + dbTripId);
+            } else {
+                showSystemAlert('error', 'Database Error', 'Could not start trip.');
+            }
+        })
+        .catch(err => {
+            console.error("Critical Start Error:", err);
+            showSystemAlert('error', 'Connection Error', 'Check server connection.');
+        });
 }
 // --- 2. SCANNER LOGIC ---
 async function startScanner() {
@@ -164,29 +190,23 @@ function updateCounterUI() {
     currentBoardedCount = totalOnScreen;
 }
 // --- COUNTER LOGIC: SYNC WITH BACKEND ---
-function recordScanToBackend(lrn, tripId) {
-    const id = tripId || "MANUAL-LOG";
+function recordScanToBackend(lrn) {
+    // Ensure we are sending the Number we got from InitializeTrip
+    const tripId = parseInt(dbTripId);
 
     fetch('/DriverDashboard/RecordScan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `lrn=${encodeURIComponent(lrn)}&tripId=${encodeURIComponent(id)}`
+        body: `lrn=${encodeURIComponent(lrn)}&tripId=${tripId}&isManual=false`
     })
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-               
-                currentBoardedCount = result.currentCount;
-
-              
+                // This updates the '0' on your screen to '1' immediately
                 updateCounterUI(result.currentCount);
-
-                console.log("Count synced from server: " + currentBoardedCount);
             }
-        })
-        .catch(err => console.error("Manifest sync failed:", err));
+        });
 }
-
 
 
 
@@ -215,64 +235,64 @@ function addToOnBoardList(studentData) {
 
 // --- 3. END TRIP LOGIC ---
 function endTrip() {
-    
-    const confirmMessage = `Are you sure?`;
+    const confirmMessage = `Finish current trip? Total boarded: ${currentBoardedCount}`;
 
     showSystemAlert('confirm', 'Finish Trip?', confirmMessage, function () {
-
-        // --- THIS CODE ONLY RUNS IF THE USER CLICKS "YES, CONTINUE" ---
         stopScanner();
 
+        // --- THE FIX: Use the REAL Database ID saved in your global variable ---
+        // We use dbTripId (the number from SQL) instead of guessing from the string
         const tripData = {
-            tripId: currentTripId,
-            shift: currentShift, 
-            date: new Date().toLocaleDateString(),
-            startTime: tripStartTime,
-            endTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            boardedCount: currentBoardedCount,
-            driverName: "" 
+            TripID: dbTripId,           // Use the global variable number
+            UserID: 0,                   // Placeholder
+            TotalBoarded: currentBoardedCount,
+            TripSchedule: currentShift,
+            StartTime: tripStartTime,
+            EndTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            Date: new Date().toLocaleDateString(),
+            Status: "Completed"
         };
 
-        // 2. SEND TO CONTROLLER
+        console.log("SENDING TO SERVER:", tripData);
+
         fetch('/DriverDashboard/SaveTrip', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
             body: JSON.stringify(tripData)
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) return response.text().then(err => { throw new Error(err) });
+                return response.json();
+            })
             .then(result => {
                 if (result.success) {
-                    // 3. Add to the history table in the dashboard
-                    addTripToHistoryTable(tripData.tripId, tripData.date, tripData.startTime, tripData.endTime, tripData.boardedCount);
+                    // SUCCESS logic...
+                    addTripToHistoryTable(currentTripId, tripData.Date, tripData.StartTime, tripData.EndTime, currentBoardedCount);
 
-                    // 4. RESET ALL DATA FOR THE NEXT TRIP
+                    // RESET EVERYTHING
                     currentBoardedCount = 0;
                     updateCounterUI(0);
                     resetManualCheckinUI();
-                    tripIdCounter++; 
+                    tripIdCounter++;
+                    dbTripId = 0; // Reset the database ID tracker
 
-                    // Clear student list from the phone screen
                     document.getElementById('onboardList').innerHTML = '<p style="text-align:center; color:#8898aa; margin-top:50px;">No students scanned yet.</p>';
+                    if (document.getElementById('main-title')) document.getElementById('main-title').classList.remove('hide-banner');
 
-                    // Show the Main Banner again
-                    const banner = document.getElementById('main-title');
-                    if (banner) {
-                        banner.classList.remove('hide-banner');
-                        banner.style.removeProperty('display');
-                    }
-
-                    // Go back to the initial Start Trip screen
                     document.getElementById('active-scanner-ui').style.display = 'none';
                     document.getElementById('scan-success').style.display = 'none';
                     document.getElementById('trip-idle-state').style.display = 'block';
 
-                    // 5. SHOW THE SUCCESS MODAL
-                    showSystemAlert('success', 'Trip Logged', result.message || 'Trip successfully saved to history.');
+                    // Show success modal with the real message from server
+                    showSystemAlert('success', 'Trip Logged', result.message);
                 }
             })
             .catch(err => {
-                console.error("Error:", err);
-                showSystemAlert('error', 'Save Failed', 'Could not connect to the server. Please try again.');
+                console.error("Critical Error:", err);
+                showSystemAlert('error', 'Save Failed', 'Data format mismatch. Check your F12 Console.');
             });
     });
 }

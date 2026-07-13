@@ -142,7 +142,6 @@ function closeSchInfoView() {
 
 /* --- UPDATE STUDENT MODAL LOGIC --- */
 function openUpdateModal(id, fname, mname, lname, grade, section, contact, status) {
-    // 1. Fill the form fields with current data
     document.getElementById('upd-id').value = id;
     document.getElementById('upd-fname').value = fname;
     document.getElementById('upd-mname').value = mname;
@@ -150,23 +149,33 @@ function openUpdateModal(id, fname, mname, lname, grade, section, contact, statu
     document.getElementById('upd-grade').value = grade;
     document.getElementById('upd-section').value = section;
     document.getElementById('upd-contact').value = contact;
-    document.getElementById('upd-status').value = status || "Active";
 
+    // --- FIX FOR BLANK DROPDOWN ---
+    const statusSelect = document.getElementById('upd-status');
+
+    // Convert 1/0 or True/False to the words "Active"/"Inactive" if necessary
+    let displayStatus = status;
+    if (status === "True" || status === "1" || status === true) displayStatus = "Active";
+    if (status === "False" || status === "0" || status === false) displayStatus = "Inactive";
+
+    if (statusSelect) {
+        statusSelect.value = displayStatus;
+    }
+
+    // Update the visual badge color
     const badge = document.querySelector('#updateStudentOverlay .badge-role');
-    if (status === "Inactive") {
-        badge.innerText = "Inactive";
+    if (displayStatus === "Inactive") {
+        badge.innerText = "INACTIVE";
         badge.style.background = "#fee2e2";
         badge.style.color = "#991b1b";
     } else {
-        badge.innerText = "Active";
+        badge.innerText = "ACTIVE";
         badge.style.background = "#A3DE83";
         badge.style.color = "black";
     }
-    // 2. Open the Modal
-    document.getElementById('updateStudentOverlay').classList.add('active');
-    document.body.style.overflow = 'hidden';
-}
 
+    document.getElementById('updateStudentOverlay').classList.add('active');
+}
 function closeUpdateModal() {
     document.getElementById('updateStudentOverlay').classList.remove('active');
     document.body.style.overflow = 'auto';

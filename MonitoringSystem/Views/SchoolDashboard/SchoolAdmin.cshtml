@@ -1,4 +1,5 @@
 ﻿@model MonitoringSystem.Models.SchoolAdminViewModel
+@using System.Linq
 @{
     Layout = "~/Views/Shared/SchoolLayout.cshtml";
 
@@ -120,11 +121,11 @@
                         <div class="form-grid">
                             <div class="form-group full-width">
                                 <label> LRN *</label>
-                                <input type="text" name="LRN" placeholder="12-digit LRN" required>
+                                <input type="text" name="StudentLRN" placeholder="12-digit LRN" required>
                             </div>
                             <div class="form-group">
                                 <label>Student Id</label>
-                                <input type="text" name="StudentId" placeholder="Internal ID">
+                                <input type="text" name="StudentSchoolId" placeholder="Internal ID">
                             </div>
                             <div class="form-group">
                                 <label>First Name *</label>
@@ -156,7 +157,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Emergency Contact *</label>
-                                <input type="text" name="ParentContact" placeholder="09XX-XXX-XXXX" required>
+                                <input type="text" name="ContactNum" placeholder="09XX-XXX-XXXX" required>
                             </div>
                             <div class="form-group full-width">
                                 <label>Address *</label>
@@ -173,7 +174,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Parents/Guardian Name *</label>
-                                <input type="text" name="Parent" placeholder="Full Name" required>
+                                <input type="text" name="ParentGuardianName" placeholder="Full Name" required>
                             </div>
                             <div class="form-group profile-upload-group full-width">
                                 <label>Student Picture *</label>
@@ -222,6 +223,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" placeholder="Search LRN or Name...">
                 </div>
+                <div class="activity-logs-scroll">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -232,10 +234,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var student in Model.Students.Where(s => s.Status == "Active" || string.IsNullOrEmpty(s.Status)))
+                            @foreach (var student in Model.Students.Where(s => s.Status != null && s.Status.Equals("Active", StringComparison.OrdinalIgnoreCase)))
                         {
                             <tr>
-                                <td><span class="id-tag">@student.LRN</span></td>
+                                <td><span class="id-tag">@student.StudentLRN</span></td>
                                 <td><strong>@student.FirstName @student.MiddleName @student.LastName</strong></td>
                                 <td>@student.GradeLevel - @student.Section</td>
                                 <td>
@@ -250,12 +252,12 @@
                                 <td>
                                     <div class="action-buttons-container">
                                         <button type="button" class="btn-view-info"
-                                                onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.LRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.Parent)', '@student.ParentContact', '@student.StudentId', '@student.DateRegistered')">
+                                                onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.StudentLRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.ParentGuardianName)', '@student.ContactNum', '@student.StudentSchoolID', '@student.DateRegistered')">
                                             <i class="fa-solid fa-circle-info"></i> View Student Info
                                         </button>
 
                                         <button type="button" class="btn-view-info btn-update-dark"
-                                                onclick="openUpdateModal('@student.StudentId', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ParentContact', '@student.Status')">
+                                                onclick="openUpdateModal('@student.StudentSchoolID', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ContactNum', '@student.Status')">
                                             <i class="fa-solid fa-pen-to-square"></i> Update
                                         </button>
                                     </div>
@@ -265,6 +267,7 @@
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- 2. QR VIEW MODAL -->
@@ -356,12 +359,12 @@
 
                             <form asp-action="UpdateStudent" asp-controller="SchoolDashboard" method="post" class="modern-form">
                                 
-                                <input type="hidden" name="StudentId" id="upd-id">
+                                <input type="hidden" name="id" id="upd-id">
 
                                 <div class="info-grid">
                                     <div class="info-item full">
                                         <strong>Student Status</strong>
-                                        <select name="Status" id="upd-status" class="status-select" style="margin-top:5px; border: 2px solid #0077b6; font-weight:700;">
+                                        <select name="status" id="upd-status" class="status-select" style="margin-top:5px; border: 2px solid #0077b6; font-weight:700;">
                                             <option value="Active">Active</option>
                                             <option value="Inactive">Inactive</option>
                                         </select>
@@ -369,19 +372,19 @@
 
                                     <div class="info-item">
                                         <strong>First Name</strong>
-                                        <input type="text" name="FirstName" id="upd-fname" required>
+                                        <input type="text" name="firstName" id="upd-fname" required>
                                     </div>
                                     <div class="info-item">
                                         <strong>Middle Name</strong>
-                                        <input type="text" name="MiddleName" id="upd-mname">
+                                        <input type="text" name="middleName" id="upd-mname">
                                     </div>
                                     <div class="info-item">
                                         <strong>Last Name</strong>
-                                        <input type="text" name="LastName" id="upd-lname" required>
+                                        <input type="text" name="lastName" id="upd-lname" required>
                                     </div>
                                     <div class="info-item">
                                         <strong>Grade Level</strong>
-                                        <select name="GradeLevel" id="upd-grade">
+                                        <select name="gradeLevel" id="upd-grade">
                                             <option>Grade 7</option>
                                             <option>Grade 8</option>
                                             <option>Grade 9</option>
@@ -392,11 +395,11 @@
                                     </div>
                                     <div class="info-item">
                                         <strong>Section</strong>
-                                        <input type="text" name="Section" id="upd-section" required>
+                                        <input type="text" name="section" id="upd-section" required>
                                     </div>
                                     <div class="info-item">
                                         <strong>Emergency Contact</strong>
-                                        <input type="text" name="ParentContact" id="upd-contact" required>
+                                        <input type="text" name="contact" id="upd-contact" required>
                                     </div>
                                 </div>
 
@@ -464,6 +467,7 @@
                     </button>
                 </div>
                 <div id="activity-report-pdf" style="background: white !important; padding: 20px; border-radius: 15px;">
+                    <div class="activity-logs-scroll">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -479,10 +483,10 @@
                         @foreach (var trip in Model.TripLogs)
                         {
                             <tr>
-                                <td><span class="id-tag">@trip.TripId</span></td>
+                                <td><span class="id-tag">@trip.TripID</span></td>
                                 <td>
                                     
-                                    @if (trip.Shift == "AM")
+                                    @if (trip.TripSchedule == "AM")
                                     {
                                         <span class="status">
                                             AM 
@@ -497,12 +501,12 @@
                                 </td>
                                 <td>@trip.Date</td>
                                 <td><strong>@trip.DriverName</strong></td>
-                                <td>@trip.BoardedCount </td>
+                                <td>@trip.TotalBoarded </td>
                                 <td><span class="status success">Completed</span></td>
                                 <td>
                                     <!-- ACTION BUTTON -->
                                     <button type="button" class="btn-view-info"
-                                            onclick="viewTripDetails('@trip.TripId', '@trip.Date', '@trip.DriverName', '@trip.StartTime', '@trip.EndTime', '@trip.BoardedCount')">
+                                            onclick="viewTripDetails('@trip.TripID', '@trip.Date', '@trip.DriverName', '@trip.StartTime', '@trip.EndTime', '@trip.TotalBoarded')">
                                         <i class="fa-solid fa-circle-info"></i> View Details
                                     </button>
                                 </td>
@@ -590,7 +594,7 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
                 <input type="text" id="archiveSearch" placeholder="Search archived students..." onkeyup="filterArchiveTable()">
             </div>
-
+                <div class="activity-logs-scroll">
             <table class="modern-table" id="archiveTable">
                 <thead>
                     <tr style="background: #f8fafc;">
@@ -604,29 +608,29 @@
                     <!-- FILTER ONLY INACTIVE STUDENTS -->
                     @if (Model.Students.Any(s => s.Status == "Inactive"))
                     {
-                        @foreach (var student in Model.Students.Where(s => s.Status == "Inactive"))
+                                @foreach (var student in Model.Students.Where(s => s.Status != null && s.Status.Equals("Inactive", StringComparison.OrdinalIgnoreCase)))
                         {
                             <tr class="archived-row">
-                                <td><span class="id-tag" style="background:#f1f5f9; color:#64748b;">@student.LRN</span></td>
+                                <td><span class="id-tag" style="background:#f1f5f9; color:#64748b;">@student.StudentLRN</span></td>
                                 <td><strong style="color:#64748b;">@student.FirstName @student.MiddleName @student.LastName</strong></td>
                                 <td style="color:#94a3b8;">@student.GradeLevel - @student.Section</td>
                                     <td style="text-align:center;">
                                         <div style="display:flex; gap:10px; justify-content:center;">
                                             <!-- RESTORE BUTTON -->
                                             <button type="button" class="btn-restore"
-                                                    onclick="askConfirm('restore', '@student.StudentId', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
+                                                    onclick="askConfirm('restore', '@student.StudentSchoolID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
                                                 <i class="fa-solid fa-rotate-left"></i> Restore
                                             </button>
 
                                             <!-- DELETE BUTTON  -->
                                             <button type="button" class="btn-delete"
-                                                    onclick="askConfirm('delete', '@student.StudentId', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
+                                                    onclick="askConfirm('delete', '@student.StudentSchoolID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
                                                 <i class="fa-solid fa-trash-can"></i> Delete
                                             </button>
 
                                             <!-- HIDDEN FORM FOR ACTUAL DELETION -->
-                                            <form id="delete-form-@student.StudentId" asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post" style="display:none;">
-                                                <input type="hidden" name="StudentId" value="@student.StudentId" />
+                                            <form id="delete-form-@student.StudentSchoolID" asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post" style="display:none;">
+                                                <input type="hidden" name="StudentId" value="@student.StudentSchoolID" />
                                             </form>
                                         </div>
                                     </td>
@@ -643,7 +647,9 @@
                         </tr>
                     }
                 </tbody>
+                
             </table>
+            </div>
                 <!-- UNIFIED CONFIRMATION MODAL -->
                 <div class="modal-overlay" id="customConfirmModal">
                     <div class="modal-content confirm-box">
@@ -764,7 +770,7 @@
                             {
                                 <tr>
                                     <td><strong>@student.FirstName @student.LastName</strong></td>
-                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td><span class="id-tag">@student.StudentLRN</span></td>
                                     <td style="text-align:center;">
                                         <span style="color:#ef4444; font-weight:800;">@student.ManualCheckInCount</span>
                                     </td>
@@ -776,7 +782,7 @@
                                     <td style="text-align:center;">
                                         <!-- REVIEW BUTTON -->
                                         <button class="btn-view-info"
-                                                onclick="reviewStudentQR('@student.LRN')">
+                                                onclick="reviewStudentQR('@student.StudentLRN')">
                                             <i class="fa-solid fa-magnifying-glass"></i> Review
                                         </button>
                                     </td>
@@ -815,7 +821,7 @@
                         <tbody>
                             @foreach (var student in Model.Students.Where(s => s.NeedsUpdate || s.ReviewStatus == "Pending Update"))
                             {
-                                <tr id="row-@student.LRN">
+                                <tr id="row-@student.StudentLRN">
                                     <td><strong>@student.FirstName @student.LastName</strong></td>
                                     <td>@student.DateRegistered</td>
                                     <td style="text-align:center;">
@@ -825,7 +831,7 @@
                                     </td>
                                     <td style="text-align:center;">
                                         <button class="btn-view-info" style="background:#1e293b;"
-                                                onclick="reviewForUpdate('@student.LRN')">
+                                                onclick="reviewForUpdate('@student.StudentLRN')">
                                             <i class="fa-solid fa-pen-to-square"></i> Review
                                         </button>
                                     </td>
@@ -874,7 +880,7 @@
                                     </td>
                                     <td style="text-align:center;">
                                         <button class="btn-view-info" style="background:#1e293b;"
-                                                onclick="reviewAbsence('@student.LRN')">
+                                                onclick="reviewAbsence('@student.StudentLRN')">
                                             <i class="fa-solid fa-eye"></i> Review Profile
                                         </button>
                                     </td>

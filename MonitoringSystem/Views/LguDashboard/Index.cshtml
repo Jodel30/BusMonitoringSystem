@@ -124,7 +124,7 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="lguStudentSearch" placeholder="Search LRN or Name..." onkeyup="filterLguTable()">
                 </div>
-
+                <div class="activity-logs-scroll">
                 <table class="modern-table" id="lguStudentTable">
                     <thead>
                         <tr>
@@ -142,12 +142,12 @@
                             {
                                 <tr>
                                     <td><strong>@student.FirstName @student.MiddleName @student.LastName</strong></td>
-                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td><span class="id-tag">@student.StudentLRN</span></td>
                                     <td>@student.GradeLevel - @student.Section</td>
                                     <td>@student.Address</td>
                                     <td style="text-align:center;">
                                         <button type="button" class="btn-view-info"
-                                                onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.LRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.Parent', '@student.ParentContact', '@student.StudentId')"
+                                                    onclick="viewStudentInfo('@student.PhotoPath', '@student.FirstName @student.MiddleName @student.LastName', '@student.StudentLRN', '@student.GradeLevel', '@student.Section', '@student.Address', '@student.ParentGuardianName', '@student.ContactNum', '@student.StudentSchoolID')"
                                                 title="Student Profile">
                                             <i class="fa-solid fa-circle-info"></i> View Trip Details
                                         </button>
@@ -166,6 +166,7 @@
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
 
             <!-- STUDENT FULL INFO MODAL -->
@@ -309,6 +310,7 @@
 
             <!-- START OF PRINTABLE AREA (Add this ID) -->
             <div id="activity-report-pdf" style="background: white !important; padding: 20px; border-radius: 15px;">
+                <div class="activity-logs-scroll">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -324,16 +326,17 @@
                         @foreach (var trip in Model.TripLogs)
                         {
                             <tr>
-                                <td><span class="id-tag">@trip.TripId</span></td>
-                                <td>@trip.Shift</td>
+                                <td><span class="id-tag">@trip.TripID</span></td>
+                                <td>@trip.TripSchedule</td>
                                 <td>@trip.Date</td>
                                 <td><strong>@trip.DriverName</strong></td>
-                                <td>@trip.BoardedCount</td>
+                                <td>@trip.TotalBoarded</td>
                                 <td><span class="status success">Completed</span></td>
                             </tr>
                         }
                     </tbody>
                 </table>
+                </div>
             </div>
             <!-- END OF PRINTABLE AREA -->
         </div>
@@ -562,7 +565,7 @@
 
                                 <!-- VIEW DETAILS BUTTON -->
                                 <button type="button" class="btn-view-info"
-                                        onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.ContactNo', '@acc.Email', '@acc.Password')">
+                                        onclick="viewAccountDetails('@Html.Raw(acc.FirstName) @Html.Raw(acc.LastName)', '@acc.Username', '@acc.Role', '@Html.Raw(acc.Address)', '@acc.SchoolId', '@acc.ContactNum', '@acc.Email', '@acc.Password')">
                                     <i class="fa-solid fa-circle-info"></i> Info
                                 </button>
 
@@ -666,6 +669,7 @@
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <h3>Activity Logs</h3>
                 </div>
+            <div class="activity-logs-scroll">
                 <table class="modern-table">
                     <thead>
                         <tr>
@@ -702,7 +706,7 @@
                                     }
                                 </td>
                                 <td><span class="status success">@log.Action</span></td>
-                                <td>@log.Timestamp</td>
+                                <td>@log.LogTime</td>
                             </tr>
                         }
                     }
@@ -714,6 +718,7 @@
                     }
                 </tbody>
                 </table>
+             </div>
             </div>
 
         <div class="notif-modal" id="notifModal">
@@ -795,14 +800,14 @@
                             {
                                 <tr>
                                     <td><strong>@student.FirstName @student.LastName</strong></td>
-                                    <td><span class="id-tag">@student.LRN</span></td>
+                                    <td><span class="id-tag">@student.StudentLRN</span></td>
                                     <td style="text-align:center;">
                                         <span class="status warning" style="background:#ecfeff; color:#0891b2; font-weight:800;">
                                             @student.WeeklyTripCount Trips
                                         </span>
                                     </td>
                                     <td style="text-align:center;">
-                                        <button class="btn-view-info" style="background:#0891b2;" onclick="reviewLowUsage('@student.LRN')">
+                                        <button class="btn-view-info" style="background:#0891b2;" onclick="reviewLowUsage('@student.StudentLRN')">
                                             <i class="fa-solid fa-magnifying-glass"></i> Review Profile
                                         </button>
                                     </td>
