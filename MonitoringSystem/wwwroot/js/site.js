@@ -25,7 +25,28 @@ function closeAccountModal() {
 function closeAccountModalOutside(e) {
     if (e.target.id === "accountModalOverlay") closeAccountModal();
 }
+/* --- FIX: Matches the name called by the button --- */
+function openAccountUpdateModal(username, password) {
+    // 1. Fill the hidden field and the visible input
+    document.getElementById('upd-original-username').value = username;
+    document.getElementById('upd-new-username').value = username;
 
+    // 2. Open the modal using the CORRECT ID from your HTML
+    const modal = document.getElementById('accountUpdateOverlay');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/* --- FIX: Matches the close button in your HTML --- */
+function closeAccountUpdateModal() {
+    const modal = document.getElementById('accountUpdateOverlay');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
 function updateRoleFields() {
     const role = document.getElementById('roleSelector').value;
 
@@ -159,16 +180,16 @@ function filterLguTable() {
 }
 // --- STUDENT PROFILE MODAL ---
 function viewStudentInfo(photo, name, lrn, grade, section, address, parent, contact, sid) {
-    // 1. Reset UI and show Loading state
+    // 1. Reset UI
     const historyBody = document.getElementById('boarding-history-body');
     const totalTripsEl = document.getElementById('info-total-trips');
-    const manualCountEl = document.getElementById('info-manual-scans'); // NEW
+    const manualCountEl = document.getElementById('info-manual-scans');
 
     if (historyBody) historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px;">Fetching logs...</td></tr>';
     if (totalTripsEl) totalTripsEl.innerText = "0";
-    if (manualCountEl) manualCountEl.innerText = "0"; // Reset manual count
+    if (manualCountEl) manualCountEl.innerText = "0";
 
-    // 2. SET BASIC INFO IMMEDIATELY
+    // 2. SET STATIC INFO
     document.getElementById('info-name').innerText = name;
     document.getElementById('info-lrn').innerText = lrn;
     document.getElementById('info-grade').innerText = grade;
@@ -178,33 +199,37 @@ function viewStudentInfo(photo, name, lrn, grade, section, address, parent, cont
     document.getElementById('info-contact').innerText = contact || "N/A";
     document.getElementById('info-id').innerText = sid || "N/A";
 
-    // 3. SET PHOTO
     const photoEl = document.getElementById('info-photo');
-    if (photoEl) {
-        photoEl.src = (photo && photo !== '') ? photo : '/lib/default-avatar.png';
-    }
+    if (photoEl) photoEl.src = (photo && photo !== '') ? photo : '/lib/default-avatar.png';
 
-    // 4. Show the modal
+    // 3. Show the modal
     document.getElementById('studentInfoOverlay').classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // 5. FETCH DATA FROM BACKEND
-    fetch(`/SchoolDashboard/GetStudentData?lrn=${lrn}`)
-        .then(response => response.json())
+    // 4. FETCH DATA
+    // Fix: Added encodeURIComponent to handle spaces/symbols in LRN
+    fetch(`/SchoolDashboard/GetStudentData?lrn=${encodeURIComponent(lrn)}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Server Error: " + response.status);
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // --- UPDATE DYNAMIC COUNTERS ---
-                if (totalTripsEl) totalTripsEl.innerText = data.totalTrips;
-                if (manualCountEl) manualCountEl.innerText = data.manualCount; // UPDATED
+                // Update the Pills
+                document.getElementById('info-reg-date').innerText = data.regDate; 
+                if (totalTripsEl) totalTripsEl.innerText = data.totalTrips || "0";
+                if (manualCountEl) manualCountEl.innerText = data.manualCount || "0";
 
-                // --- POPULATE HISTORY TABLE ---
+                // Populate Table
                 if (historyBody) {
                     historyBody.innerHTML = "";
                     if (data.tripHistory && data.tripHistory.length > 0) {
                         data.tripHistory.forEach(log => {
-                            // Check if log is manual to color code the status
-                            const isManual = log.status.includes("Manual");
-                            const statusColor = isManual ? "background:#fffbeb; color:#d97706;" : "background:#dcfce7; color:#15803d;";
+                            // Match badge colors
+                            const isManual = log.status === "Manual";
+                            const badgeStyle = isManual
+                                ? "background:#fffbeb; color:#d97706; border: 1px solid #fde68a;"
+                                : "background:#dcfce7; color:#15803d; border: 1px solid #bbf7d0;";
 
                             historyBody.innerHTML += `
                                 <tr>
@@ -212,7 +237,7 @@ function viewStudentInfo(photo, name, lrn, grade, section, address, parent, cont
                                     <td><span class="id-tag">${log.tripId}</span></td>
                                     <td style="font-weight:700; color:#0077b6;">${log.scanTime}</td>
                                     <td>
-                                        <span class="status" style="font-size:10px; padding:4px 10px; border-radius:50px; font-weight:800; ${statusColor}">
+                                        <span class="status" style="font-size:10px; padding:4px 10px; border-radius:50px; font-weight:800; ${badgeStyle}">
                                             ${log.status}
                                         </span>
                                     </td>
@@ -222,13 +247,15 @@ function viewStudentInfo(photo, name, lrn, grade, section, address, parent, cont
                         historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8;">No records found.</td></tr>';
                     }
                 }
-
-                // Save for local filtering
-                currentStudentLogs = data.tripHistory;
+            } else {
+                if (historyBody) historyBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:orange; padding:20px;">${data.message || 'Student not found.'}</td></tr>`;
             }
         })
-        .catch(err => console.error("Error fetching data:", err));
-}
+        .catch(err => {
+            console.error("Critical Fetch Error:", err);
+            if (historyBody) historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#ef4444; padding:20px;">Failed to load data. Please check connection.</td></tr>';
+        });
+}  
 // --- NEW: MODAL FILTER LOGIC ---
 
 // 1. Toggle visibility of inputs (Date/Month)

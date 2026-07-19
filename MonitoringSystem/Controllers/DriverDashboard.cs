@@ -62,41 +62,37 @@ namespace MonitoringSystem.Controllers
             try
             {
                 if (string.IsNullOrEmpty(lrn) || tripId <= 0)
-                    return Json(new { success = false, message = "Invalid ID or Scan Data" });
+                    return Json(new { success = false, message = "No active trip or invalid LRN." });
 
                 string cleanLrn = lrn.Trim();
 
-                // DECRYPTION: If not manual, try to unlock the QR code
+                // Only decrypt if it's a QR scan (not manual)
                 if (!isManual)
                 {
                     try
                     {
-                        string input = lrn.Trim().Replace(" ", "+");
-                        string decryptedData = SecurityHelper.Decrypt(input);
-
-                        // Handle our formats: "STMS-VERIFIED|LS-2026-0101"
+                        string decryptedData = SecurityHelper.Decrypt(cleanLrn.Replace(" ", "+"));
                         if (decryptedData.Contains("|"))
                             cleanLrn = decryptedData.Split("|")[1].Trim();
                     }
-                    catch { /* If fails, treated as raw text */ }
+                    catch { /* Use raw if decryption fails */ }
                 }
 
                 // STEP 1: Find the Student
-                // Search by StudentLRN OR by the QRCodeValue (LS-2026-XXXX)
                 var student = _context.Students.FirstOrDefault(s => s.StudentLRN == cleanLrn)
                    ?? _context.Students.FirstOrDefault(s => _context.QRCodes.Any(q => q.QRCodeValue == cleanLrn && q.QRCodeID == s.QRCodeID));
 
                 if (student == null)
-                    return Json(new { success = false, message = "Student not found in registry." });
+                    return Json(new { success = false, message = "Student not found." });
 
                 if (student.Status == "Inactive")
-                    return Json(new { success = false, message = "Access Denied: Student is Inactive." });
+                    return Json(new { success = false, message = "Student is set to Inactive." });
 
-                // STEP 2: SAVE TRANSPORT ACTIVITY
+                // STEP 2: Save Activity
                 var newActivity = new TransportActivity
                 {
-                    StudentID = student.StudentID, // int FK
-                    TripID = tripId,               // int FK
+                    StudentID = student.StudentID,
+                    TripID = tripId,
                     EntryMethod = isManual ? "Manual" : "QR",
                     Time = DateTime.Now.TimeOfDay,
                     ManualCheckInReason = isManual ? reason : "N/A"
@@ -104,26 +100,23 @@ namespace MonitoringSystem.Controllers
 
                 _context.TransportActivities.Add(newActivity);
 
-                if (isManual) student.ManualCheckInCount++;
+                if (isManual) student.ManualCheckInCount++; // Track manual abuse
+
                 _context.SaveChanges();
 
-                // STEP 3: GET REAL-TIME COUNT FROM SQL
-                int realTimeCount = _context.TransportActivities.Count(a => a.TripID == tripId);
-
+                // STEP 3: Return Response
                 return Json(new
                 {
                     success = true,
-                    currentCount = realTimeCount,
-                    name = student.FullName,
-                    photo = student.PhotoPath,
-                    level = student.GradeLevel,
-                    id = student.StudentSchoolID,
-                    address = student.Address
+                    currentCount = _context.TransportActivities.Count(a => a.TripID == tripId),
+                    // FIX: Use manual string concatenation instead of .FullName
+                    name = student.FirstName + " " + student.LastName,
+                    photo = student.PhotoPath
                 });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Database Error: " + ex.Message });
+                return Json(new { success = false, message = "System Error: " + ex.Message });
             }
         }
 

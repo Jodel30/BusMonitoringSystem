@@ -142,6 +142,7 @@ function closeSchInfoView() {
 
 /* --- UPDATE STUDENT MODAL LOGIC --- */
 function openUpdateModal(id, fname, mname, lname, grade, section, contact, status) {
+    // 1. Set the values
     document.getElementById('upd-id').value = id;
     document.getElementById('upd-fname').value = fname;
     document.getElementById('upd-mname').value = mname;
@@ -150,35 +151,53 @@ function openUpdateModal(id, fname, mname, lname, grade, section, contact, statu
     document.getElementById('upd-section').value = section;
     document.getElementById('upd-contact').value = contact;
 
-    // --- FIX FOR BLANK DROPDOWN ---
+    // 2. Normalize Status (Handles True/False, 1/0, or "Active")
+    let displayStatus = "Active";
+    const s = String(status).toLowerCase().trim();
+    if (s === "inactive" || s === "false" || s === "0") {
+        displayStatus = "Inactive";
+    }
+
+    // 3. Set Dropdown
     const statusSelect = document.getElementById('upd-status');
-
-    // Convert 1/0 or True/False to the words "Active"/"Inactive" if necessary
-    let displayStatus = status;
-    if (status === "True" || status === "1" || status === true) displayStatus = "Active";
-    if (status === "False" || status === "0" || status === false) displayStatus = "Inactive";
-
     if (statusSelect) {
         statusSelect.value = displayStatus;
     }
 
-    // Update the visual badge color
-    const badge = document.querySelector('#updateStudentOverlay .badge-role');
-    if (displayStatus === "Inactive") {
-        badge.innerText = "INACTIVE";
-        badge.style.background = "#fee2e2";
-        badge.style.color = "#991b1b";
-    } else {
-        badge.innerText = "ACTIVE";
-        badge.style.background = "#A3DE83";
-        badge.style.color = "black";
-    }
+    // 4. Update the Badge UI immediately
+    updateModalBadgeUI(displayStatus);
 
     document.getElementById('updateStudentOverlay').classList.add('active');
 }
 function closeUpdateModal() {
     document.getElementById('updateStudentOverlay').classList.remove('active');
     document.body.style.overflow = 'auto';
+}
+
+// NEW: Update badge color when user changes the dropdown manually
+document.addEventListener('DOMContentLoaded', function () {
+    const statusDropdown = document.getElementById('upd-status');
+    if (statusDropdown) {
+        statusDropdown.addEventListener('change', function () {
+            updateModalBadgeUI(this.value);
+        });
+    }
+});
+
+// Helper to handle the colors
+function updateModalBadgeUI(statusValue) {
+    const badge = document.querySelector('#updateStudentOverlay .badge-role');
+    if (badge) {
+        if (statusValue === "Inactive") {
+            badge.innerText = "INACTIVE";
+            badge.style.background = "#fee2e2"; // Light Red
+            badge.style.color = "#991b1b";      // Dark Red
+        } else {
+            badge.innerText = "ACTIVE";
+            badge.style.background = "#A3DE83"; // Green
+            badge.style.color = "black";
+        }
+    }
 }
 
 function closeUpdateModalOutside(e) {
@@ -633,7 +652,7 @@ function exportTransportReport() {
     // 2. Add a professional Header
     doc.setFontSize(18);
     doc.setTextColor(0, 119, 182); // Your brand blue
-    doc.text("Student Transport Monitoring System", 14, 15);
+    doc.text("Libreng Sakay Student Transport Monitoring System", 14, 15);
 
     doc.setFontSize(12);
     doc.setTextColor(100);
@@ -667,3 +686,4 @@ function exportTransportReport() {
     // 5. Download the file
     doc.save(`STMS_Report_${new Date().getTime()}.pdf`);
 }
+

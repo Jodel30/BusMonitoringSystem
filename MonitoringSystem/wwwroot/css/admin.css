@@ -1108,21 +1108,53 @@ hr {
 
 /* PRINT LOGIC: Hides everything except the card when printing */
 @media print {
-    body * {
+    
+    body {
         visibility: hidden;
+        background: white !important;
     }
 
-    #printable-qr-card, #printable-qr-card * {
-        visibility: visible;
+   
+    #printable-qr-card,
+    #printable-qr-card img {
+        visibility: visible !important;
+        display: block !important;
     }
 
+    
     #printable-qr-card {
         position: absolute;
         left: 50%;
-        top: 20%;
+        top: 0;
         transform: translateX(-50%);
-        border: 2px solid #eee;
-        padding: 40px;
+        width: 120mm !important; 
+        border: none !important;
+        box-shadow: none !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+        
+        #printable-qr-card h1,
+        #printable-qr-card h2,
+        #printable-qr-card h3,
+        #printable-qr-card p,
+        #printable-qr-card span,
+        #printable-qr-card strong {
+            display: none !important; 
+        }
+
+       
+        #printable-qr-card img {
+            width: 100% !important;
+            height: auto !important;
+            margin-top: 20mm; /* Space from top of paper */
+        }
+
+    
+    @page {
+        margin: 0;
     }
 }
 #rp-visual-badge h1 {

@@ -202,7 +202,7 @@ function recordScanToBackend(lrn) {
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                // This updates the '0' on your screen to '1' immediately
+               
                 updateCounterUI(result.currentCount);
             }
         });
@@ -367,55 +367,70 @@ function filterStudents() {
 }
 // 1. UNLOCK THE BUTTON WHEN A REASON IS CHOSEN
 function enableBoardButton(selectEl) {
-    // Find the button inside the same student-item box
-    const button = selectEl.closest('.student-item').querySelector('.btn-check');
+    const studentItem = selectEl.closest('.student-item');
+    const button = studentItem.querySelector('.btn-check');
 
     if (selectEl.value !== "") {
+        button.disabled = false; // THIS IS THE KEY FIX
         button.style.opacity = "1";
         button.style.pointerEvents = "auto";
-        button.style.background = "#0077b6"; // Turn to primary blue
+        button.style.background = "#0077b6";
+    } else {
+        button.disabled = true;
+        button.style.opacity = "0.5";
+        button.style.pointerEvents = "none";
     }
 }
 
 // 2. HANDLE BOARDING
 function handleManualBoarding(btn, lrn, name, level, photo) {
-    if (btn.disabled || !currentTripId) {
+    // CHANGE: Check dbTripId (the number) instead of the text string
+    if (btn.disabled || !dbTripId || dbTripId === 0) {
         alert("Please start a trip first!");
         return;
     }
 
-    // Get the selected reason from the dropdown
     const selectEl = btn.closest('.student-item').querySelector('.manual-reason-select');
     const reason = selectEl.value;
 
-    // A. Sync with Backend (Pass isManual=true and the reason)
+    btn.innerText = "Processing...";
+    btn.disabled = true;
+
     fetch('/DriverDashboard/RecordScan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `lrn=${encodeURIComponent(lrn)}&tripId=${encodeURIComponent(currentTripId)}&isManual=true&reason=${encodeURIComponent(reason)}`
+        // FIX: Send dbTripId (the integer) so C# can read it
+        body: `lrn=${encodeURIComponent(lrn)}&tripId=${dbTripId}&isManual=true&reason=${encodeURIComponent(reason)}`
     })
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                // B. Update the Live Counter UI
+                btn.innerText = "Boarded ✓";
+                btn.style.background = "#2ecc71";
+                selectEl.disabled = true;
+
                 if (document.getElementById('active-live-count'))
                     document.getElementById('active-live-count').innerText = result.currentCount;
 
-                // C. Add student to the live "On-Board" list
-                const manualData = {
+                addToOnBoardList({
                     name: name,
                     level: level,
                     photo: photo,
-                    status: "Manual: " + reason // Shows the reason in the list
-                };
-                addToOnBoardList(manualData);
+                    status: "Manual: " + reason
+                });
 
-                // D. UI Feedback
-                btn.innerText = "Boarded ✓";
-                btn.style.background = "#2ecc71";
-                btn.disabled = true;
-                selectEl.disabled = true; // Lock dropdown
+                // Optional: Hide from list once boarded
+                hideStudentFromManualList(lrn);
+            } else {
+                alert("Error: " + result.message);
+                btn.innerText = "Board Student";
+                btn.disabled = false;
             }
+        })
+        .catch(err => {
+            alert("Connection Error. Check if Controller is named DriverDashboardController.");
+            btn.innerText = "Board Student";
+            btn.disabled = false;
         });
 }
 function resetManualCheckinUI() {

@@ -252,12 +252,12 @@
                                 <td>
                                     <div class="action-buttons-container">
                                         <button type="button" class="btn-view-info"
-                                                onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.StudentLRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.ParentGuardianName)', '@student.ContactNum', '@student.StudentSchoolID', '@student.DateRegistered')">
+                                                    onclick="viewSchStudentInfo('@Html.Raw(student.PhotoPath)', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)', '@student.StudentLRN', '@student.GradeLevel', '@student.Section', '@Html.Raw(student.Address)', '@Html.Raw(student.ParentGuardianName)', '@student.ContactNum', '@student.StudentSchoolID', '@student.DateRegistered.ToString("MM/dd/yyyy")')">
                                             <i class="fa-solid fa-circle-info"></i> View Student Info
                                         </button>
 
                                         <button type="button" class="btn-view-info btn-update-dark"
-                                                onclick="openUpdateModal('@student.StudentSchoolID', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ContactNum', '@student.Status')">
+                                                onclick="openUpdateModal('@student.StudentID', '@Html.Raw(student.FirstName)', '@Html.Raw(student.MiddleName)', '@Html.Raw(student.LastName)', '@student.GradeLevel', '@student.Section', '@student.ContactNum', '@student.Status')">
                                             <i class="fa-solid fa-pen-to-square"></i> Update
                                         </button>
                                     </div>
@@ -592,7 +592,7 @@
 
                 <div class="search-mini" onclick="this.querySelector('input').focus();" style="cursor: text;">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="archiveSearch" placeholder="Search archived students..." onkeyup="filterArchiveTable()">
+                <input type="text" id="archiveSearch" placeholder="Search students" onkeyup="filterArchiveTable()">
             </div>
                 <div class="activity-logs-scroll">
             <table class="modern-table" id="archiveTable">
@@ -618,22 +618,22 @@
                                         <div style="display:flex; gap:10px; justify-content:center;">
                                             <!-- RESTORE BUTTON -->
                                             <button type="button" class="btn-restore"
-                                                    onclick="askConfirm('restore', '@student.StudentSchoolID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
+                                                    onclick="askConfirm('restore', '@student.StudentID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
                                                 <i class="fa-solid fa-rotate-left"></i> Restore
                                             </button>
 
                                             <!-- DELETE BUTTON  -->
                                             <button type="button" class="btn-delete"
-                                                    onclick="askConfirm('delete', '@student.StudentSchoolID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
+                                                    onclick="askConfirm('delete', '@student.StudentID', '@Html.Raw(student.FirstName) @Html.Raw(student.LastName)')">
                                                 <i class="fa-solid fa-trash-can"></i> Delete
                                             </button>
 
                                             <!-- HIDDEN FORM FOR ACTUAL DELETION -->
-                                            <form id="delete-form-@student.StudentSchoolID" asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post" style="display:none;">
-                                                <input type="hidden" name="StudentId" value="@student.StudentSchoolID" />
+                                            <form id="delete-form-@student.StudentID" asp-action="DeleteStudent" asp-controller="SchoolDashboard" method="post" style="display:none;">
+                                                <input type="hidden" name="StudentId" value="@student.StudentID" />
                                             </form>
                                         </div>
-                                    </td>
+                                    </td>   
                             </tr>
                         }
                     }

@@ -91,78 +91,100 @@ namespace MonitoringSystem.Controllers
         [HttpGet]
         public IActionResult GetStudentData(string lrn)
         {
-            if (string.IsNullOrEmpty(lrn)) return Json(new { success = false, message = "Scan data empty." });
-
-            string input = lrn.Trim().Replace(" ", "+");
-            string targetLrn = "";
-            Models.QRCode qrPass = null;
-
-            // 1. CHECK THE QRCODE TABLE (Search by Value 'LS-2026-XXXX')
-            qrPass = _context.QRCodes.FirstOrDefault(q => q.QRCodeValue == input);
-
-            if (qrPass != null)
+            try
             {
-                // In your ERD, QR table links to Student. Assuming you have StudentLRN in QR table:
-                // If not, we search Students table by QRCodeID
-                var studentByQR = _context.Students.FirstOrDefault(s => s.QRCodeID == qrPass.QRCodeID);
-                if (studentByQR != null) targetLrn = studentByQR.StudentLRN;
-            }
-            else
-            {
-                // Fallback for manual search (Driver typing LRN or School ID)
-                var manual = _context.Students.FirstOrDefault(s => s.StudentLRN == input || s.StudentSchoolID.ToString() == input);
-                if (manual != null) targetLrn = manual.StudentLRN;
-            }
+                if (string.IsNullOrEmpty(lrn)) return Json(new { success = false, message = "Scan data empty." });
 
-            // 2. FETCH PROFILE
-            var student = _context.Students.FirstOrDefault(s => s.StudentLRN == targetLrn);
+                // Clean the input
+                string input = lrn.Trim();
+                string targetLrn = "";
+                Models.QRCode qrPass = null;
 
-            if (student != null)
-            {
-                if (student.Status == "Inactive") return Json(new { success = false, message = "Student is Inactive." });
+                // 1. CHECK THE QRCODE TABLE
+                qrPass = _context.QRCodes.FirstOrDefault(q => q.QRCodeValue == input);
 
-                // FIXED: Table name is 'TransportActivities'
-                var history = _context.TransportActivities
-                    .Where(h => h.StudentID == student.StudentID)
-                    .OrderByDescending(h => h.Time)
-                    .ToList();
-
-                return Json(new
+                if (qrPass != null)
                 {
-                    success = true,
-                    name = student.FullName,
-                    photo = student.PhotoPath,
-                    level = student.GradeLevel,
-                    section = student.Section,
-                    address = student.Address,
-                    id = student.StudentSchoolID,
-                    systemPassId = qrPass?.QRCodeValue ?? "Manual",
-                    parent = student.ParentGuardianName,
-                    contact = student.ContactNum,
-                    tripHistory = history,
-                    totalTrips = history.Count
-                });
+                    var studentByQR = _context.Students.FirstOrDefault(s => s.QRCodeID == qrPass.QRCodeID);
+                    if (studentByQR != null) targetLrn = studentByQR.StudentLRN;
+                }
+                else
+                {
+                    // Fallback for manual search (Checks LRN or School ID)
+                    var manual = _context.Students.FirstOrDefault(s => s.StudentLRN == input || s.StudentSchoolID.ToString() == input);
+                    if (manual != null) targetLrn = manual.StudentLRN;
+                }
+
+                // 2. FETCH PROFILE
+                var student = _context.Students.FirstOrDefault(s => s.StudentLRN == targetLrn);
+
+                if (student != null)
+                {
+                    if (student.Status == "Inactive") return Json(new { success = false, message = "Student is Inactive." });
+
+                    // 3. FETCH HISTORY SAFELY
+                    var history = _context.TransportActivities
+                        .Where(h => h.StudentID == student.StudentID)
+                        .ToList(); // Pull to memory to handle formatting safely
+
+                    var formattedHistory = history.Select(h => new {
+                        date = DateTime.Now.ToString("MM/dd/yyyy"),
+                        tripId = h.TripID.ToString(),
+                        // FIXED: Handle TimeSpan nulls and convert to 12-hour format (AM/PM)
+                        scanTime = h.Time != null ? DateTime.Today.Add(h.Time).ToString("hh:mm tt") : "N/A",
+                        status = h.EntryMethod ?? "Tap-In"
+                    }).OrderByDescending(x => x.scanTime).ToList();
+
+                    return Json(new
+                    {
+                        success = true,
+                        // SAFETY: Use FirstName + LastName if FullName is not a database column
+                        name = student.FirstName + " " + student.LastName,
+                        photo = student.PhotoPath ?? "/lib/default-avatar.png",
+                        level = student.GradeLevel ?? "N/A",
+                        section = student.Section ?? "N/A",
+                        address = student.Address ?? "N/A",
+                        id = student.StudentSchoolID,
+                        systemPassId = qrPass?.QRCodeValue ?? "Manual",
+                        parent = student.ParentGuardianName ?? "N/A",
+                        contact = student.ContactNum ?? "N/A",
+                        regDate = student.DateRegistered.ToString("MM/dd/yyyy"),
+                        tripHistory = formattedHistory,
+                        totalTrips = history.Count,
+                        manualCount = history.Count(h => h.EntryMethod == "Manual")
+                    });
+                }
+
+                return Json(new { success = false, message = "Student record not found." });
             }
-
-            return Json(new { success = false, message = "Invalid Pass." });
+            catch (Exception ex)
+            {
+                // THIS IS THE KEY: If it fails, the "Failed to load data" will be replaced 
+                // by the actual error message from C# so you can see it.
+                return Json(new { success = false, message = "Server Error: " + ex.Message });
+            }
         }
-
         [HttpGet]
-        public IActionResult GetTripManifest(int tripId) // Changed to int to match ERD TripID
+        public IActionResult GetTripManifest(int tripId)
         {
-            // FIXED: Table name is 'TransportActivities'
+            // 1. Fetch scans from TransportActivities
             var scans = _context.TransportActivities.Where(s => s.TripID == tripId).ToList();
 
             var manifest = scans.Select(scan => {
                 var student = _context.Students.FirstOrDefault(s => s.StudentID == scan.StudentID);
+
+                // --- THE FIX: Convert TimeSpan to 12-hour format with AM/PM ---
+                // We add the TimeSpan to Today's date so we can use "hh:mm tt"
+                string normalTime = DateTime.Today.Add(scan.Time).ToString("hh:mm tt");
+
                 return new
                 {
                     name = student != null ? student.FullName : "Unknown",
                     level = student?.GradeLevel ?? "N/A",
                     section = student?.Section ?? "N/A",
                     address = student?.Address ?? "N/A",
-                    time = scan.Time.ToString(@"hh\:mm"),
-                    status = scan.EntryMethod
+                    time = normalTime, // Now returns "07:16 PM"
+                    status = scan.EntryMethod ?? "QR"
                 };
             }).ToList();
 
@@ -170,37 +192,31 @@ namespace MonitoringSystem.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateStudent(Student updatedData)
+        public IActionResult UpdateStudent(int id, string status, string firstName, string middleName, string lastName, string gradeLevel, string section, string contact)
         {
-            // DEBUG: Look at your "Output" window in Visual Studio to see these
-            System.Diagnostics.Debug.WriteLine("Updating Student ID: " + updatedData.StudentID);
-            System.Diagnostics.Debug.WriteLine("New Status: " + updatedData.Status);
-
             // Try to find the student
-            var student = _context.Students.FirstOrDefault(s => s.StudentID == updatedData.StudentID);
+            var student = _context.Students.FirstOrDefault(s => s.StudentID == id);
 
             if (student != null)
             {
-                student.FirstName = updatedData.FirstName;
-                student.MiddleName = updatedData.MiddleName;
-                student.LastName = updatedData.LastName;
-                student.GradeLevel = updatedData.GradeLevel;
-                student.Section = updatedData.Section;
-                student.ContactNum = updatedData.ContactNum;
-
-                // FORCE the update
-                student.Status = updatedData.Status;
+                student.FirstName = firstName;
+                student.MiddleName = middleName;
+                student.LastName = lastName;
+                student.GradeLevel = gradeLevel;
+                student.Section = section;
+                student.ContactNum = contact;
+                student.Status = status;
 
                 _context.SaveChanges();
-                TempData["Message"] = "Save Successful";
+                TempData["UpdateStatus"] = "Success";
             }
             else
             {
-                // IF THIS RUNS, your HTML ID is wrong
-                TempData["Message"] = "Error: Student Not Found in Database";
+                // THIS IS THE KEY: If you see this message, the ID passed from JS is wrong
+                TempData["UpdateStatus"] = "Error: Student ID " + id + " not found in database.";
             }
 
-            string anchor = (updatedData.Status == "Inactive") ? "#archive" : "#students";
+            string anchor = (status == "Inactive") ? "#archive" : "#students";
             return Redirect(Url.Action("SchoolAdmin") + anchor);
         }
         [HttpPost]
@@ -215,6 +231,21 @@ namespace MonitoringSystem.Controllers
             return Redirect(Url.Action("SchoolAdmin") + "#archive");
         }
 
-        // ... Resolve methods updated to use _context.Students and _context.SaveChanges() ...
+        [HttpPost]
+        public IActionResult MarkAsActive(int studentId)
+        {
+            // Search for the student by their Primary Key
+            var student = _context.Students.FirstOrDefault(s => s.StudentID == studentId);
+
+            if (student != null)
+            {
+                student.Status = "Active"; // Set them back to Active
+                _context.SaveChanges();
+                return Ok(); // Return 200 OK so the JavaScript knows to reload
+            }
+
+            return NotFound(); // Return 404 if student not found
+        }
+
     }
 }

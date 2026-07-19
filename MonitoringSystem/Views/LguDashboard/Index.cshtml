@@ -194,6 +194,10 @@
                                     <div class="info-item full"><strong>Home Address</strong> <span id="info-address"></span></div>
                                     <div class="info-item"><strong>Guardian Name</strong> <span id="info-parent"></span></div>
                                     <div class="info-item"><strong>Contact Number</strong> <span id="info-contact"></span></div>
+                                    <div class="trip-summary-pill">
+                                        <span>Date Registered:</span>
+                                        <strong id="info-reg-date">00/00/0000</strong>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -505,7 +509,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Contact No.</label>
-                                    <input type="text" placeholder="Enter Contact No." name="ContactNo" class="role-input">
+                                    <input type="text" placeholder="Enter Contact No." name="ContactNum" class="role-input">
                                 </div>
                        
                         </div>
@@ -571,7 +575,7 @@
 
                                 <!-- UPDATE CREDENTIALS BUTTON -->
                                 <button type="button" class="btn-view-info" style="background:#1e293b;"
-                                        onclick="openAccountUpdateModal('@acc.Username')">
+                                        onclick="openAccountUpdateModal('@acc.Username', '@acc.Password')">
                                     <i class="fa-solid fa-key"></i> Update
                                 </button>
                             </div>
@@ -637,7 +641,7 @@
                                 <div class="info-item"><strong>Contact Number</strong> <span id="acc-contact"></span></div>
                                 <div id="acc-email-container" class="info-item"><strong>Email Address</strong> <span id="acc-email"></span></div>
                             </div>
-
+                                
                             <hr>
 
                             <!-- ROLE SPECIFIC DATA -->
