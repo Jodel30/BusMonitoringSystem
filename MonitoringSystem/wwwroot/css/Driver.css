@@ -1,34 +1,66 @@
-﻿body {
+﻿/* ==========================================
+   1. GLOBAL LAYOUT & RESPONSIVENESS
+   ========================================== */
+body {
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #333;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #333; /* Dark background for Desktop */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
 }
 
+/* THE CONTAINER: Fixed "Phone" size on desktop, Full-screen on mobile */
 .mobile-container {
-    width: 375px;
-    height: 700px;
+    width: 100%;
+    max-width: 420px;
+    height: 100vh;
+    max-height: 850px;
     background-color: #f0f7ff;
-    border-radius: 30px;
-    overflow: hidden;
     position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    border: 8px solid #1a1a1a;
+    transition: all 0.3s ease;
 }
 
+/* DESKTOP DECORATION (Phone Frame) */
+@media (min-width: 501px) {
+    .mobile-container {
+        border: 8px solid #1a1a1a;
+        border-radius: 35px;
+    }
+}
 
+/* MOBILE ADJUSTMENTS (Real phone screens) */
+@media (max-width: 500px) {
+    body {
+        background-color: #f0f7ff;
+    }
+
+    .mobile-container {
+        max-width: 100%;
+        max-height: 100vh;
+        border: none;
+        border-radius: 0;
+    }
+}
+
+/* ==========================================
+   2. APP HEADER & SIDEBAR
+   ========================================== */
 .app-header {
+    flex-shrink: 0;
     background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
     padding: 15px 20px;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 10;
+    z-index: 1001;
 }
 
     .app-header h2 {
@@ -43,8 +75,8 @@
     width: 80%;
     height: 100%;
     background: #102a43;
-    z-index: 100;
-    transition: 0.4s;
+    z-index: 2000;
+    transition: 0.4s ease;
     padding: 40px 20px;
     box-sizing: border-box;
     color: white;
@@ -57,6 +89,7 @@
     .sidebar h3 {
         border-bottom: 1px solid rgba(255,255,255,0.2);
         padding-bottom: 10px;
+        margin: 0;
     }
 
     .sidebar ul {
@@ -77,10 +110,13 @@
                 width: 20px;
             }
 
+/* ==========================================
+   3. CONTENT SECTIONS (SCROLLABLE MIDDLE)
+   ========================================== */
 .content-section {
+    flex: 1;
     padding: 20px;
     display: none;
-    height: 580px;
     overflow-y: auto;
     box-sizing: border-box;
 }
@@ -91,7 +127,7 @@
 
 .search-container {
     position: sticky;
-    top: 0;
+    top: -20px;
     background: #f0f7ff;
     padding: 10px 0;
     z-index: 5;
@@ -103,10 +139,12 @@
         border-radius: 10px;
         border: 1px solid #dce7f1;
         outline: none;
-        box-sizing: border-box;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
+/* ==========================================
+   4. STUDENT CARDS & HERO BANNER
+   ========================================== */
 .student-item {
     background: white;
     padding: 15px;
@@ -116,8 +154,8 @@
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    border: 1px solid transparent;
     transition: 0.3s;
+    gap: 10px;
 }
 
 .student-info h4 {
@@ -146,190 +184,68 @@
     .btn-check.boarded {
         background: #2ecc71;
     }
+
 .hero-banner {
     background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
-    border-radius: 20px;
-    padding: 20px; /* Reduced padding to fit phone width */
+    border-radius: 25px;
+    padding: 30px;
     display: flex;
-    flex-direction: row; /* Keeps items side-by-side */
-    align-items: center; /* Vertically centers both */
     justify-content: space-between;
+    align-items: center;
     color: white;
+    margin-bottom: 15px;
     box-shadow: 0 10px 25px rgba(0, 119, 182, 0.2);
-    overflow: hidden;
-    min-height: 120px; /* Compact height for mobile */
+    min-height: 100px;
 }
 
-.hero-text {
-    flex: 1; /* Takes up all available left space */
-    text-align: left;
+.hero-text h1 {
+    font-size: 24px;
+    margin: 0;
+    font-weight: 900;
+    line-height: 1.2;
 }
+
+.hero-visual img {
+    width: 140px;
+    height: 100px;
+    border-radius: 15px;
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+    object-fit: cover;
+}
+
+@media (max-width: 360px) {
+    .hero-banner {
+        padding: 20px;
+    }
 
     .hero-text h1 {
-        font-size: 18px; /* Much smaller to prevent huge line breaks */
-        margin: 0;
-        font-weight: 800;
-        line-height: 1.2;
+        font-size: 20px;
     }
-
-.hero-visual {
-    flex-shrink: 0; /* Prevents the image from getting squashed */
-    margin-left: 10px; /* Gap between text and image */
-}
 
     .hero-visual img {
-        width: 100px; /* Fixed small width to fit on the right */
-        height: auto;
-        border-radius: 10px;
-        filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+        width: 100px;
+        height: 70px;
     }
-.hide-banner {
-    display: none !important;
 }
-.scan-container {
-    text-align: center;
-    margin-top: 30px;
-}
-
+/* ==========================================
+   5. SCANNER & TRIP BUTTONS
+   ========================================== */
 .qr-frame {
-    width: 220px;
-    height: 220px;
+    width: min(220px, 70vw);
+    height: min(220px, 70vw);
     border: 4px dashed #0077b6;
-    margin: 0 auto 30px;
+    margin: 30px auto;
     border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     background: white;
-    color: #ddd;
 }
 
     .qr-frame i {
-        font-size: 80px;
+        font-size: 70px;
+        color: #ddd;
     }
-
-.btn-main {
-    background: #0077b6;
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 12px;
-    font-weight: 600;
-    width: 100%;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-/* CONTAINER SPACING */
-.analytics-summary {
-    margin-top: 10px;
-    width: 100%;
-}
-
-.insight-card {
-    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
-    border-radius: 20px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden; /* Clips the background image */
-    display: flex;
-    align-items: center;
-    min-height: 50px;
-    box-shadow: 0 10px 25px rgba(0, 119, 182, 0.2);
-}
-
-/* CONTENT ALIGNMENT */
-.card-inner {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    z-index: 2; /* Ensures text is above the background image */
-}
-
-/* THE ICON BOX (Phone Style) */
-.icon-box-mobile {
-    width: 50px;
-    height: 50px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-}
-
-/* THE NUMBERS AND LABELS */
-.insight-data .label {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 2px;
-}
-
-.insight-data h1 {
-    margin: 0;
-    font-size: 32px;
-    font-weight: 800;
-    color: white;
-    line-height: 1;
-}
-
-/* BACKGROUND DECORATIVE IMAGE */
-.card-bg-icon {
-    position: absolute;
-    bottom: -15px;
-    right: -10px;
-    width: 100px;
-    opacity: 0.15; /* Keeps it subtle */
-    transform: rotate(-10deg);
-    z-index: 1;
-    pointer-events: none; /* User can't click the image */
-}
-
-
-/* END TRIP BUTTON */
-.btn-end-trip {
-    margin-top: 20px;
-    width: 100%;
-    background: white;
-    border: 2px solid #e74c3c;
-    color: #e74c3c;
-    padding: 15px;
-    border-radius: 15px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-    .btn-end-trip:hover {
-        background: #e74c3c;
-        color: white;
-    }
-.overlay-bg {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 90;
-    display: none;
-}
-
-    .overlay-bg.active {
-        display: block;
-    }
-
-.trip-action-container {
-    padding: 10px 0;
-    display: block;
-    justify-content: center;
-}
 
 .btn-trip {
     width: 100%;
@@ -344,23 +260,12 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-    transition: all 0.3s ease;
     box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
-    /* START TRIP STYLE */
     .btn-trip.start {
         background: linear-gradient(135deg, #2ecc71 0%, #15803d 100%);
         margin-top: 20px;
-    }
-
-        .btn-trip.start:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px rgba(0, 180, 216, 0.3);
-        }
-
-    .btn-trip:active {
-        transform: translateY(-1px);
     }
 
     .btn-trip.active {
@@ -368,154 +273,94 @@
         margin-top: 20px;
     }
 
-        .btn-trip.active:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px rgba(0, 180, 216, 0.3);
-        }
-
-/* Active trip */
-
-.history-table {
+.btn-end-trip {
     width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-}
-
-    .history-table th {
-        text-align: left;
-        padding: 10px 5px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 2px solid #f1f5f9;
-    }
-
-    .history-table td {
-        padding: 12px 5px;
-        border-bottom: 1px solid #f1f5f9;
-        color: #102a43;
-        font-weight: 600;
-    }
-
-/* Trip ID Highlight */
-.trip-id-tag {
-    background: #f1f5f9;
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #0077b6;
-}
-
-.count-pill {
-    display: inline-block;
-    background: #0077b6;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 50px;
-    font-size: 10px;
-}
-/* LIVE BOARDING CARD */
-.boarding-stats-card {
-    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
-    padding: 15px 25px;
-    border-radius: 20px;
+    margin-top: 20px;
+    background: white;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    padding: 15px;
+    border-radius: 15px;
+    font-weight: 800;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* ==========================================
+   6. ANALYTICS CARDS (Stats)
+   ========================================== */
+.insight-card {
+    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
+    border-radius: 20px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    min-height: 80px;
     color: white;
-    box-shadow: 0 10px 20px rgba(0, 119, 182, 0.2);
-    margin-bottom: 10px;
 }
 
-.stats-icon {
-    font-size: 24px;
-    opacity: 0.8;
+.icon-box-mobile {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
 }
 
-.stats-info span {
-    display: block;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    opacity: 0.7;
-}
-
-.stats-info h2 {
+.insight-data h1 {
     margin: 0;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: 800;
 }
 
-.stats-badge {
-    background: #e74c3c;
-    font-size: 9px;
-    font-weight: 900;
-    padding: 4px 10px;
-    border-radius: 50px;
+.card-bg-icon {
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    width: 90px;
+    opacity: 0.15;
 }
 
-
-/* SUCCESS SCREEN MINI COUNTER */
-.mini-count-success {
-    display: inline-block;
-    background: #f1f5f9;
-    color: #102a43;
-    padding: 6px 15px;
-    border-radius: 50px;
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    border: 1px solid #e2e8f0;
-}
-
-    .mini-count-success strong {
-        color: #0077b6;
-    }
-
-/* SYSTEM ALERT MODAL */
-/* THE OVERLAY (Background Blur) */
-#systemAlertModal {
-    position: absolute; /* Keeps it inside the mobile-container */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(16, 42, 67, 0.6); /* Navy tint */
+/* ==========================================
+   7. MODALS & SYSTEM ALERTS
+   ========================================== */
+.modal-overlay, #systemAlertModal, #startTripModal {
+    position: absolute;
+    inset: 0;
+    background: rgba(16, 42, 67, 0.6);
     backdrop-filter: blur(5px);
     z-index: 5000;
-    /* HIDDEN BY DEFAULT */
     display: none;
     justify-content: center;
     align-items: center;
 }
 
-    /* THE TRIGGER (When JS adds this class) */
-    #systemAlertModal.active {
-        display: flex;
+    .modal-overlay.active, #systemAlertModal.active, #startTripModal.active {
+        display: flex !important;
     }
 
-/* YOUR STYLES APPLIED TO THE BOX */
 .system-alert-box {
     background: white;
-    width: 85%; /* Fits mobile width */
+    width: 85%;
     max-width: 320px;
-    padding: 30px !important;
+    padding: 25px;
+    border-radius: 28px;
     text-align: center;
-    border-radius: 28px !important;
     box-shadow: 0 15px 40px rgba(0,0,0,0.2);
-    /* Animation */
-    transform: translateY(20px);
-    transition: transform 0.3s ease;
-}
-
-#systemAlertModal.active .system-alert-box {
-    transform: translateY(0);
 }
 
 #alert-icon-container {
-    width: 65px;
-    height: 65px;
-    margin: 0 auto 20px;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 15px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -523,7 +368,13 @@
     font-size: 28px;
 }
 
-/* Alert Types */
+.alert-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+    width: 100%;
+    margin-top: 25px; 
+}
 .alert-success {
     background: #dcfce7;
     color: #15803d;
@@ -539,99 +390,47 @@
     color: #f59e0b;
 }
 
-.system-alert-box h3 {
-    margin: 0 0 10px;
-    color: #102a43;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.system-alert-box p {
-    font-size: 14px;
-    color: #64748b;
-    margin-bottom: 25px;
-    line-height: 1.5;
-}
-
-.alert-footer {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-alert-primary {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    background: #0077b6;
-    color: white;
-}
-
-.btn-alert-secondary {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    border-radius: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    background: #f1f5f9;
-    color: #64748b;
-}
-
-#startTripModal {
-    position: absolute; 
-    top: 0;
-    left: 0;
+/* ==========================================
+   8. TABLES & PROFILE DROPDOWN
+   ========================================== */
+.activity-logs-scroll {
     width: 100%;
-    height: 100%;
-    background: rgba(16, 42, 67, 0.6);
-    backdrop-filter: blur(5px);
-    z-index: 5000;
-    /* HIDDEN BY DEFAULT */
-    display: none;
-    justify-content: center;
-    align-items: center;
+    overflow-x: auto;
 }
 
-    
-    #startTripModal.active {
-        display: flex !important; 
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 300px;
+}
+
+    .history-table th {
+        text-align: left;
+        padding: 10px;
+        color: #94a3b8;
+        font-size: 10px;
+        border-bottom: 2px solid #f1f5f9;
     }
-.active-trip-badge {
-    background: #eef6fc;
-    color: #0077b6;
-    padding: 6px 15px;
-    border-radius: 50px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-    border: 1px solid #dce7f1;
-}
 
-    .active-trip-badge strong {
+    .history-table td {
+        padding: 10px;
+        border-bottom: 1px solid #f1f5f9;
         color: #102a43;
-        font-weight: 800;
+        font-weight: 600;
+        font-size: 11px;
     }
-/* DRIVER PROFILE DROPDOWN */
-.drv-user-trigger {
-    cursor: pointer;
-    padding: 5px;
-}
 
 .drv-profile-dropdown {
     position: absolute;
-    top: 60px; /* Right below header */
+    top: 60px;
     right: 15px;
-    width: 260px;
+    width: 250px;
     background: white;
     border-radius: 20px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    z-index: 6000; /* Above the scanner */
     display: none;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    z-index: 6000;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
     animation: drvSlideDown 0.3s ease-out;
 }
 
@@ -647,76 +446,6 @@
     }
 }
 
-.drv-drop-header {
-    padding: 15px 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.drv-avatar {
-    width: 40px;
-    height: 40px;
-    background: #0077b6;
-    color: white;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.drv-info strong {
-    display: block;
-    font-size: 13px;
-    color: #102a43;
-}
-
-.drv-info span {
-    font-size: 10px;
-    font-weight: 800;
-    color: #0077b6;
-    text-transform: uppercase;
-}
-
-.drv-drop-body {
-    padding: 5px 0;
-}
-
-.drv-item {
-    padding: 10px 20px;
-    display: flex;
-    gap: 12px;
-}
-
-    .drv-item i {
-        color: #94a3b8;
-        font-size: 14px;
-        width: 15px;
-        margin-top: 5px;
-    }
-
-    .drv-item small {
-        display: block;
-        font-size: 9px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        font-weight: 700;
-    }
-
-    .drv-item p {
-        margin: 0;
-        font-size: 12px;
-        color: #1e293b;
-        font-weight: 600;
-    }
-
-.drv-drop-footer {
-    padding: 12px;
-    border-top: 1px solid #f1f5f9;
-    background: #f8fafc;
-}
 .btn-logout-pro {
     display: flex;
     align-items: center;
@@ -725,8 +454,6 @@
     text-decoration: none;
     color: #ef4444;
     font-weight: 800;
-    font-size: 13px;
-    width: 100%;
     padding: 10px;
     border-radius: 10px;
     transition: 0.3s;
@@ -734,4 +461,307 @@
 
     .btn-logout-pro:hover {
         background: #fee2e2;
+    }
+
+/* UTILITY CLASSES */
+.overlay-bg {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+    display: none;
+}
+
+    .overlay-bg.active {
+        display: block;
+    }
+
+.hide-banner {
+    display: none !important;
+}
+
+/* ==========================================
+   FIXED PROFILE DROPDOWN INTERNAL STYLES
+   ========================================== */
+
+.drv-profile-dropdown {
+    position: absolute;
+    top: 60px; /* Positions it right below the header */
+    right: 15px;
+    width: 260px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    z-index: 6000;
+    display: none; /* Controlled by JS toggle */
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+/* Header inside the dropdown */
+.drv-drop-header {
+    padding: 20px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.drv-avatar {
+    width: 45px;
+    height: 45px;
+    background: #0077b6;
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.drv-info strong {
+    display: block;
+    font-size: 14px;
+    color: #102a43;
+}
+
+.drv-info span {
+    font-size: 11px;
+    font-weight: 800;
+    color: #0077b6;
+    text-transform: uppercase;
+}
+
+/* Body items inside the dropdown */
+.drv-drop-body {
+    padding: 10px 0;
+}
+
+.drv-item {
+    padding: 12px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    transition: background 0.2s;
+}
+
+    .drv-item i {
+        color: #94a3b8;
+        font-size: 16px;
+        margin-top: 3px;
+        width: 20px;
+        text-align: center;
+    }
+
+    .drv-item small {
+        display: block;
+        font-size: 10px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .drv-item p {
+        margin: 0;
+        font-size: 13px;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+/* Footer / Logout Area */
+.drv-drop-footer {
+    padding: 15px;
+    border-top: 1px solid #f1f5f9;
+    background: #f8fafc;
+}
+
+.btn-logout-pro {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #ef4444;
+    font-weight: 800;
+    font-size: 14px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    transition: 0.3s;
+}
+
+    .btn-logout-pro:hover {
+        background: #fee2e2;
+    }
+
+.btn-alert-primary {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px; /* Modern rounded look */
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+    background: linear-gradient(135deg, #0077b6 0%, #00b4d8 100%);
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0, 119, 182, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-alert-primary:active {
+        transform: scale(0.98); /* Slight click effect */
+    }
+
+
+.btn-alert-secondary {
+    width: 100%;
+    padding: 16px;
+    border: none;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #64748b; /* Muted slate color */
+    background: #f1f5f9; /* Light grey background */
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+    .btn-alert-secondary:hover {
+        background: #e2e8f0;
+    }
+
+/* Modal text styling */
+.system-alert-box h3 {
+    margin: 0 0 10px;
+    color: #102a43;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.system-alert-box p {
+    margin: 0 0 25px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ==========================================
+   FIXED ACTIVE SCANNER UI STYLES
+   ========================================== */
+
+/* 1. THE LIVE COUNTER CARD (Top Gradient Card) */
+.boarding-stats-card {
+    background: linear-gradient(135deg, #102a43 0%, #0077b6 100%);
+    padding: 20px 25px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    box-shadow: 0 10px 25px rgba(0, 119, 182, 0.25);
+    margin-bottom: 10px;
+    transition: transform 0.2s;
+}
+
+    .boarding-stats-card:active {
+        transform: scale(0.98);
+    }
+
+.stats-icon {
+    font-size: 28px;
+    opacity: 0.8;
+}
+
+.stats-info span {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+}
+
+.stats-info h2 {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* 2. THE TRIP BADGE (TRP-044) */
+.active-trip-badge {
+    background: #eef6fc;
+    color: #0077b6;
+    padding: 10px 25px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid #dce7f1;
+    display: inline-block;
+}
+
+/* 3. THE QR SCANNER FRAME (Dashed Box) */
+.qr-frame {
+    width: 240px;
+    height: 240px;
+    border: 5px dashed #0077b6; /* Thicker dashed border */
+    margin: 30px auto;
+    border-radius: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    color: #dce7f1; /* Faded icon color */
+    font-size: 90px;
+    box-shadow: inset 0 0 20px rgba(0, 119, 182, 0.05);
+}
+
+/* 4. THE MAIN SCAN BUTTON (Blue Button) */
+.btn-main {
+    background: #0077b6;
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 18px;
+    font-weight: 800;
+    width: 100%;
+    cursor: pointer;
+    font-size: 18px;
+    box-shadow: 0 8px 20px rgba(0, 119, 182, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: 0.3s;
+}
+
+    .btn-main:active {
+        transform: translateY(2px);
+        box-shadow: 0 4px 10px rgba(0, 119, 182, 0.1);
+    }
+
+
+.btn-end-trip {
+    margin-top: 20px;
+    width: 100%;
+    background: white;
+    border: 2px solid #e74c3c;
+    color: #e74c3c;
+    padding: 16px;
+    border-radius: 18px;
+    font-weight: 900;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+    .btn-end-trip:hover {
+        background: #fee2e2; /* Light red hover */
     }
